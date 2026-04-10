@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('note_shares', function (Blueprint $table) {
+        Schema::create('shares', function (Blueprint $table) {
             $table->id();
 
             // The shared note
@@ -29,18 +29,12 @@ return new class extends Migration
             // 'read' | 'edit'
             $table->enum('permission', ['read', 'edit'])->default('read');
 
-            // When this share was created / last updated
-            $table->timestamp('shared_at')->useCurrent();
-
-            // A note can only be shared once per recipient
-            $table->unique(['note_id', 'shared_with_user_id']);
-
-            $table->timestamps();
+            $table->timestamps(); // created_at, updated_at
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('note_shares');
+        Schema::dropIfExists('shares');
     }
 };

@@ -18,11 +18,11 @@ return new class extends Migration {
 
             $table->unique(['user_id', 'name']);
 
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
         });
-        Schema::create('note_label', function (Blueprint $table) {
-            $table->id();
 
+        // Pivot table with composite primary key per SRS
+        Schema::create('note_label', function (Blueprint $table) {
             $table->foreignId('note_id')
                 ->constrained('notes')
                 ->cascadeOnDelete();
@@ -31,9 +31,7 @@ return new class extends Migration {
                 ->constrained('labels')
                 ->cascadeOnDelete();
 
-            $table->unique(['note_id', 'label_id']);
-
-            $table->timestamps();
+            $table->primary(['note_id', 'label_id']);
         });
     }
 

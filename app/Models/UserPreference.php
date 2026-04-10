@@ -2,32 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Label extends Model
+class UserPreference extends Model
 {
-    use HasFactory;
-
-    public $timestamps = false;
+    const UPDATED_AT = 'updated_at';
+    const CREATED_AT = null;
 
     protected $fillable = [
         'user_id',
-        'name',
+        'theme',
+        'font_size',
+        'note_color',
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
-
-    protected static function booted(): void
-    {
-        static::creating(function (Label $model) {
-            $model->created_at = $model->created_at ?? now();
-        });
-    }
 
     // ──────────────────────────────────────────────
     // Relationships
@@ -36,11 +28,5 @@ class Label extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
-    }
-
-
-    public function notes(): BelongsToMany
-    {
-        return $this->belongsToMany(Note::class, 'note_label');
     }
 }

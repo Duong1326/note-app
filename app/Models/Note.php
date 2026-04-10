@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Builder;
 
 class Note extends Model
@@ -17,11 +18,9 @@ class Note extends Model
         'user_id',
         'title',
         'content',
-        'color',             // hex color string, e.g. "#ffffff"
-        'is_pinned',         // bool – pinned to top
-        'pinned_at',         // timestamp when pinned (for ordering multiple pins)
-        'is_locked',         // bool – password-protected
-        'lock_password',     // bcrypt hash of the note-level password
+        'is_pinned',
+        'pinned_at',
+        'is_locked',
     ];
 
     protected $casts = [
@@ -43,20 +42,25 @@ class Note extends Model
     /** Labels attached to this note */
     public function labels(): BelongsToMany
     {
-        return $this->belongsToMany(Label::class, 'note_label')
-                    ->withTimestamps();
+        return $this->belongsToMany(Label::class, 'note_label');
     }
 
-    /** Image attachments */
-    public function images(): HasMany
+    /** Image/file attachments */
+    public function attachments(): HasMany
     {
-        return $this->hasMany(NoteImage::class, 'note_id');
+        return $this->hasMany(Attachment::class, 'note_id');
     }
 
     /** Share records for this note */
     public function shares(): HasMany
     {
-        return $this->hasMany(NoteShare::class, 'note_id');
+        return $this->hasMany(Share::class, 'note_id');
+    }
+
+    /** Password protection record */
+    public function notePassword(): HasOne
+    {
+        return $this->hasOne(NotePassword::class, 'note_id');
     }
 
     // ──────────────────────────────────────────────
@@ -116,10 +120,16 @@ class Note extends Model
     }
 
     /**
-     * Verify a plain-text password against the note's lock_password hash.
+     * Verify a plain-text password against the note's password hash.
      */
     public function verifyLockPassword(string $plain): bool
     {
-        return password_verify($plain, $this->lock_password);
+        $notePassword = $this->notePassword;
+
+        if (!$notePassword) {
+            return false;
+        }
+
+        return $notePassword->verify($plain);
     }
 }

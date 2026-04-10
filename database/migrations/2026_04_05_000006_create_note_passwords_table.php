@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('attachments', function (Blueprint $table) {
+        Schema::create('note_passwords', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('note_id')
                   ->constrained('notes')
                   ->cascadeOnDelete();
 
-            $table->string('file_path');
+            $table->string('password_hash'); // bcrypt
 
             $table->timestamp('created_at')->useCurrent();
         });
@@ -23,6 +23,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('attachments');
+        Schema::dropIfExists('note_passwords');
     }
 };

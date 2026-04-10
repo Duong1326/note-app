@@ -18,18 +18,14 @@ return new class extends Migration
 
             // Content
             $table->string('title');
-            $table->longText('content')->nullable();
-
-            // Appearance
-            $table->string('color', 10)->nullable(); // hex, e.g. "#fef08a"
+            $table->text('content')->nullable();
 
             // Pinning
             $table->boolean('is_pinned')->default(false);
-            $table->timestamp('pinned_at')->nullable(); // when it was pinned
+            $table->timestamp('pinned_at')->nullable();
 
-            // Password lock
+            // Password lock flag (password stored in note_passwords table)
             $table->boolean('is_locked')->default(false);
-            $table->string('lock_password')->nullable(); // bcrypt hash
 
             $table->timestamps(); // created_at, updated_at
         });

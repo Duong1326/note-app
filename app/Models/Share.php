@@ -5,15 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class NoteImage extends Model
+class Share extends Model
 {
+    const PERMISSION_READ = 'read';
+    const PERMISSION_EDIT = 'edit';
+
     protected $fillable = [
         'note_id',
-        'path',        // relative path stored in storage (e.g. "note-images/abc.jpg")
-        'disk',        // storage disk name: 'public' | 's3' | etc.
-        'mime_type',   // e.g. "image/jpeg"
-        'size',        // file size in bytes
-        'original_name', // original filename uploaded by user
+        'owner_id',
+        'shared_with_user_id',
+        'permission',
     ];
 
     // ──────────────────────────────────────────────
@@ -25,13 +26,29 @@ class NoteImage extends Model
         return $this->belongsTo(Note::class, 'note_id');
     }
 
+    /** The user who shared the note */
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /** The user who received access to the note */
+    public function recipient(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'shared_with_user_id');
+    }
+
     // ──────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────
 
-    /** Returns the publicly accessible URL for this image */
-    public function url(): string
+    public function isReadOnly(): bool
     {
-        return \Storage::disk($this->disk ?? 'public')->url($this->path);
+        return $this->permission === self::PERMISSION_READ;
+    }
+
+    public function canEdit(): bool
+    {
+        return $this->permission === self::PERMISSION_EDIT;
     }
 }
