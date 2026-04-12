@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Đăng ký | {{ config('app.name', 'Note App') }}</title>
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+        <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+        <style>
+            :root {
+                --amber-100: #fef3c7;
+                --amber-200: #fde68a;
+                --amber-300: #fcd34d;
+                --amber-400: #fbbf24;
+                --amber-500: #f59e0b;
+                --amber-600: #d97706;
+                --amber-700: #b45309;
+                --amber-900: #78350f;
+                --slate-50: #f8fafc;
+                --slate-200: #e2e8f0;
+                --slate-400: #94a3b8;
+                --slate-500: #64748b;
+                --slate-600: #475569;
+                --slate-700: #334155;
+                --slate-900: #0f172a;
+                --slate-950: #020617;
+                --rose-50: #fff1f2;
+                --rose-200: #fecdd3;
+                --rose-700: #be123c;
+            }
+
+            * { box-sizing: border-box; }
+
+            body {
+                font-family: 'Instrument Sans', sans-serif;
+                color: var(--slate-900);
+                min-height: 100vh;
+                background:
+                    radial-gradient(circle at top right, #dbeafe, transparent 30%),
+                    linear-gradient(135deg, #fff7ed 0%, #fefce8 35%, #ecfeff 100%);
+                margin: 0;
+            }
+
+            .auth-main {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2.5rem 1rem;
+            }
+
+            .auth-card {
+                width: 100%;
+                max-width: 72rem;
+                display: grid;
+                grid-template-columns: 1fr;
+                overflow: hidden;
+                border-radius: 2rem;
+                border: 1px solid rgba(255, 255, 255, 0.6);
+                background: rgba(255, 255, 255, 0.8);
+                backdrop-filter: blur(16px);
+                box-shadow: 0 24px 90px rgba(15, 23, 42, 0.12);
+            }
+
+            @media (min-width: 1200px) {
+                .auth-card {
+                    grid-template-columns: 0.95fr 1.05fr;
+                }
+            }
+
+            /* Left Panel (Form) */
+            .auth-panel-left {
+                padding: 2rem 1.25rem;
+            }
+
+            @media (min-width: 576px) {
+                .auth-panel-left {
+                    padding: 3rem 2.5rem;
+                }
+            }
+
+            .form-wrapper {
+                max-width: 28rem;
+                margin: 0 auto;
+            }
+
+            .brand-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: var(--slate-600);
+                text-decoration: none;
+                transition: color 0.2s;
+            }
+
+            .brand-link:hover {
+                color: var(--slate-900);
+            }
+
+            .brand-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2rem;
+                height: 2rem;
+                border-radius: 50%;
+                background: var(--amber-500);
+                color: var(--slate-950);
+                font-weight: 600;
+            }
+
+            .section-label {
+                font-size: 0.875rem;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.3em;
+                color: var(--amber-600);
+            }
+
+            .section-title {
+                margin-top: 0.75rem;
+                font-size: 1.875rem;
+                font-weight: 600;
+                letter-spacing: -0.025em;
+                color: var(--slate-900);
+            }
+
+            .section-desc {
+                margin-top: 0.75rem;
+                font-size: 0.875rem;
+                line-height: 1.5;
+                color: var(--slate-500);
+            }
+
+            .alert-error {
+                margin-top: 1.5rem;
+                border-radius: 1rem;
+                border: 1px solid var(--rose-200);
+                background: var(--rose-50);
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+                color: var(--rose-700);
+            }
+
+            .auth-form {
+                margin-top: 2rem;
+            }
+
+            .form-group {
+                margin-bottom: 1.25rem;
+            }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: var(--slate-700);
+            }
+
+            .form-group .form-control {
+                width: 100%;
+                border-radius: 1rem;
+                border: 1px solid var(--slate-200);
+                background: #fff;
+                padding: 0.75rem 1rem;
+                font-size: 0.9375rem;
+                color: var(--slate-900);
+                outline: none;
+                transition: border-color 0.2s, box-shadow 0.2s;
+                font-family: inherit;
+            }
+
+            .form-group .form-control::placeholder {
+                color: var(--slate-400);
+            }
+
+            .form-group .form-control:focus {
+                border-color: var(--amber-500);
+                box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+            }
+
+            .btn-register {
+                display: inline-flex;
+                width: 100%;
+                align-items: center;
+                justify-content: center;
+                border-radius: 1rem;
+                background: var(--amber-500);
+                color: var(--slate-950);
+                padding: 0.875rem 1.25rem;
+                font-size: 0.875rem;
+                font-weight: 600;
+                border: none;
+                cursor: pointer;
+                transition: background-color 0.2s, box-shadow 0.2s;
+                font-family: inherit;
+            }
+
+            .btn-register:hover {
+                background: var(--amber-400);
+            }
+
+            .btn-register:focus {
+                outline: none;
+                box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+            }
+
+            .login-link {
+                margin-top: 2rem;
+                font-size: 0.875rem;
+                color: var(--slate-500);
+            }
+
+            .login-link a {
+                font-weight: 600;
+                color: var(--amber-700);
+                text-decoration: none;
+                transition: color 0.2s;
+            }
+
+            .login-link a:hover {
+                color: var(--amber-900);
+            }
+
+            /* Right Panel (Showcase) */
+            .auth-panel-right {
+                display: none;
+                position: relative;
+                overflow: hidden;
+                background: linear-gradient(160deg, #111827 0%, #1d4ed8 55%, #0f172a 100%);
+                color: #fff;
+                padding: 3rem 2.5rem;
+            }
+
+            @media (min-width: 1200px) {
+                .auth-panel-right {
+                    display: block;
+                }
+            }
+
+            .auth-panel-right::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background:
+                    radial-gradient(circle at top, rgba(251, 191, 36, 0.3), transparent 26%),
+                    radial-gradient(circle at bottom left, rgba(125, 211, 252, 0.22), transparent 28%);
+            }
+
+            .panel-right-content {
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                height: 100%;
+            }
+
+            .hero-label {
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.35em;
+                color: rgba(252, 211, 77, 0.8);
+            }
+
+            .hero-title {
+                margin-top: 1rem;
+                font-size: 2.25rem;
+                font-weight: 600;
+                line-height: 1.2;
+            }
+
+            .hero-desc {
+                margin-top: 1.5rem;
+                font-size: 1rem;
+                line-height: 1.75;
+                color: rgba(255, 255, 255, 0.75);
+            }
+
+            .info-card {
+                border-radius: 1rem;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(8px);
+                padding: 1.25rem;
+                margin-top: 2rem;
+            }
+
+            .info-card-title {
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: #fff;
+                margin-bottom: 0.5rem;
+            }
+
+            .info-card-text {
+                font-size: 0.875rem;
+                line-height: 1.5;
+                color: rgba(255, 255, 255, 0.75);
+            }
+        </style>
+    </head>
+    <body>
+        <main class="auth-main">
+            <div class="auth-card">
+                <section class="auth-panel-left">
+                    <div class="form-wrapper">
+                        <a href="{{ route('home') }}" class="brand-link">
+                            <span class="brand-icon">N</span>
+                            {{ config('app.name', 'Note App') }}
+                        </a>
+
+                        <div class="mt-4">
+                            <p class="section-label">Create account</p>
+                            <h1 class="section-title">Tạo tài khoản mới trong vài giây</h1>
+                            <p class="section-desc">Bắt đầu lưu note, sắp xếp công việc và theo dõi những gì quan trọng với bạn.</p>
+                        </div>
+
+                        @if ($errors->any())
+                            <div class="alert-error">
+                                {{ $errors->first() }}
+                            </div>
+                        @endif
+
+                        <form method="POST" action="{{ route('register') }}" class="auth-form">
+                            @csrf
+
+                            <div class="form-group">
+                                <label for="name">Tên hiển thị</label>
+                                <input
+                                    id="name"
+                                    type="text"
+                                    name="name"
+                                    value="{{ old('name') }}"
+                                    required
+                                    class="form-control"
+                                    placeholder="Nguyen Van A"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    value="{{ old('email') }}"
+                                    required
+                                    class="form-control"
+                                    placeholder="you@example.com"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password">Mật khẩu</label>
+                                <input
+                                    id="password"
+                                    type="password"
+                                    name="password"
+                                    required
+                                    class="form-control"
+                                    placeholder="Toi thieu 8 ky tu"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password_confirmation">Xác nhận mật khẩu</label>
+                                <input
+                                    id="password_confirmation"
+                                    type="password"
+                                    name="password_confirmation"
+                                    required
+                                    class="form-control"
+                                    placeholder="Nhap lai mat khau"
+                                >
+                            </div>
+
+                            <button type="submit" class="btn-register">
+                                Tạo tài khoản
+                            </button>
+                        </form>
+
+                        <p class="login-link">
+                            Đã có tài khoản?
+                            <a href="{{ route('login') }}">Đăng nhập ngay</a>
+                        </p>
+                    </div>
+                </section>
+
+                <section class="auth-panel-right">
+                    <div class="panel-right-content">
+                        <div style="max-width: 28rem;">
+                            <p class="hero-label">New workspace</p>
+                            <h2 class="hero-title">Biến mọi ý tưởng rời rạc thành hệ thống ghi chú dễ theo dõi.</h2>
+                            <p class="hero-desc">Từ task ngắn hạn đến danh sách việc dài hạn, mọi thứ đều có chỗ đứng rõ ràng ngay từ ngày đầu tiên.</p>
+                        </div>
+
+                        <div class="info-card">
+                            <p class="info-card-title">Bắt đầu nhẹ nhàng</p>
+                            <p class="info-card-text">Tạo tài khoản, đăng nhập và bạn đã sẵn sàng để xây dựng quy trình làm việc của riêng mình.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+    </body>
+</html>
