@@ -17,8 +17,7 @@ class AuthControler extends Controller
     {
         $user = $this->authService->register($request->validated());
 
-        auth()->login($user);
-        return redirect()->route('home');
+        return redirect()->route('login');
     }
 
     public function login(LoginRequest $request)
@@ -26,5 +25,12 @@ class AuthControler extends Controller
         $user = $this->authService->login($request->validated(), $request->boolean('remember'));
 
         return redirect()->intended('/')->with('success', 'Đăng nhập thành công!');
+    }
+
+    public function logout()
+    {
+        $this->authService->logout();
+
+        return redirect()->route('login')->with('success', 'Đăng xuất thành công!');
     }
 }
