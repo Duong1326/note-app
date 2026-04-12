@@ -5,16 +5,28 @@ namespace App\Services;
 use App\Models\User;
 use Auth;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
 
 class AuthService
 {
     public function register(array $data): User
     {
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password']),
-        ]);
+        try {
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => bcrypt($data['password']),
+            ]);
+        } catch (QueryException $e) {
+            if ((string) $e->getCode() === '23000') {
+                throw ValidationException::withMessages([
+                    'email' => ['Email has already been taken.'],
+                ]);
+            }
+
+            throw $e;
+        }
 
         event(new Registered($user));
         return $user;
@@ -28,7 +40,7 @@ class AuthService
                 'password' => $credentials['password'],
             ], $remember)
         ) {
-            throw ValidateException::withMessages([
+            throw ValidationException::withMessages([
                 'email' => ['The provided credentials do not match our records.'],
             ]);
         }
