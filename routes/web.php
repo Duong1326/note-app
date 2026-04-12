@@ -10,3 +10,6 @@ Route::get('/notes', function () {
     return view('notes');
 });
 Route::post('/register', [AuthControler::class, 'register']);
+Route::get('/login', [AuthControler::class, 'login']);
+Route::post('/login', [AuthControler::class, 'login']);
+Route::post('/logout', [AuthControler::class, 'logout']);

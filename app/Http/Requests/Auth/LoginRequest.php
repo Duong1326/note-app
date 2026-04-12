@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
-use Illuminate\Foundation\FormRequest;
+use Illuminate\Foundation\Http\FormRequest;
 
 class LoginRequest extends FormRequest
 {
@@ -16,7 +16,18 @@ class LoginRequest extends FormRequest
         return [
             'email' => 'required|email',
             'password' => 'required|string|min:8',
-            'remmeber' => 'boolean',
+            'remember' => 'boolean',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'Email is required',
+            'email.email' => 'Email is invalid',
+            'password.required' => 'Password is required',
+            'password.min' => 'Password must be at least 8 characters',
+            'remember.boolean' => 'Remember me must be a boolean',
         ];
     }
 }

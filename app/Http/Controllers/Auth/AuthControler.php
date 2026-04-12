@@ -23,9 +23,8 @@ class AuthControler extends Controller
 
     public function login(LoginRequest $request)
     {
-        $user = $this->authService->login($request->validated());
+        $user = $this->authService->login($request->validated(), $request->boolean('remember'));
 
-        auth()->login($user);
-        return redirect()->route('home');
+        return redirect()->intended('/')->with('success', 'Đăng nhập thành công!');
     }
 }
