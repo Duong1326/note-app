@@ -15,14 +15,14 @@
     <div class="auth-bg">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
-        <div class="orb orb-3 orb-warm"></div>
+        <div class="orb orb-3"></div>
     </div>
 
     <main class="auth-main">
-        <div class="auth-card card-wide card-warm">
+        <div class="auth-card card-wide">
 
             {{-- Brand Header --}}
-            <div class="brand-header brand-warm">
+            <div class="brand-header">
                 <a href="{{ route('home') }}" class="brand-logo">
                     <div class="brand-logo-icon">
                         <span class="material-symbols-outlined">edit_note</span>
@@ -119,7 +119,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-submit btn-warm" id="register-btn">
+                <button type="submit" class="btn-submit" id="register-btn">
                     <span>Tạo tài khoản</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                 </button>
