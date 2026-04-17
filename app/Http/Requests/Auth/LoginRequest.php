@@ -15,7 +15,7 @@ class LoginRequest extends FormRequest
     {
         return [
             'email' => 'required|email',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:6',
             'remember' => 'boolean',
         ];
     }
@@ -23,11 +23,11 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => 'Email is required',
-            'email.email' => 'Email is invalid',
-            'password.required' => 'Password is required',
-            'password.min' => 'Password must be at least 8 characters',
-            'remember.boolean' => 'Remember me must be a boolean',
+            'email.required' => 'Email không được để trống.',
+            'email.email' => 'Email không hợp lệ.',
+            'password.required' => 'Mật khẩu không được để trống.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'remember.boolean' => 'Remember me phải là true hoặc false',
         ];
     }
 }

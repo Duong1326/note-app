@@ -86,7 +86,7 @@
                             name="password"
                             required
                             class="form-input input-password"
-                            placeholder="Tối thiểu 8 ký tự"
+                            placeholder="Nhập 6 số"
                         >
                         <span class="material-symbols-outlined input-icon">lock</span>
                         <button type="button" class="toggle-password-btn" onclick="togglePassword('password', this)" aria-label="Toggle password visibility">
@@ -96,7 +96,7 @@
                     </div>
                     <div class="password-hint">
                         <span class="material-symbols-outlined">info</span>
-                        Bao gồm chữ hoa, thường và ký tự đặc biệt
+                        Mật khẩu gồm 6 số
                     </div>
                 </div>
 
