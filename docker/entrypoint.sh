@@ -11,13 +11,13 @@ export COMPOSER_NO_INTERACTION=1
 
 # Install PHP dependencies if vendor is empty
 if [ ! -d "vendor" ] || [ ! -f "vendor/autoload.php" ]; then
-    echo "📦 Installing Composer dependencies (this may take a few minutes on Windows)..."
+    echo "Installing Composer dependencies (this may take a few minutes on Windows)..."
     composer install --prefer-dist --optimize-autoloader --no-interaction
 fi
 
 # Generate APP_KEY if not set
 if [ -f ".env" ] && grep -q "^APP_KEY=$" .env; then
-    echo "🔑 Generating application key..."
+    echo "Generating application key..."
     php artisan key:generate --force
 fi
 
@@ -25,7 +25,7 @@ fi
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
 # Wait for MySQL to be ready
-echo "⏳ Waiting for MySQL..."
+echo "Waiting for MySQL..."
 max_tries=30
 count=0
 until php -r "
@@ -42,24 +42,28 @@ until php -r "
 " 2>/dev/null; do
     count=$((count + 1))
     if [ $count -ge $max_tries ]; then
-        echo "❌ MySQL not reachable after ${max_tries} attempts. Starting anyway..."
+        echo "MySQL not reachable after ${max_tries} attempts. Starting anyway..."
         break
     fi
     echo "  Attempt $count/$max_tries - MySQL not ready yet..."
     sleep 2
 done
-echo "✅ MySQL is ready!"
+echo "MySQL is ready!"
 
 # Run migrations
-echo "🗄️ Running migrations..."
-php artisan migrate --force 2>/dev/null || echo "⚠️ Migration failed or already up to date"
+echo "Running migrations..."
+php artisan migrate --force 2>/dev/null || echo "Migration failed or already up to date"
 
 # Clear and cache config
-echo "⚡ Optimizing Laravel..."
+echo "Optimizing Laravel..."
 php artisan config:clear
 php artisan cache:clear
 
-echo "🚀 Application is ready! Visit http://localhost:8080"
+echo "Application is ready! Visit http://localhost:8080"
+
+# Start queue worker in background
+echo "Starting queue worker..."
+php artisan queue:work --tries=3 --sleep=3 --daemon &
 
 # Start PHP-FPM
 exec php-fpm

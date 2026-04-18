@@ -41,11 +41,24 @@ Route::post('/resend-otp', [AuthControler::class, 'resendOtp'])
     ->middleware('throttle:3,1')->name('verify.otp.resend');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', function () {
+        $user = auth()->user();
+        $notes = $user->notes();
+
+        return view('dashboard', [
+            'recentNotes' => $notes->clone()->with('labels')->latest()->take(6)->get(),
+            'pinnedNotes' => $notes->clone()->where('is_pinned', true)->latest()->get(),
+            'totalNotes' => $notes->clone()->count(),
+            'weeklyNotes' => $notes->clone()->where('created_at', '>=', now()->subWeek())->count(),
+            'labels' => $user->labels()->orderBy('name')->get(),
+        ]);
+    })->name('dashboard');
+
     Route::post('/logout', [AuthControler::class, 'logout'])->name('logout');
 
     Route::get('/notes', function () {
         return view('notes');
-    })->name('notes');
+    })->name('notes.index');
 
     Route::resource('labels', LabelController::class)->only(['index', 'store', 'update', 'destroy']);
 });

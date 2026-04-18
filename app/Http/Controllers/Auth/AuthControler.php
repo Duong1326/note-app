@@ -56,7 +56,7 @@ class AuthControler extends Controller
     {
         $user = $this->authService->login($request->validated(), $request->boolean('remember'));
 
-        return redirect()->intended('/')->with('success', 'Đăng nhập thành công!');
+        return redirect()->intended(route('dashboard'))->with('success', 'Đăng nhập thành công!');
     }
 
     public function logout()
