@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,8 +10,10 @@
     {{-- Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
 
     {{-- Bootstrap 5 --}}
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
@@ -20,6 +23,7 @@
 
     @stack('styles')
 </head>
+
 <body>
 
     {{-- Sidebar Overlay (mobile) --}}
@@ -33,11 +37,13 @@
         </div>
 
         <nav class="fn-nav">
-            <a href="{{ route('dashboard') }}" class="fn-nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <a href="{{ route('dashboard') }}"
+                class="fn-nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <span class="material-symbols-outlined">home</span>
                 <span>Home</span>
             </a>
-            <a href="{{ route('notes.index') }}" class="fn-nav-item {{ request()->routeIs('notes.*') ? 'active' : '' }}">
+            <a href="{{ route('notes.index') }}"
+                class="fn-nav-item {{ request()->routeIs('notes.*') ? 'active' : '' }}">
                 <span class="material-symbols-outlined">description</span>
                 <span>All Notes</span>
             </a>
@@ -58,18 +64,14 @@
             </a>
             <form method="POST" action="{{ route('logout') }}" id="logout-form">
                 @csrf
-                <a href="#" class="fn-nav-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <a href="#" class="fn-nav-item"
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <span class="material-symbols-outlined">logout</span>
                     <span>Logout</span>
                 </a>
             </form>
         </div>
 
-        <div class="fn-pro-banner">
-            <div class="badge-label">PRO PLAN</div>
-            <p>Unlock unlimited storage and AI summaries.</p>
-            <button class="fn-pro-btn">Upgrade Pro</button>
-        </div>
     </aside>
 
     {{-- ═══ Main Content ═══ --}}
@@ -97,30 +99,36 @@
                 <div class="fn-header-divider"></div>
                 <button class="fn-user-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <div class="fn-user-avatar d-flex align-items-center justify-content-center"
-                         style="background: var(--fn-primary-container); color: var(--fn-on-primary); font-weight: 700; font-size: 0.8rem;">
+                        style="background: var(--fn-primary-container); color: var(--fn-on-primary); font-weight: 700; font-size: 0.8rem;">
                         {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                     </div>
                     <span class="fn-user-name d-none d-sm-inline">{{ Auth::user()->name }}</span>
-                    <span class="material-symbols-outlined" style="font-size: 18px; color: var(--fn-on-surface-variant);">expand_more</span>
+                    <span class="material-symbols-outlined"
+                        style="font-size: 18px; color: var(--fn-on-surface-variant);">expand_more</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius: 0.75rem;">
                     <li>
                         <a class="dropdown-item py-2 px-3" href="#">
-                            <span class="material-symbols-outlined me-2" style="font-size: 18px; vertical-align: middle;">person</span>
+                            <span class="material-symbols-outlined me-2"
+                                style="font-size: 18px; vertical-align: middle;">person</span>
                             Profile
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item py-2 px-3" href="#">
-                            <span class="material-symbols-outlined me-2" style="font-size: 18px; vertical-align: middle;">settings</span>
+                            <span class="material-symbols-outlined me-2"
+                                style="font-size: 18px; vertical-align: middle;">settings</span>
                             Settings
                         </a>
                     </li>
-                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
                     <li>
                         <a class="dropdown-item py-2 px-3 text-danger" href="#"
-                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <span class="material-symbols-outlined me-2" style="font-size: 18px; vertical-align: middle;">logout</span>
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <span class="material-symbols-outlined me-2"
+                                style="font-size: 18px; vertical-align: middle;">logout</span>
                             Logout
                         </a>
                     </li>
@@ -153,7 +161,7 @@
         }
 
         // Close sidebar on resize to desktop
-        window.addEventListener('resize', function() {
+        window.addEventListener('resize', function () {
             if (window.innerWidth >= 992) {
                 closeSidebar();
             }
@@ -162,4 +170,5 @@
 
     @stack('scripts')
 </body>
+
 </html>

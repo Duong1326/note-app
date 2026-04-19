@@ -1,81 +1,95 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Quên mật khẩu | {{ config('app.name', 'LiveNote') }}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
-</head>
-
-<body class="auth-page">
-    <div class="auth-bg">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
-
-    <main class="auth-main">
-        <div class="auth-card">
-
-            {{-- Brand Header --}}
-            <div class="brand-header">
-                <a href="{{ route('home') }}" class="brand-logo">
-                    <div class="brand-logo-icon">
-                        <span class="material-symbols-outlined">edit_note</span>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Quên mật khẩu | {{ config('app.name', 'Note App') }}</title>
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+        <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
+    </head>
+    <body>
+        <main class="auth-main">
+            <div class="auth-card">
+                <section class="auth-panel-left">
+                    <div class="panel-left-content">
+                        <div>
+                            <a href="{{ route('home') }}" class="brand-link">
+                                <span class="brand-icon">N</span>
+                                {{ config('app.name', 'Note App') }}
+                            </a>
+                            <div class="hero-section">
+                                <p class="hero-label">Password recovery</p>
+                                <h1 class="hero-title">Đặt lại mật khẩu dễ dàng và nhanh chóng.</h1>
+                                <p class="hero-desc">Nhập email đã đăng ký, chúng tôi sẽ gửi mã xác thực để bạn tạo mật khẩu mới.</p>
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <p class="info-card-title">An toàn & bảo mật</p>
+                            <p class="info-card-text">Mã xác thực sẽ được gửi đến email của bạn và hết hạn sau 5 phút.</p>
+                        </div>
                     </div>
-                    <span class="brand-logo-text">LiveNote</span>
-                </a>
-                <p class="brand-subtitle">Nhập email để nhận mã xác thực</p>
+                </section>
+
+                <section class="auth-panel-right">
+                    <div class="form-wrapper">
+                        <div class="mobile-brand">
+                            <a href="{{ route('home') }}">
+                                <span class="mobile-brand-icon">N</span>
+                                {{ config('app.name', 'Note App') }}
+                            </a>
+                        </div>
+
+                        <div class="mt-4">
+                            <p class="section-label">Password recovery</p>
+                            <h2 class="section-title">Quên mật khẩu?</h2>
+                            <p class="section-desc">Nhập email để nhận mã xác thực đặt lại mật khẩu.</p>
+                        </div>
+
+                        @if (session('success'))
+                            <div class="alert-success">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+
+                        @if ($errors->any())
+                            <div class="alert-error">
+                                {{ $errors->first() }}
+                            </div>
+                        @endif
+
+                        <form method="POST" action="{{ route('password.email') }}" class="auth-form">
+                            @csrf
+
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    value="{{ old('email') }}"
+                                    required
+                                    autofocus
+                                    class="form-control"
+                                    placeholder="you@example.com"
+                                >
+                            </div>
+
+                            <button type="submit" class="btn-submit">
+                                Gửi mã xác thực
+                            </button>
+                        </form>
+
+                        <p class="auth-footer">
+                            Nhớ mật khẩu rồi?
+                            <a href="{{ route('login') }}">Quay lại đăng nhập</a>
+                        </p>
+                    </div>
+                </section>
             </div>
+        </main>
 
-            {{-- Success Alert --}}
-            @if (session('success'))
-                <div class="alert alert-success">
-                    <span class="material-symbols-outlined">check_circle</span>
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            {{-- Error Alert --}}
-            @if ($errors->any())
-                <div class="alert alert-error">
-                    <span class="material-symbols-outlined">error</span>
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
-            {{-- Forgot Password Form --}}
-            <form method="POST" action="{{ route('password.email') }}" class="auth-form" id="forgot-password-form">
-                @csrf
-
-                <div class="form-group">
-                    <label for="email">Địa chỉ Email</label>
-                    <div class="input-wrapper">
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
-                            class="form-input" placeholder="you@example.com">
-                        <span class="material-symbols-outlined input-icon">mail</span>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-submit" id="forgot-password-btn">
-                    <span class="material-symbols-outlined">lock_reset</span>
-                    <span>Gửi mã xác thực</span>
-                </button>
-            </form>
-
-            <p class="auth-footer">
-                Nhớ mật khẩu rồi?
-                <a href="{{ route('login') }}">Quay lại đăng nhập</a>
-            </p>
-        </div>
-    </main>
-</body>
-
+        <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+    </body>
 </html>
