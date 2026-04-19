@@ -1,116 +1,127 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Xác thực OTP | {{ config('app.name', 'Note App') }}</title>
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
-        <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
-    </head>
-    <body>
-        <main class="auth-main">
-            <div class="auth-card">
-                <section class="auth-panel-left">
-                    <div class="panel-left-content">
-                        <div>
-                            <a href="{{ route('home') }}" class="brand-link">
-                                <span class="brand-icon">N</span>
-                                {{ config('app.name', 'Note App') }}
-                            </a>
-                            <div class="hero-section">
-                                <p class="hero-label">Verification</p>
-                                <h1 class="hero-title">Xác minh danh tính để đặt lại mật khẩu.</h1>
-                                <p class="hero-desc">Nhập mã xác thực đã gửi đến email của bạn để tiếp tục đặt lại mật khẩu.</p>
-                            </div>
-                        </div>
-                        <div class="info-card">
-                            <p class="info-card-title">Mã bảo mật</p>
-                            <p class="info-card-text">Mã xác thực có hiệu lực trong 5 phút. Không chia sẻ mã này với ai.</p>
-                        </div>
-                    </div>
-                </section>
 
-                <section class="auth-panel-right">
-                    <div class="form-wrapper">
-                        <div class="mobile-brand">
-                            <a href="{{ route('home') }}">
-                                <span class="mobile-brand-icon">N</span>
-                                {{ config('app.name', 'Note App') }}
-                            </a>
-                        </div>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Xác thực OTP | {{ config('app.name', 'Note App') }}</title>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
+</head>
 
-                        <div class="mt-4" style="text-align: center;">
-                            <div class="verify-icon-wrapper">
-                                <div class="verify-icon">
-                                    <span class="material-symbols-outlined">lock_reset</span>
-                                </div>
-                            </div>
-                            <h2 class="verify-title">Nhập mã xác thực</h2>
-                            <p class="verify-description">
-                                Chúng tôi đã gửi mã 6 số đến email
-                                <strong>{{ $email }}</strong>.
-                                Vui lòng nhập mã bên dưới để đặt lại mật khẩu.
+<body>
+    <main class="auth-main">
+        <div class="auth-card">
+            <section class="auth-panel-left">
+                <div class="panel-left-content">
+                    <div>
+                        <a href="{{ route('home') }}" class="brand-link">
+                            <span class="brand-icon">N</span>
+                            {{ config('app.name', 'Note App') }}
+                        </a>
+                        <div class="hero-section">
+                            <p class="hero-label">Verification</p>
+                            <h1 class="hero-title">Xác minh danh tính để đặt lại mật khẩu.</h1>
+                            <p class="hero-desc">Nhập mã xác thực đã gửi đến email của bạn để tiếp tục đặt lại mật khẩu.
                             </p>
                         </div>
+                    </div>
+                    <div class="info-card">
+                        <p class="info-card-title">Mã bảo mật</p>
+                        <p class="info-card-text">Mã xác thực có hiệu lực trong 5 phút. Không chia sẻ mã này với ai.</p>
+                    </div>
+                </div>
+            </section>
 
-                        @if (session('success'))
-                            <div class="alert-success">
-                                {{ session('success') }}
+            <section class="auth-panel-right">
+                <div class="form-wrapper">
+                    <div class="mobile-brand">
+                        <a href="{{ route('home') }}">
+                            <span class="mobile-brand-icon">N</span>
+                            {{ config('app.name', 'Note App') }}
+                        </a>
+                    </div>
+
+                    <div class="mt-4" style="text-align: center;">
+                        <div class="verify-icon-wrapper">
+                            <div class="verify-icon">
+                                <span class="material-symbols-outlined">lock_reset</span>
                             </div>
-                        @endif
-
-                        @if ($errors->any())
-                            <div class="alert-error">
-                                {{ $errors->first() }}
-                            </div>
-                        @endif
-
-                        <form method="POST" action="{{ route('password.verify.otp.submit') }}" class="auth-form" id="otp-form">
-                            @csrf
-                            <input type="hidden" name="otp" id="otp-hidden">
-
-                            <div class="otp-inputs" id="otp-inputs">
-                                <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" data-index="0" autofocus>
-                                <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="1">
-                                <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="2">
-                                <div class="otp-separator"><span></span></div>
-                                <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="3">
-                                <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="4">
-                                <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="5">
-                            </div>
-
-                            <div class="otp-timer" id="otp-timer">
-                                <span class="material-symbols-outlined">timer</span>
-                                <span>Mã hết hạn sau <strong id="countdown">5:00</strong></span>
-                            </div>
-
-                            <button type="submit" class="btn-submit" id="verify-btn" disabled>
-                                Xác thực
-                            </button>
-                        </form>
-
-                        <div class="otp-resend">
-                            <span>Không nhận được mã?</span>
-                            <form method="POST" action="{{ route('password.resend.otp') }}" style="display: inline;">
-                                @csrf
-                                <button type="submit" class="link-btn">Gửi lại mã</button>
-                            </form>
                         </div>
-
-                        <p class="auth-footer" style="text-align: center;">
-                            Nhớ mật khẩu rồi?
-                            <a href="{{ route('login') }}">Quay lại đăng nhập</a>
+                        <h2 class="verify-title">Nhập mã xác thực</h2>
+                        <p class="verify-description">
+                            Chúng tôi đã gửi mã 6 số đến email
+                            <strong>{{ $email }}</strong>.
+                            Vui lòng nhập mã bên dưới để đặt lại mật khẩu.
                         </p>
                     </div>
-                </section>
-            </div>
-        </main>
 
-        <script>
-        (function() {
+                    @if (session('success'))
+                        <div class="alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="alert-error">
+                            {{ $errors->first() }}
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('password.verify.otp.submit') }}" class="auth-form"
+                        id="otp-form">
+                        @csrf
+                        <input type="hidden" name="otp" id="otp-hidden">
+
+                        <div class="otp-inputs" id="otp-inputs">
+                            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                                autocomplete="one-time-code" data-index="0" autofocus>
+                            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                                data-index="1">
+                            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                                data-index="2">
+                            <div class="otp-separator"><span></span></div>
+                            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                                data-index="3">
+                            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                                data-index="4">
+                            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                                data-index="5">
+                        </div>
+
+                        <div class="otp-timer" id="otp-timer">
+                            <span class="material-symbols-outlined">timer</span>
+                            <span>Mã hết hạn sau <strong id="countdown">5:00</strong></span>
+                        </div>
+
+                        <button type="submit" class="btn-submit" id="verify-btn" disabled>
+                            Xác thực
+                        </button>
+                    </form>
+
+                    <div class="otp-resend">
+                        <span>Không nhận được mã?</span>
+                        <form method="POST" action="{{ route('password.resend.otp') }}" style="display: inline;">
+                            @csrf
+                            <button type="submit" class="link-btn">Gửi lại mã</button>
+                        </form>
+                    </div>
+
+                    <p class="auth-footer" style="text-align: center;">
+                        Nhớ mật khẩu rồi?
+                        <a href="{{ route('login') }}">Quay lại đăng nhập</a>
+                    </p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        (function () {
             const inputs = document.querySelectorAll('.otp-box');
             const hiddenInput = document.getElementById('otp-hidden');
             const submitBtn = document.getElementById('verify-btn');
@@ -124,7 +135,7 @@
             }
 
             inputs.forEach((input, index) => {
-                input.addEventListener('input', function(e) {
+                input.addEventListener('input', function (e) {
                     this.value = this.value.replace(/[^0-9]/g, '');
                     if (this.value && index < inputs.length - 1) {
                         inputs[index + 1].focus();
@@ -136,7 +147,7 @@
                     }
                 });
 
-                input.addEventListener('keydown', function(e) {
+                input.addEventListener('keydown', function (e) {
                     if (e.key === 'Backspace' && !this.value && index > 0) {
                         inputs[index - 1].focus();
                         inputs[index - 1].value = '';
@@ -144,7 +155,7 @@
                     }
                 });
 
-                input.addEventListener('paste', function(e) {
+                input.addEventListener('paste', function (e) {
                     e.preventDefault();
                     const pastedData = (e.clipboardData || window.clipboardData)
                         .getData('text').replace(/[^0-9]/g, '').slice(0, 6);
@@ -159,7 +170,7 @@
                     }
                 });
 
-                input.addEventListener('focus', function() { this.select(); });
+                input.addEventListener('focus', function () { this.select(); });
             });
 
             const countdownEl = document.getElementById('countdown');
@@ -180,8 +191,9 @@
                 }
             }, 1000);
         })();
-        </script>
+    </script>
 
-        <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
-    </body>
+    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+</body>
+
 </html>
