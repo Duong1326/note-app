@@ -39,9 +39,24 @@ class NoteControler extends Controller
         return view('notes.index', compact('notes', 'labels', 'preferences', 'filters'));
     }
 
-    public function store(StoreNoteRequest $request): RedirectResponse
+    public function store(StoreNoteRequest $request): JsonResponse|RedirectResponse
     {
         $note = $this->noteService->create($request->user(), $request->validated());
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'note' => [
+                    'id' => $note->id,
+                    'title' => $note->title,
+                    'content' => $note->content,
+                    'is_pinned' => $note->is_pinned,
+                    'updated_at' => $note->updated_at?->diffForHumans(),
+                    'labels' => $note->labels->map(fn($l) => ['id' => $l->id, 'name' => $l->name]),
+                ],
+            ]);
+        }
+
         return redirect()->route('dashboard');
     }
 
@@ -52,16 +67,27 @@ class NoteControler extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'updated_at' => $updated->updated_at?->toIso8601String(),
+                'note' => [
+                    'id' => $updated->id,
+                    'title' => $updated->title,
+                    'content' => $updated->content,
+                    'is_pinned' => $updated->is_pinned,
+                    'updated_at' => $updated->updated_at?->diffForHumans(),
+                    'labels' => $updated->labels->map(fn($l) => ['id' => $l->id, 'name' => $l->name]),
+                ],
             ]);
         }
 
         return redirect()->route('dashboard');
     }
 
-    public function destroy(Note $note): RedirectResponse
+    public function destroy(Note $note): JsonResponse|RedirectResponse
     {
         $this->noteService->delete($note);
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->route('dashboard');
     }

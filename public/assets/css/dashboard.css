@@ -1096,3 +1096,96 @@ a {
 .card {
     border: none;
 }
+
+/* ── Toast Notifications ─────────────────────── */
+.fn-toast-container {
+    position: fixed;
+    top: calc(var(--fn-header-height) + 1rem);
+    right: 2rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+.fn-toast {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1.25rem;
+    border-radius: 0.75rem;
+    background: var(--fn-inverse-surface);
+    color: var(--fn-inverse-on-surface);
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    pointer-events: auto;
+    animation: toastSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    max-width: 380px;
+}
+
+.fn-toast.fn-toast-success .material-symbols-outlined {
+    color: #4ade80;
+}
+
+.fn-toast.fn-toast-error .material-symbols-outlined {
+    color: #f87171;
+}
+
+.fn-toast.fn-toast-exit {
+    animation: toastSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes toastSlideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+/* ── Note Card AJAX Animations ───────────────── */
+.fn-note-removing {
+    animation: noteFadeOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes noteFadeOut {
+    to {
+        opacity: 0;
+        transform: scale(0.85);
+        max-height: 0;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+    }
+}
+
+.fn-note-adding {
+    animation: noteSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes noteSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.85) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}

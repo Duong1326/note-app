@@ -82,10 +82,17 @@
                 <button class="fn-menu-toggle" onclick="toggleSidebar()">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
-                <div class="fn-search-box">
-                    <span class="material-symbols-outlined">search</span>
-                    <input type="text" class="fn-search-input" placeholder="Search your notes..." id="globalSearch">
-                </div>
+                <form action="{{ route('dashboard') }}" method="GET" class="fn-search-box m-0 p-0" style="background:transparent;">
+                    <div class="fn-search-box">
+                        <span class="material-symbols-outlined">search</span>
+                        <input type="text" name="q" class="fn-search-input" placeholder="Search your notes..." id="globalSearch" value="{{ request('q') }}" style="padding-right: 2.5rem;">
+                        @if(request('q'))
+                            <a href="{{ route('dashboard') }}" class="text-muted text-decoration-none" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); z-index: 10; display: flex;">
+                                <span class="material-symbols-outlined" style="position: static; transform: none; left: auto; font-size: 18px;">close</span>
+                            </a>
+                        @endif
+                    </div>
+                </form>
             </div>
 
             <div class="fn-header-actions">
@@ -148,25 +155,11 @@
     {{-- Bootstrap JS --}}
     <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 
-    {{-- Sidebar Toggle --}}
-    <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('show');
-            document.getElementById('sidebarOverlay').classList.toggle('show');
-        }
+    {{-- App JS (sidebar, toast, helpers) --}}
+    <script src="{{ asset('assets/js/app.js') }}"></script>
 
-        function closeSidebar() {
-            document.getElementById('sidebar').classList.remove('show');
-            document.getElementById('sidebarOverlay').classList.remove('show');
-        }
-
-        // Close sidebar on resize to desktop
-        window.addEventListener('resize', function () {
-            if (window.innerWidth >= 992) {
-                closeSidebar();
-            }
-        });
-    </script>
+    {{-- Toast Container --}}
+    <div class="fn-toast-container" id="toastContainer"></div>
 
     @stack('scripts')
 </body>

@@ -31,7 +31,13 @@
             {{-- Section Header --}}
             <div class="fn-section-header">
                 <div class="d-flex align-items-center gap-3">
-                    <h3 class="fn-section-title">Recent Notes</h3>
+                    <h3 class="fn-section-title">
+                        @if(isset($searchQuery) && $searchQuery)
+                            Search Results for "{{ $searchQuery }}"
+                        @else
+                            Recent Notes
+                        @endif
+                    </h3>
                     <div class="fn-view-toggle">
                         <button type="button" class="fn-toggle-btn active" id="btnGridView"
                             onclick="setNotesView('grid')" title="Dạng lưới">
@@ -50,10 +56,10 @@
             @if($recentNotes->count() > 0)
                 <div class="row g-3" id="notesContainer">
                     @foreach($recentNotes as $note)
-                        <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-animate-in note-col">
+                        <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-animate-in note-col" data-note-id="{{ $note->id }}">
                             <div class="fn-note-card">
 
-                                {{-- Dropdown Menu (direct child — positioned by CSS per-view) --}}
+                                {{-- Dropdown Menu --}}
                                 <div class="dropdown fn-note-dropdown">
                                     <span class="material-symbols-outlined fn-note-more"
                                         data-bs-toggle="dropdown" aria-expanded="false">
@@ -73,31 +79,27 @@
                                                 Sửa
                                             </a>
                                         </li>
-                                        {{-- Pin / Unpin --}}
+                                        {{-- Pin / Unpin (AJAX) --}}
                                         <li>
-                                            <form action="{{ route($note->is_pinned ? 'notes.unpin' : 'notes.pin', $note) }}" method="POST">
-                                                @csrf
-                                                <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2">
-                                                    <span class="material-symbols-outlined"
-                                                        style="font-size:18px;{{ $note->is_pinned ? "font-variation-settings:'FILL' 1;" : '' }}">
-                                                        push_pin
-                                                    </span>
-                                                    {{ $note->is_pinned ? 'Bỏ ghim' : 'Ghim' }}
-                                                </button>
-                                            </form>
+                                            <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                                                href="javascript:void(0)"
+                                                onclick="togglePinAjax({{ $note->id }}, {{ $note->is_pinned ? 'true' : 'false' }})">
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size:18px;{{ $note->is_pinned ? "font-variation-settings:'FILL' 1;" : '' }}">
+                                                    push_pin
+                                                </span>
+                                                {{ $note->is_pinned ? 'Bỏ ghim' : 'Ghim' }}
+                                            </a>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
-                                        {{-- Delete --}}
+                                        {{-- Delete (AJAX) --}}
                                         <li>
-                                            <form action="{{ route('notes.destroy', $note) }}" method="POST"
-                                                onsubmit="return confirm('Bạn có chắc chắn muốn xóa ghi chú này không?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger">
-                                                    <span class="material-symbols-outlined" style="font-size:18px;">delete</span>
-                                                    Xóa
-                                                </button>
-                                            </form>
+                                            <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger"
+                                                href="javascript:void(0)"
+                                                onclick="deleteNoteAjax({{ $note->id }})">
+                                                <span class="material-symbols-outlined" style="font-size:18px;">delete</span>
+                                                Xóa
+                                            </a>
                                         </li>
                                     </ul>
                                 </div>
@@ -136,8 +138,13 @@
                 </div>
             @else
                 <div class="fn-empty-state">
-                    <span class="material-symbols-outlined">note_add</span>
-                    <p>You haven't created any notes yet.<br>Start by creating your first note!</p>
+                    @if(isset($searchQuery) && $searchQuery)
+                        <span class="material-symbols-outlined">search_off</span>
+                        <p>No results found for "{{ $searchQuery }}".</p>
+                    @else
+                        <span class="material-symbols-outlined">note_add</span>
+                        <p>You haven't created any notes yet.<br>Start by creating your first note!</p>
+                    @endif
                 </div>
             @endif
 
@@ -150,35 +157,11 @@
 @endsection
 
 @push('scripts')
+{{-- Pass server-side config to JS --}}
 <script>
-    // ── View Toggle ──────────────────────────────
-    function setNotesView(view) {
-        const container = document.getElementById('notesContainer');
-        const btnGrid   = document.getElementById('btnGridView');
-        const btnList   = document.getElementById('btnListView');
-        if (!container) return;
-
-        const isList = view === 'list';
-        container.classList.toggle('fn-view-list', isList);
-        btnList.classList.toggle('active', isList);
-        btnGrid.classList.toggle('active', !isList);
-        localStorage.setItem('notesView', view);
-    }
-
-    // ── Dropdown z-index fix ─────────────────────
-    function bindDropdownZIndex() {
-        document.addEventListener('shown.bs.dropdown', function (e) {
-            e.target.closest('.note-col')?.classList.add('dropdown-open');
-        });
-        document.addEventListener('hidden.bs.dropdown', function (e) {
-            e.target.closest('.note-col')?.classList.remove('dropdown-open');
-        });
-    }
-
-    // ── Init ─────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', () => {
-        setNotesView(localStorage.getItem('notesView') || 'grid');
-        bindDropdownZIndex();
-    });
+    window.FN_STORE_URL = '{{ route("notes.store") }}';
 </script>
+<script src="{{ asset('assets/js/notes.js') }}"></script>
 @endpush
+
+
