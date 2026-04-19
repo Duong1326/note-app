@@ -8,7 +8,7 @@ use App\Http\Controllers\LabelController;
 use App\Http\Controllers\NoteControler;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 })->name('home');
 
 

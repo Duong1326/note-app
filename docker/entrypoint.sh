@@ -22,7 +22,7 @@ if [ -f ".env" ] && grep -q "^APP_KEY=$" .env; then
 fi
 
 # Set permissions
-chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+chmod -R 777 storage bootstrap/cache 2>/dev/null || true
 
 # Wait for MySQL to be ready
 echo "Waiting for MySQL..."
