@@ -83,7 +83,7 @@ class ForgotPasswordController extends Controller
             ]);
         }
 
-        if ($request->otp !== $reset['otp']) {
+        if ((string)$request->otp !== (string)$reset['otp']) {
             throw ValidationException::withMessages([
                 'otp' => ['Mã xác thực không đúng. Vui lòng thử lại.'],
             ]);

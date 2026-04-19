@@ -55,7 +55,7 @@ class AuthService
             ]);
         }
 
-        if ($inputOtp !== $registration['otp']) {
+        if ((string)$inputOtp !== (string)$registration['otp']) {
             throw ValidationException::withMessages([
                 'otp' => ['Mã xác thực không đúng. Vui lòng thử lại.'],
             ]);
