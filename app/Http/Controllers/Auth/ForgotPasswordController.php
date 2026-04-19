@@ -44,7 +44,7 @@ class ForgotPasswordController extends Controller
             ],
         ]);
 
-        Mail::to($request->email)->send(
+        Mail::to($request->email)->queue(
             new ResetPasswordCodeMail($otp, $user->name)
         );
 
@@ -83,7 +83,7 @@ class ForgotPasswordController extends Controller
             ]);
         }
 
-        if ((string)$request->otp !== (string)$reset['otp']) {
+        if ((string) $request->otp !== (string) $reset['otp']) {
             throw ValidationException::withMessages([
                 'otp' => ['Mã xác thực không đúng. Vui lòng thử lại.'],
             ]);
@@ -110,7 +110,7 @@ class ForgotPasswordController extends Controller
         $reset['otp_expires_at'] = now()->addMinutes(5);
         session(['password_reset' => $reset]);
 
-        Mail::to($reset['email'])->send(
+        Mail::to($reset['email'])->queue(
             new ResetPasswordCodeMail($otp, $reset['name'])
         );
 
