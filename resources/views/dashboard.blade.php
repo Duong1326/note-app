@@ -13,84 +13,101 @@
                 <p class="fn-welcome-sub">Ready to capture your thoughts?</p>
             </div>
             <div class="col-12 col-md-4 text-md-end">
-                <a href="{{ route('notes.index') }}" class="fn-btn-new-note">
+                <button type="button" class="fn-btn-new-note" onclick="openNewNoteModal()">
                     <span class="material-symbols-outlined">add</span>
                     New Note
-                </a>
+                </button>
             </div>
         </div>
     </section>
 
-    {{-- ═══ Quick Actions Grid ═══ --}}
-    <section class="fn-quick-actions fn-animate-in">
-        <div class="row g-3">
-            <div class="col-12 col-sm-6 col-lg-3">
-                <a href="{{ route('notes.index') }}" class="fn-action-card">
-                    <div class="fn-action-icon icon-new">
-                        <span class="material-symbols-outlined">edit_note</span>
-                    </div>
-                    <div>
-                        <div class="fn-action-title">New Note</div>
-                        <p class="fn-action-desc">Create something new</p>
-                    </div>
-                </a>
-            </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-                <a href="{{ route('notes.index') }}" class="fn-action-card">
-                    <div class="fn-action-icon icon-all">
-                        <span class="material-symbols-outlined">grid_view</span>
-                    </div>
-                    <div>
-                        <div class="fn-action-title">View All Notes</div>
-                        <p class="fn-action-desc">Access your library</p>
-                    </div>
-                </a>
-            </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="fn-action-card">
-                    <div class="fn-action-icon icon-fav">
-                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-                    </div>
-                    <div>
-                        <div class="fn-action-title">Favorites</div>
-                        <p class="fn-action-desc">{{ $pinnedNotes->count() }} important items</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="fn-action-card">
-                    <div class="fn-action-icon icon-recent">
-                        <span class="material-symbols-outlined">history</span>
-                    </div>
-                    <div>
-                        <div class="fn-action-title">Recently Edited</div>
-                        <p class="fn-action-desc">Resume working</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    {{-- ═══ Quick Actions ═══ --}}
+    @include('components::quick-actions')
 
-    {{-- ═══ Main Workspace Layout ═══ --}}
+    {{-- ═══ Recent Notes ═══ --}}
     <div class="row g-4">
+        <div class="col-12">
 
-        {{-- ── Recent Notes (Left Column) ── --}}
-        <div class="col-12 col-lg-8">
+            {{-- Section Header --}}
             <div class="fn-section-header">
-                <h3 class="fn-section-title">Recent Notes</h3>
+                <div class="d-flex align-items-center gap-3">
+                    <h3 class="fn-section-title">Recent Notes</h3>
+                    <div class="fn-view-toggle">
+                        <button type="button" class="fn-toggle-btn active" id="btnGridView"
+                            onclick="setNotesView('grid')" title="Dạng lưới">
+                            <span class="material-symbols-outlined" style="font-size:18px;">grid_view</span>
+                        </button>
+                        <button type="button" class="fn-toggle-btn" id="btnListView"
+                            onclick="setNotesView('list')" title="Dạng danh sách">
+                            <span class="material-symbols-outlined" style="font-size:18px;">view_list</span>
+                        </button>
+                    </div>
+                </div>
                 <a href="{{ route('notes.index') }}" class="fn-section-link">View archive</a>
             </div>
 
+            {{-- Notes Grid/List --}}
             @if($recentNotes->count() > 0)
-                <div class="row g-3">
+                <div class="row g-3" id="notesContainer">
                     @foreach($recentNotes as $note)
-                        <div class="col-12 col-md-6 fn-animate-in">
+                        <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-animate-in note-col">
                             <div class="fn-note-card">
-                                <div class="fn-note-card-header">
-                                    <h4 class="fn-note-title">{{ $note->title }}</h4>
-                                    <span class="material-symbols-outlined fn-note-more">more_vert</span>
+
+                                {{-- Dropdown Menu (direct child — positioned by CSS per-view) --}}
+                                <div class="dropdown fn-note-dropdown">
+                                    <span class="material-symbols-outlined fn-note-more"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        more_vert
+                                    </span>
+                                    <ul class="dropdown-menu dropdown-menu-end fn-dropdown-menu">
+                                        {{-- Edit --}}
+                                        <li>
+                                            <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                                                href="javascript:void(0)"
+                                                data-id="{{ $note->id }}"
+                                                data-title="{{ $note->title }}"
+                                                data-content="{{ $note->content }}"
+                                                data-labels="{{ $note->labels->pluck('id')->toJson() }}"
+                                                onclick="openEditNoteModal(this)">
+                                                <span class="material-symbols-outlined" style="font-size:18px;">edit</span>
+                                                Sửa
+                                            </a>
+                                        </li>
+                                        {{-- Pin / Unpin --}}
+                                        <li>
+                                            <form action="{{ route($note->is_pinned ? 'notes.unpin' : 'notes.pin', $note) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2">
+                                                    <span class="material-symbols-outlined"
+                                                        style="font-size:18px;{{ $note->is_pinned ? "font-variation-settings:'FILL' 1;" : '' }}">
+                                                        push_pin
+                                                    </span>
+                                                    {{ $note->is_pinned ? 'Bỏ ghim' : 'Ghim' }}
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        {{-- Delete --}}
+                                        <li>
+                                            <form action="{{ route('notes.destroy', $note) }}" method="POST"
+                                                onsubmit="return confirm('Bạn có chắc chắn muốn xóa ghi chú này không?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger">
+                                                    <span class="material-symbols-outlined" style="font-size:18px;">delete</span>
+                                                    Xóa
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
                                 </div>
 
+                                {{-- Title --}}
+                                <div class="fn-note-card-header">
+                                    <h4 class="fn-note-title">{{ $note->title }}</h4>
+                                </div>
+
+                                {{-- Labels --}}
                                 @if($note->labels->count() > 0)
                                     <div class="fn-note-labels">
                                         @foreach($note->labels->take(3) as $label)
@@ -99,16 +116,20 @@
                                     </div>
                                 @endif
 
+                                {{-- Excerpt --}}
                                 <p class="fn-note-excerpt">{{ Str::limit(strip_tags($note->content), 120) }}</p>
 
+                                {{-- Meta --}}
                                 <div class="fn-note-meta">
                                     <span class="fn-note-date">
-                                        Last updated {{ $note->updated_at->diffForHumans() }}
+                                        {{ $note->updated_at->diffForHumans() }}
                                     </span>
                                     @if($note->is_pinned)
-                                        <span class="material-symbols-outlined fn-pin-star" style="font-variation-settings: 'FILL' 1;">star</span>
+                                        <span class="material-symbols-outlined fn-pin-star"
+                                            style="font-variation-settings:'FILL' 1;">star</span>
                                     @endif
                                 </div>
+
                             </div>
                         </div>
                     @endforeach
@@ -119,90 +140,45 @@
                     <p>You haven't created any notes yet.<br>Start by creating your first note!</p>
                 </div>
             @endif
-        </div>
 
-        {{-- ── Right Column: Activity & Pinned ── --}}
-        <div class="col-12 col-lg-4">
-
-            {{-- Activity Widget --}}
-            <div class="mb-4 fn-animate-in">
-                <h3 class="fn-section-label mb-3 px-1">Activity</h3>
-                <div class="fn-activity-card">
-                    <div class="fn-activity-content">
-                        <div class="fn-activity-icon">
-                            <span class="material-symbols-outlined">analytics</span>
-                        </div>
-                        <div class="fn-activity-count">{{ $weeklyNotes }}</div>
-                        <div class="fn-activity-label">notes created this week</div>
-                        <div class="fn-progress-track">
-                            @php
-                                $progress = $totalNotes > 0 ? min(100, round(($weeklyNotes / $totalNotes) * 100)) : 0;
-                            @endphp
-                            <div class="fn-progress-fill" style="width: {{ $progress }}%"></div>
-                        </div>
-                        <div class="fn-progress-label">{{ $progress }}% of total {{ $totalNotes }} notes</div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Stats Summary --}}
-            <div class="mb-4 fn-animate-in">
-                <h3 class="fn-section-label mb-3 px-1">Overview</h3>
-                <div class="row g-3">
-                    <div class="col-6">
-                        <div class="fn-note-card text-center py-4">
-                            <div class="fn-activity-count" style="font-size: 1.5rem;">{{ $totalNotes }}</div>
-                            <div class="fn-note-date">Total Notes</div>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="fn-note-card text-center py-4">
-                            <div class="fn-activity-count" style="font-size: 1.5rem;">{{ $labels->count() }}</div>
-                            <div class="fn-note-date">Labels</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Pinned / Favorites --}}
-            <div class="fn-animate-in">
-                <div class="d-flex align-items-center justify-content-between mb-3 px-1">
-                    <h3 class="fn-section-label mb-0">Pinned</h3>
-                    <span class="material-symbols-outlined" style="font-size: 18px; color: var(--fn-on-surface-variant);">push_pin</span>
-                </div>
-
-                @if($pinnedNotes->count() > 0)
-                    @foreach($pinnedNotes as $pinned)
-                        <div class="fn-pinned-item">
-                            <div class="fn-pinned-icon">
-                                <span class="material-symbols-outlined" style="font-size: 18px; font-variation-settings: 'FILL' 1;">star</span>
-                            </div>
-                            <div class="fn-pinned-info">
-                                <p class="fn-pinned-title">{{ $pinned->title }}</p>
-                                <p class="fn-pinned-date">Pinned {{ $pinned->pinned_at ? $pinned->pinned_at->diffForHumans() : $pinned->updated_at->diffForHumans() }}</p>
-                            </div>
-                        </div>
-                    @endforeach
-                @else
-                    <div class="fn-empty-state" style="padding: 1.5rem;">
-                        <span class="material-symbols-outlined" style="font-size: 32px;">push_pin</span>
-                        <p class="mb-0">No pinned notes yet</p>
-                    </div>
-                @endif
-            </div>
-
-            {{-- Labels --}}
-            @if($labels->count() > 0)
-                <div class="mt-4 fn-animate-in">
-                    <h3 class="fn-section-label mb-3 px-1">Your Labels</h3>
-                    <div class="d-flex flex-wrap gap-2">
-                        @foreach($labels as $label)
-                            <span class="fn-label-badge" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">{{ $label->name }}</span>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
         </div>
     </div>
+
 </div>
+
+@include('components::note-modal')
 @endsection
+
+@push('scripts')
+<script>
+    // ── View Toggle ──────────────────────────────
+    function setNotesView(view) {
+        const container = document.getElementById('notesContainer');
+        const btnGrid   = document.getElementById('btnGridView');
+        const btnList   = document.getElementById('btnListView');
+        if (!container) return;
+
+        const isList = view === 'list';
+        container.classList.toggle('fn-view-list', isList);
+        btnList.classList.toggle('active', isList);
+        btnGrid.classList.toggle('active', !isList);
+        localStorage.setItem('notesView', view);
+    }
+
+    // ── Dropdown z-index fix ─────────────────────
+    function bindDropdownZIndex() {
+        document.addEventListener('shown.bs.dropdown', function (e) {
+            e.target.closest('.note-col')?.classList.add('dropdown-open');
+        });
+        document.addEventListener('hidden.bs.dropdown', function (e) {
+            e.target.closest('.note-col')?.classList.remove('dropdown-open');
+        });
+    }
+
+    // ── Init ─────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        setNotesView(localStorage.getItem('notesView') || 'grid');
+        bindDropdownZIndex();
+    });
+</script>
+@endpush

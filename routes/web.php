@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\AuthControler;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\LabelController;
+use App\Http\Controllers\NoteControler;
 
 Route::get('/', function () {
     return view('welcome');
@@ -46,8 +47,8 @@ Route::middleware('auth')->group(function () {
         $notes = $user->notes();
 
         return view('dashboard', [
-            'recentNotes' => $notes->clone()->with('labels')->latest()->take(6)->get(),
-            'pinnedNotes' => $notes->clone()->where('is_pinned', true)->latest()->get(),
+            'recentNotes' => $notes->clone()->with('labels')->defaultOrder()->take(6)->get(),
+            'pinnedNotes' => $notes->clone()->where('is_pinned', true)->defaultOrder()->get(),
             'totalNotes' => $notes->clone()->count(),
             'weeklyNotes' => $notes->clone()->where('created_at', '>=', now()->subWeek())->count(),
             'labels' => $user->labels()->orderBy('name')->get(),
@@ -56,9 +57,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [AuthControler::class, 'logout'])->name('logout');
 
-    Route::get('/notes', function () {
-        return view('notes');
-    })->name('notes.index');
+    Route::resource('notes', NoteControler::class);
+    Route::post('/notes/{note}/pin', [NoteControler::class, 'pin'])->name('notes.pin');
+    Route::post('/notes/{note}/unpin', [NoteControler::class, 'unpin'])->name('notes.unpin');
 
     Route::resource('labels', LabelController::class)->only(['index', 'store', 'update', 'destroy']);
 });

@@ -117,11 +117,16 @@ class NoteService
             }
 
             $updated = DB::transaction(function () use ($note, $data) {
-                $note->fill(array_filter([
-                    'title' => $data['title'] ?? null,
-                    'content' => $data['content'] ?? null,
-                    'is_pinned' => $data['is_pinned'] ?? null,
-                ], fn($v) => $v !== null));
+                if (array_key_exists('title', $data)) {
+                    $note->title = $data['title'];
+                }
+                if (array_key_exists('content', $data)) {
+                    $note->content = $data['content'];
+                }
+                if (array_key_exists('is_pinned', $data)) {
+                    $note->is_pinned = $data['is_pinned'];
+                }
+                
                 $note->save();
 
                 if (array_key_exists('label_ids', $data)) {

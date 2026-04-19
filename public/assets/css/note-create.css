@@ -1,0 +1,748 @@
+/* ── Back Link ──────────────────────────────────── */
+.fn-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fn-on-surface-variant);
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    transition: all var(--fn-transition-normal);
+    background: transparent;
+}
+
+.fn-back-link:hover {
+    color: var(--fn-primary);
+    background: var(--fn-surface-container-high);
+    transform: translateX(-4px);
+}
+
+.fn-back-link .material-symbols-outlined {
+    font-size: 20px;
+    transition: transform var(--fn-transition-fast);
+}
+
+.fn-back-link:hover .material-symbols-outlined {
+    transform: translateX(-2px);
+}
+
+/* ── Note Create Card ──────────────────────────── */
+.fn-note-create-card {
+    background: var(--fn-surface-container-lowest);
+    border-radius: 1.25rem;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 8px 32px rgba(0, 74, 198, 0.04);
+    overflow: hidden;
+    border: 1px solid rgba(195, 198, 215, 0.15);
+    max-width: 820px;
+    margin: 0 auto;
+    animation: cardSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes cardSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ── Card Header ─────────────────────────────── */
+.fn-note-create-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--fn-outline-variant);
+    border-bottom-color: rgba(195, 198, 215, 0.2);
+}
+
+.fn-note-create-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.fn-note-create-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 74, 198, 0.08);
+    color: var(--fn-primary);
+    transition: all var(--fn-transition-normal);
+}
+
+.fn-note-create-icon .material-symbols-outlined {
+    font-size: 22px;
+}
+
+.fn-note-create-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--fn-on-surface);
+    margin: 0;
+}
+
+.fn-note-create-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--fn-on-surface-variant);
+    transition: all var(--fn-transition-fast);
+    text-decoration: none;
+}
+
+.fn-note-create-close:hover {
+    background: var(--fn-surface-container-high);
+    color: var(--fn-on-surface);
+    transform: rotate(90deg);
+}
+
+/* ── Form Body ───────────────────────────────── */
+.fn-note-create-body {
+    padding: 2rem;
+}
+
+/* ── Field Groups ────────────────────────────── */
+.fn-note-field-group {
+    margin-bottom: 1.5rem;
+}
+
+.fn-note-field-group:last-child {
+    margin-bottom: 0;
+}
+
+.fn-field-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--fn-on-surface-variant);
+    margin-bottom: 0.75rem;
+}
+
+.fn-field-label .material-symbols-outlined {
+    font-size: 18px;
+}
+
+/* ── Title Input ─────────────────────────────── */
+.fn-note-title-input {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--fn-on-surface);
+    background: transparent;
+    border: none;
+    padding: 0;
+    outline: none;
+    transition: all var(--fn-transition-fast);
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+}
+
+.fn-note-title-input::placeholder {
+    color: var(--fn-on-surface-variant);
+    opacity: 0.25;
+}
+
+.fn-note-title-input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.fn-note-title-input.is-invalid {
+    border-bottom: 2px solid var(--fn-error);
+    padding-bottom: 0.25rem;
+}
+
+/* ── Content Textarea ────────────────────────── */
+.fn-note-content-input {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9375rem;
+    color: var(--fn-on-surface-variant);
+    background: transparent;
+    border: none;
+    padding: 0;
+    outline: none;
+    resize: none;
+    line-height: 1.75;
+    min-height: 280px;
+    transition: color var(--fn-transition-fast);
+}
+
+.fn-note-content-input::placeholder {
+    color: var(--fn-on-surface-variant);
+    opacity: 0.25;
+}
+
+.fn-note-content-input:focus {
+    color: var(--fn-on-surface);
+    outline: none;
+    box-shadow: none;
+}
+
+.fn-note-content-input.is-invalid {
+    border-left: 3px solid var(--fn-error);
+    padding-left: 0.75rem;
+}
+
+/* ── Label Chips ─────────────────────────────── */
+.fn-labels-section {
+    padding: 1.25rem 0;
+    border-top: 1px solid rgba(195, 198, 215, 0.15);
+    border-bottom: 1px solid rgba(195, 198, 215, 0.15);
+}
+
+.fn-label-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.fn-label-chip {
+    display: inline-flex;
+    cursor: pointer;
+    margin: 0;
+}
+
+.fn-label-chip input[type="checkbox"] {
+    display: none;
+}
+
+.fn-label-chip-text {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    border: 1.5px solid var(--fn-outline-variant);
+    color: var(--fn-on-surface-variant);
+    background: transparent;
+    transition: all var(--fn-transition-fast);
+    user-select: none;
+}
+
+.fn-label-chip-text:hover {
+    border-color: var(--fn-primary);
+    color: var(--fn-primary);
+    background: rgba(0, 74, 198, 0.04);
+}
+
+.fn-label-chip input[type="checkbox"]:checked+.fn-label-chip-text {
+    background: var(--fn-primary-fixed);
+    color: var(--fn-on-primary-fixed);
+    border-color: var(--fn-primary-fixed-dim);
+    box-shadow: 0 1px 4px rgba(0, 74, 198, 0.12);
+}
+
+/* ── Field Error Messages ────────────────────── */
+.fn-field-error {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--fn-error);
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.fn-field-error::before {
+    content: '●';
+    font-size: 0.5rem;
+}
+
+/* ── Form Footer ─────────────────────────────── */
+.fn-note-create-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 2rem;
+    border-top: 1px solid rgba(195, 198, 215, 0.15);
+    background: rgba(242, 243, 255, 0.3);
+}
+
+/* ── Toolbar Buttons ─────────────────────────── */
+.fn-note-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.fn-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 0.75rem;
+    border: none;
+    background: transparent;
+    color: var(--fn-on-surface-variant);
+    opacity: 0.5;
+    cursor: pointer;
+    transition: all var(--fn-transition-fast);
+}
+
+.fn-toolbar-btn:hover {
+    opacity: 1;
+    color: var(--fn-primary);
+    background: rgba(0, 74, 198, 0.06);
+    transform: translateY(-1px);
+}
+
+.fn-toolbar-btn:active {
+    transform: scale(0.92);
+}
+
+.fn-toolbar-btn .material-symbols-outlined {
+    font-size: 20px;
+}
+
+/* ── Action Buttons ──────────────────────────── */
+.fn-note-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.fn-btn-discard {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.625rem 1.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fn-on-surface-variant);
+    background: transparent;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all var(--fn-transition-fast);
+    text-decoration: none;
+}
+
+.fn-btn-discard:hover {
+    background: var(--fn-surface-container-high);
+    color: var(--fn-on-surface);
+}
+
+.fn-btn-save-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.75rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--fn-on-primary);
+    background: linear-gradient(135deg, var(--fn-primary), var(--fn-primary-container));
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 74, 198, 0.2);
+    transition: all var(--fn-transition-normal);
+}
+
+.fn-btn-save-note:hover {
+    box-shadow: 0 8px 24px rgba(0, 74, 198, 0.3);
+    transform: translateY(-2px);
+}
+
+.fn-btn-save-note:active {
+    transform: scale(0.96) translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 74, 198, 0.2);
+}
+
+.fn-btn-save-note .material-symbols-outlined {
+    font-size: 18px;
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 767.98px) {
+    .fn-note-create-card {
+        border-radius: 1rem;
+    }
+
+    .fn-note-create-header {
+        padding: 1.25rem 1.25rem;
+    }
+
+    .fn-note-create-body {
+        padding: 1.5rem 1.25rem;
+    }
+
+    .fn-note-title-input {
+        font-size: 1.375rem;
+    }
+
+    .fn-note-create-footer {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1.25rem;
+    }
+
+    .fn-note-toolbar {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .fn-note-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .fn-btn-discard {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .fn-btn-save-note {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .fn-note-title-input {
+        font-size: 1.25rem;
+    }
+
+    .fn-note-content-input {
+        min-height: 200px;
+    }
+}
+
+/* ── Modal Overlay ───────────────────────────── */
+.fn-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(19, 27, 46, 0.25);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.fn-modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ── Modal Card ──────────────────────────────── */
+.fn-modal-card {
+    width: 100%;
+    max-width: 680px;
+    background: var(--fn-surface-container-lowest);
+    border-radius: 1.25rem;
+    box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(195, 198, 215, 0.1);
+    overflow: hidden;
+    transform: translateY(24px) scale(0.96);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fn-modal-overlay.show .fn-modal-card {
+    transform: translateY(0) scale(1);
+}
+
+/* ── Modal Header ────────────────────────────── */
+.fn-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid rgba(195, 198, 215, 0.15);
+}
+
+.fn-modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.fn-modal-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 0.625rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 74, 198, 0.08);
+    color: var(--fn-primary);
+}
+
+.fn-modal-icon .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.fn-modal-title {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--fn-on-surface);
+    margin: 0;
+}
+
+.fn-modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--fn-on-surface-variant);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fn-modal-close:hover {
+    background: var(--fn-surface-container-high);
+    color: var(--fn-on-surface);
+    transform: rotate(90deg);
+}
+
+/* ── Modal Body ──────────────────────────────── */
+.fn-modal-body {
+    padding: 1.75rem 2rem;
+}
+
+.fn-modal-field {
+    margin-bottom: 1.25rem;
+}
+
+.fn-modal-field:last-child {
+    margin-bottom: 0;
+}
+
+.fn-modal-title-input {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--fn-on-surface);
+    background: transparent;
+    border: none;
+    padding: 0;
+    outline: none;
+    letter-spacing: -0.01em;
+}
+
+.fn-modal-title-input::placeholder {
+    color: var(--fn-on-surface-variant);
+    opacity: 0.25;
+}
+
+.fn-modal-content-input {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9375rem;
+    color: var(--fn-on-surface-variant);
+    background: transparent;
+    border: none;
+    padding: 0;
+    outline: none;
+    resize: none;
+    line-height: 1.75;
+    min-height: 200px;
+}
+
+.fn-modal-content-input::placeholder {
+    color: var(--fn-on-surface-variant);
+    opacity: 0.25;
+}
+
+.fn-modal-content-input:focus {
+    color: var(--fn-on-surface);
+}
+
+/* ── Labels ──────────────────────────────────── */
+.fn-modal-labels {
+    padding: 1rem 0;
+    border-top: 1px solid rgba(195, 198, 215, 0.12);
+    border-bottom: 1px solid rgba(195, 198, 215, 0.12);
+}
+
+.fn-modal-field-label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--fn-on-surface-variant);
+    margin-bottom: 0.625rem;
+}
+
+.fn-modal-field-label .material-symbols-outlined {
+    font-size: 16px;
+}
+
+.fn-modal-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+}
+
+.fn-chip {
+    cursor: pointer;
+    margin: 0;
+}
+
+.fn-chip input[type="checkbox"] {
+    display: none;
+}
+
+.fn-chip-text {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3125rem 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    border: 1.5px solid var(--fn-outline-variant);
+    color: var(--fn-on-surface-variant);
+    background: transparent;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.fn-chip-text:hover {
+    border-color: var(--fn-primary);
+    color: var(--fn-primary);
+}
+
+.fn-chip input[type="checkbox"]:checked+.fn-chip-text {
+    background: var(--fn-primary-fixed);
+    color: var(--fn-on-primary-fixed);
+    border-color: var(--fn-primary-fixed-dim);
+    box-shadow: 0 1px 4px rgba(0, 74, 198, 0.12);
+}
+
+/* ── Modal Footer ────────────────────────────── */
+.fn-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    border-top: 1px solid rgba(195, 198, 215, 0.12);
+    background: rgba(242, 243, 255, 0.3);
+}
+
+.fn-modal-toolbar {
+    display: flex;
+    gap: 0.125rem;
+}
+
+.fn-modal-tool-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 0.5rem;
+    border: none;
+    background: transparent;
+    color: var(--fn-on-surface-variant);
+    opacity: 0.45;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fn-modal-tool-btn:hover {
+    opacity: 1;
+    color: var(--fn-primary);
+    background: rgba(0, 74, 198, 0.06);
+}
+
+.fn-modal-tool-btn .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.fn-modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.fn-modal-btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--fn-on-primary);
+    background: linear-gradient(135deg, var(--fn-primary), var(--fn-primary-container));
+    border: none;
+    border-radius: 0.625rem;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 74, 198, 0.2);
+    transition: all 0.3s ease;
+}
+
+.fn-modal-btn-save:hover {
+    box-shadow: 0 8px 24px rgba(0, 74, 198, 0.3);
+    transform: translateY(-1px);
+}
+
+.fn-modal-btn-save:active {
+    transform: scale(0.97);
+}
+
+.fn-modal-btn-save .material-symbols-outlined {
+    font-size: 16px;
+}
+
+/* ── Modal Responsive ────────────────────────── */
+@media (max-width: 575.98px) {
+
+    .fn-modal-header,
+    .fn-modal-body,
+    .fn-modal-footer {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+
+    .fn-modal-title-input {
+        font-size: 1.25rem;
+    }
+
+    .fn-modal-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .fn-modal-toolbar,
+    .fn-modal-actions {
+        width: 100%;
+        justify-content: center;
+    }
+}
