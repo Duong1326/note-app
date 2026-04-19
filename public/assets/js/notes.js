@@ -31,8 +31,8 @@ async function apiFetch(url, method = 'GET', body = null) {
 
 function setNotesView(view) {
     const container = document.getElementById('notesContainer');
-    const btnGrid   = document.getElementById('btnGridView');
-    const btnList   = document.getElementById('btnListView');
+    const btnGrid = document.getElementById('btnGridView');
+    const btnList = document.getElementById('btnListView');
     if (!container) return;
 
     const isList = view === 'list';
@@ -49,8 +49,8 @@ function setNotesView(view) {
 /** Fade a column out, then remove it from the DOM. */
 function removeNoteCard(col) {
     col.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
-    col.style.opacity    = '0';
-    col.style.transform  = 'scale(0.85)';
+    col.style.opacity = '0';
+    col.style.transform = 'scale(0.85)';
     col.style.pointerEvents = 'none';
     setTimeout(() => col.remove(), 380);
 }
@@ -65,7 +65,7 @@ function updateCardLabels(col, labels) {
     }
 
     const html = labels.slice(0, 3)
-        .map(l => `<span class="fn-label-badge">${escapeHtml(l.name)}</span>`)
+        .map(l => `<span class="fn-label-badge" data-label-id="${l.id}">${escapeHtml(l.name)}</span>`)
         .join('');
 
     if (el) {
@@ -83,18 +83,18 @@ function patchNoteCard(noteId, note) {
     const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
     if (!col) return;
 
-    col.querySelector('.fn-note-title').textContent        = note.title;
-    col.querySelector('.fn-note-excerpt').textContent      = (note.content ?? '').replace(/<[^>]*>/g, '').substring(0, 120);
-    col.querySelector('.fn-note-date').textContent         = note.updated_at ?? 'Vừa xong';
+    col.querySelector('.fn-note-title').textContent = note.title;
+    col.querySelector('.fn-note-excerpt').textContent = (note.content ?? '').replace(/<[^>]*>/g, '').substring(0, 120);
+    col.querySelector('.fn-note-date').textContent = note.updated_at ?? 'Vừa xong';
 
     updateCardLabels(col, note.labels);
 
     // Keep the edit button's data attributes in sync
     const editBtn = col.querySelector('.dropdown-menu li:first-child a');
     if (editBtn) {
-        editBtn.dataset.title   = note.title;
+        editBtn.dataset.title = note.title;
         editBtn.dataset.content = note.content ?? '';
-        editBtn.dataset.labels  = JSON.stringify(note.labels?.map(l => l.id) ?? []);
+        editBtn.dataset.labels = JSON.stringify(note.labels?.map(l => l.id) ?? []);
     }
 }
 
@@ -113,8 +113,8 @@ function patchPinCard(col, noteId, isPinned) {
         pinLink.setAttribute('onclick', `togglePinAjax(${noteId}, ${isPinned})`);
     }
 
-    const meta     = col.querySelector('.fn-note-meta');
-    const starEl   = meta.querySelector('.fn-pin-star');
+    const meta = col.querySelector('.fn-note-meta');
+    const starEl = meta.querySelector('.fn-pin-star');
     if (isPinned && !starEl) {
         const star = document.createElement('span');
         star.className = 'material-symbols-outlined fn-pin-star';
@@ -128,16 +128,16 @@ function patchPinCard(col, noteId, isPinned) {
 
 /** Build and return HTML string for a new note card. */
 function buildNoteCardHtml(note) {
-    const labelIds  = JSON.stringify(note.labels?.map(l => l.id) ?? []);
+    const labelIds = JSON.stringify(note.labels?.map(l => l.id) ?? []);
     const labelsHtml = (note.labels?.length > 0)
-        ? `<div class="fn-note-labels">${note.labels.slice(0, 3).map(l => `<span class="fn-label-badge">${escapeHtml(l.name)}</span>`).join('')}</div>`
+        ? `<div class="fn-note-labels">${note.labels.slice(0, 3).map(l => `<span class="fn-label-badge" data-label-id="${l.id}">${escapeHtml(l.name)}</span>`).join('')}</div>`
         : '';
-    const pinStyle  = note.is_pinned ? "font-variation-settings:'FILL' 1;" : '';
-    const pinText   = note.is_pinned ? 'Bỏ ghim' : 'Ghim';
-    const pinStar   = note.is_pinned
+    const pinStyle = note.is_pinned ? "font-variation-settings:'FILL' 1;" : '';
+    const pinText = note.is_pinned ? 'Bỏ ghim' : 'Ghim';
+    const pinStar = note.is_pinned
         ? `<span class="material-symbols-outlined fn-pin-star" style="font-variation-settings:'FILL' 1;">star</span>`
         : '';
-    const excerpt   = (note.content ?? '').replace(/<[^>]*>/g, '').substring(0, 120);
+    const excerpt = (note.content ?? '').replace(/<[^>]*>/g, '').substring(0, 120);
 
     return `
         <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-note-adding note-col" data-note-id="${note.id}">
@@ -196,12 +196,12 @@ function prependNoteCard(note) {
 
     if (!container) {
         const emptyState = document.querySelector('.fn-empty-state');
-        const wrapper    = emptyState?.closest('.col-12');
+        const wrapper = emptyState?.closest('.col-12');
         emptyState?.remove();
 
         container = document.createElement('div');
         container.className = 'row g-3';
-        container.id        = 'notesContainer';
+        container.id = 'notesContainer';
         wrapper?.appendChild(container);
     }
 
@@ -222,11 +222,10 @@ async function deleteNoteAjax(noteId) {
         if (!res.ok) throw new Error('Xóa thất bại');
 
         if (col) removeNoteCard(col);
-        showToast('Đã xóa ghi chú thành công');
     } catch (err) {
         if (col) {
-            col.style.opacity       = '';
-            col.style.transform     = '';
+            col.style.opacity = '';
+            col.style.transform = '';
             col.style.pointerEvents = '';
         }
         showToast(err.message || 'Có lỗi xảy ra', 'error');
@@ -237,14 +236,13 @@ async function togglePinAjax(noteId, currentlyPinned) {
     const url = currentlyPinned ? `/notes/${noteId}/unpin` : `/notes/${noteId}/pin`;
 
     try {
-        const res  = await apiFetch(url, 'POST');
+        const res = await apiFetch(url, 'POST');
         if (!res.ok) throw new Error('Không thể thay đổi trạng thái ghim');
 
         const { is_pinned: isPinned } = await res.json();
         const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
         if (col) patchPinCard(col, noteId, isPinned);
 
-        showToast(isPinned ? 'Đã ghim ghi chú' : 'Đã bỏ ghim ghi chú');
     } catch (err) {
         showToast(err.message || 'Có lỗi xảy ra', 'error');
     }
@@ -266,9 +264,9 @@ function openNewNoteModal() {
 
 function openEditNoteModal(btn) {
     _editingNoteId = btn.dataset.id;
-    const labels   = JSON.parse(btn.dataset.labels || '[]');
+    const labels = JSON.parse(btn.dataset.labels || '[]');
 
-    document.getElementById('modalNoteTitle').value   = btn.dataset.title;
+    document.getElementById('modalNoteTitle').value = btn.dataset.title;
     document.getElementById('modalNoteContent').value = btn.dataset.content ?? '';
 
     document.querySelectorAll('input[name="label_ids[]"]').forEach(cb => {
@@ -292,7 +290,7 @@ function _showModal() {
 }
 
 async function submitNoteForm() {
-    const title   = document.getElementById('modalNoteTitle').value.trim();
+    const title = document.getElementById('modalNoteTitle').value.trim();
     const content = document.getElementById('modalNoteContent').value;
 
     if (!title) {
@@ -305,14 +303,14 @@ async function submitNoteForm() {
         .map(cb => cb.value);
 
     const isEditing = _editingNoteId !== null;
-    const url       = isEditing ? `/notes/${_editingNoteId}` : window.FN_STORE_URL;
-    const method    = isEditing ? 'PUT' : 'POST';
+    const url = isEditing ? `/notes/${_editingNoteId}` : window.FN_STORE_URL;
+    const method = isEditing ? 'PUT' : 'POST';
 
     const body = new URLSearchParams({ title, content });
     labelIds.forEach(id => body.append('label_ids[]', id));
 
     try {
-        const res  = await apiFetch(url, method, body);
+        const res = await apiFetch(url, method, body);
         const data = await res.json();
 
         if (!res.ok) {
@@ -325,10 +323,8 @@ async function submitNoteForm() {
 
         if (isEditing) {
             patchNoteCard(_editingNoteId, data.note);
-            showToast('Đã cập nhật ghi chú thành công');
         } else {
             prependNoteCard(data.note);
-            showToast('Đã tạo ghi chú mới');
         }
 
         closeNewNoteModal();

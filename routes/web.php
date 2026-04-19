@@ -44,14 +44,23 @@ Route::post('/resend-otp', [AuthControler::class, 'resendOtp'])
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         $user = auth()->user();
-        $notes = $user->notes();
+        $notesQuery = $user->notes();
+
+        if (request()->has('q') && !empty(request()->q)) {
+            $q = request()->q;
+            $notesQuery->where(function($query) use ($q) {
+                $query->where('title', 'like', "%{$q}%")
+                      ->orWhere('content', 'like', "%{$q}%");
+            });
+        }
 
         return view('dashboard', [
-            'recentNotes' => $notes->clone()->with('labels')->defaultOrder()->take(6)->get(),
-            'pinnedNotes' => $notes->clone()->where('is_pinned', true)->defaultOrder()->get(),
-            'totalNotes' => $notes->clone()->count(),
-            'weeklyNotes' => $notes->clone()->where('created_at', '>=', now()->subWeek())->count(),
+            'recentNotes' => $notesQuery->clone()->with('labels')->defaultOrder()->take(request()->has('q') ? 50 : 6)->get(),
+            'pinnedNotes' => $notesQuery->clone()->where('is_pinned', true)->defaultOrder()->get(),
+            'totalNotes' => $notesQuery->clone()->count(),
+            'weeklyNotes' => $notesQuery->clone()->where('created_at', '>=', now()->subWeek())->count(),
             'labels' => $user->labels()->orderBy('name')->get(),
+            'searchQuery' => request()->q,
         ]);
     })->name('dashboard');
 

@@ -36,26 +36,51 @@
             <p>Workspace</p>
         </div>
 
-        <nav class="fn-nav">
-            <a href="{{ route('dashboard') }}"
-                class="fn-nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <span class="material-symbols-outlined">home</span>
-                <span>Home</span>
-            </a>
-            <a href="{{ route('notes.index') }}"
-                class="fn-nav-item {{ request()->routeIs('notes.*') ? 'active' : '' }}">
-                <span class="material-symbols-outlined">description</span>
-                <span>All Notes</span>
-            </a>
-            <a href="#" class="fn-nav-item">
-                <span class="material-symbols-outlined">star</span>
-                <span>Favorites</span>
-            </a>
-            <a href="#" class="fn-nav-item">
-                <span class="material-symbols-outlined">history</span>
-                <span>Recently Edited</span>
-            </a>
-        </nav>
+        @auth
+            <div class="fn-sidebar-labels">
+                <div class="fn-sidebar-labels-header">
+                    <h3>LABELS</h3>
+                </div>
+                <div class="fn-sidebar-labels-list" id="sidebarLabelsList">
+                    @if(isset($sidebarLabels))
+                        @foreach($sidebarLabels as $label)
+                            <div class="fn-sidebar-label-item" data-label-id="{{ $label->id }}">
+                                <div class="fn-sidebar-label-view">
+                                    <div class="fn-sidebar-label-info">
+                                        <span class="material-symbols-outlined">sell</span>
+                                        <span class="fn-sidebar-label-name">{{ $label->name }}</span>
+                                    </div>
+                                    <div class="fn-sidebar-label-actions">
+                                        <button onclick="startRenameLabel({{ $label->id }})" title="Đổi tên"><span
+                                                class="material-symbols-outlined">edit</span></button>
+                                        <button onclick="deleteLabel({{ $label->id }})" title="Xóa"><span
+                                                class="material-symbols-outlined">delete</span></button>
+                                    </div>
+                                </div>
+                                <div class="fn-sidebar-label-edit d-none">
+                                    <input type="text" class="fn-sidebar-label-input" value="{{ $label->name }}"
+                                        onkeydown="if(event.key==='Enter')saveRenameLabel({{ $label->id }});if(event.key==='Escape')cancelRenameLabel({{ $label->id }});"
+                                        onblur="cancelRenameLabel({{ $label->id }})">
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+                <div class="fn-sidebar-label-add-wrapper">
+                    <button type="button" class="fn-sidebar-label-add-btn" id="sidebarAddBtn"
+                        onclick="toggleAddLabelForm()">
+                        <span class="material-symbols-outlined">add</span>
+                        Add new
+                    </button>
+                    <div class="fn-sidebar-label-add-form d-none" id="sidebarLabelAddForm">
+                        <input type="text" id="newSidebarLabelInput" class="fn-sidebar-label-input"
+                            placeholder="Label name..."
+                            onkeydown="if(event.key==='Enter')createLabel();if(event.key==='Escape')toggleAddLabelForm();"
+                            onblur="toggleAddLabelForm()">
+                    </div>
+                </div>
+            </div>
+        @endauth
 
         <div class="fn-sidebar-footer">
             <a href="#" class="fn-nav-item">
@@ -82,13 +107,17 @@
                 <button class="fn-menu-toggle" onclick="toggleSidebar()">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
-                <form action="{{ route('dashboard') }}" method="GET" class="fn-search-box m-0 p-0" style="background:transparent;">
+                <form action="{{ route('dashboard') }}" method="GET" class="fn-search-box m-0 p-0"
+                    style="background:transparent;">
                     <div class="fn-search-box">
                         <span class="material-symbols-outlined">search</span>
-                        <input type="text" name="q" class="fn-search-input" placeholder="Search your notes..." id="globalSearch" value="{{ request('q') }}" style="padding-right: 2.5rem;">
+                        <input type="text" name="q" class="fn-search-input" placeholder="Search your notes..."
+                            id="globalSearch" value="{{ request('q') }}" style="padding-right: 2.5rem;">
                         @if(request('q'))
-                            <a href="{{ route('dashboard') }}" class="text-muted text-decoration-none" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); z-index: 10; display: flex;">
-                                <span class="material-symbols-outlined" style="position: static; transform: none; left: auto; font-size: 18px;">close</span>
+                            <a href="{{ route('dashboard') }}" class="text-muted text-decoration-none"
+                                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); z-index: 10; display: flex;">
+                                <span class="material-symbols-outlined"
+                                    style="position: static; transform: none; left: auto; font-size: 18px;">close</span>
                             </a>
                         @endif
                     </div>

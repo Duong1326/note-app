@@ -17,13 +17,6 @@ class LabelController extends Controller
     {
     }
 
-    public function index(Request $request)
-    {
-        $user = $request->user();
-        $labels = $this->labelService->listForUser($user);
-        return view('label.index', compact('labels'));
-    }
-
     public function store(StoreLabelRequest $request): JsonResponse|RedirectResponse
     {
         try {

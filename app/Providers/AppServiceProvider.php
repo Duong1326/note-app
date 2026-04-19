@@ -21,5 +21,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::addNamespace('components', resource_path('components'));
+
+        View::composer('layouts.app', function ($view) {
+            if (auth()->check()) {
+                $view->with('sidebarLabels', auth()->user()->labels()->orderBy('name')->get());
+            }
+        });
     }
 }

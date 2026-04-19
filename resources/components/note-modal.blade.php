@@ -25,23 +25,31 @@
                 </div>
 
                 {{-- Labels --}}
-                @if($labels->count() > 0)
-                    <div class="fn-modal-field fn-modal-labels">
-                        <label class="fn-modal-field-label">
-                            <span class="material-symbols-outlined">label</span>
-                            Labels
-                        </label>
-                        <div class="fn-modal-chips">
-                            @foreach($labels as $label)
-                                <label class="fn-chip" for="modal_label_{{ $label->id }}">
-                                    <input type="checkbox" name="label_ids[]" id="modal_label_{{ $label->id }}"
-                                        value="{{ $label->id }}" />
-                                    <span class="fn-chip-text">{{ $label->name }}</span>
-                                </label>
-                            @endforeach
-                        </div>
+                <div class="fn-modal-field fn-modal-labels-container">
+                    <label class="fn-modal-labels-title">Labels</label>
+                    <div class="fn-modal-chips" id="modalLabelsChips">
+                        @foreach($labels as $label)
+                            <label class="fn-checkbox-label" for="modal_label_{{ $label->id }}">
+                                <input type="checkbox" name="label_ids[]" id="modal_label_{{ $label->id }}"
+                                    value="{{ $label->id }}" class="fn-checkbox-input" />
+                                <span class="fn-checkbox-box">
+                                    <span class="material-symbols-outlined check-icon">check</span>
+                                </span>
+                                <span class="fn-checkbox-text">{{ $label->name }}</span>
+                            </label>
+                        @endforeach
                     </div>
-                @endif
+                    {{-- Add Label Inline Button --}}
+                    <div class="fn-modal-add-label-wrapper">
+                        <button type="button" class="fn-modal-add-label-btn" id="modalAddLabelBtn" onclick="toggleModalAddLabelForm()">
+                            <span class="material-symbols-outlined" style="font-size:16px;">add</span> Add Label
+                        </button>
+                        <input type="text" id="modalNewLabelInput" class="fn-modal-add-label-input d-none" 
+                            placeholder="Type and enter..." 
+                            onkeydown="if(event.key==='Enter'){ event.preventDefault(); createLabelFromModal(); } else if(event.key==='Escape') { event.preventDefault(); toggleModalAddLabelForm(); }"
+                            onblur="setTimeout(() => { toggleModalAddLabelForm(true) }, 200)">
+                    </div>
+                </div>
 
                 {{-- Content --}}
                 <div class="fn-modal-field">
@@ -64,9 +72,9 @@
                     </button>
                 </div>
                 <div class="fn-modal-actions">
+                    <button type="button" class="fn-modal-btn-cancel" id="btnCancelNote">Cancel</button>
                     <button type="submit" class="fn-modal-btn-save">
-                        <span class="material-symbols-outlined">save</span>
-                        Save Note
+                        Save Changes
                     </button>
                 </div>
             </div>

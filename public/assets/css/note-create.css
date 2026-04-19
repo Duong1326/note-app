@@ -582,67 +582,116 @@
 }
 
 /* ── Labels ──────────────────────────────────── */
-.fn-modal-labels {
-    padding: 1rem 0;
-    border-top: 1px solid rgba(195, 198, 215, 0.12);
-    border-bottom: 1px solid rgba(195, 198, 215, 0.12);
-}
-
-.fn-modal-field-label {
+.fn-modal-labels-container {
+    background: #f9fafa;
+    border-radius: 0.625rem;
+    padding: 1rem 1.25rem;
+    margin: 1.25rem 0;
     display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--fn-on-surface-variant);
-    margin-bottom: 0.625rem;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
-.fn-modal-field-label .material-symbols-outlined {
-    font-size: 16px;
+.fn-modal-labels-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--fn-on-surface);
+    margin: 0;
 }
 
 .fn-modal-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.375rem;
+    align-items: center;
+    gap: 1rem;
 }
 
-.fn-chip {
+.fn-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     cursor: pointer;
+    user-select: none;
     margin: 0;
 }
 
-.fn-chip input[type="checkbox"] {
+.fn-checkbox-input {
     display: none;
 }
 
-.fn-chip-text {
+.fn-checkbox-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1.5px solid var(--fn-outline-variant);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.fn-checkbox-box .check-icon {
+    font-size: 12px;
+    color: white;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s ease;
+    font-weight: 900;
+}
+
+.fn-checkbox-input:checked + .fn-checkbox-box {
+    background: var(--fn-primary);
+    border-color: var(--fn-primary);
+}
+
+.fn-checkbox-input:checked + .fn-checkbox-box .check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.fn-checkbox-text {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--fn-on-surface-variant);
+}
+
+/* Add Label Inline Wrapper */
+.fn-modal-add-label-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.fn-modal-add-label-btn {
     display: inline-flex;
     align-items: center;
-    padding: 0.3125rem 0.75rem;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    border-radius: 9999px;
-    border: 1.5px solid var(--fn-outline-variant);
-    color: var(--fn-on-surface-variant);
+    gap: 0.25rem;
     background: transparent;
-    transition: all 0.2s ease;
-    user-select: none;
+    border: none;
+    color: var(--fn-on-surface-variant);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
-.fn-chip-text:hover {
-    border-color: var(--fn-primary);
-    color: var(--fn-primary);
+.fn-modal-add-label-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--fn-on-surface);
 }
 
-.fn-chip input[type="checkbox"]:checked+.fn-chip-text {
-    background: var(--fn-primary-fixed);
-    color: var(--fn-on-primary-fixed);
-    border-color: var(--fn-primary-fixed-dim);
-    box-shadow: 0 1px 4px rgba(0, 74, 198, 0.12);
+.fn-modal-add-label-input {
+    width: 140px;
+    border: 1px solid var(--fn-primary);
+    background: var(--fn-surface-container-lowest);
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--fn-on-surface);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
 /* ── Modal Footer ────────────────────────────── */
@@ -689,6 +738,24 @@
     display: flex;
     align-items: center;
     gap: 0.625rem;
+}
+
+.fn-modal-btn-cancel {
+    background: transparent;
+    border: none;
+    color: var(--fn-on-surface-variant);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    padding: 0.5rem 1rem;
+    border-radius: 0.625rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fn-modal-btn-cancel:hover {
+    color: var(--fn-on-surface);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .fn-modal-btn-save {
