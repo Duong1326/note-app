@@ -14,7 +14,7 @@
 </head>
 
 <body>
-    <main class="auth-main">
+    <main class="min-vh-100 d-flex align-items-center justify-content-center py-5 px-3">
         <div class="auth-card">
             <section class="auth-panel-left">
                 <div class="panel-left-content">
@@ -23,7 +23,7 @@
                             <span class="brand-icon">N</span>
                             {{ config('app.name', 'Note App') }}
                         </a>
-                        <div class="hero-section">
+                        <div class="hero-section mt-5">
                             <p class="hero-label">Verification</p>
                             <h1 class="hero-title">Xác minh danh tính để đặt lại mật khẩu.</h1>
                             <p class="hero-desc">Nhập mã xác thực đã gửi đến email của bạn để tiếp tục đặt lại mật khẩu.
@@ -46,8 +46,8 @@
                         </a>
                     </div>
 
-                    <div class="mt-4" style="text-align: center;">
-                        <div class="verify-icon-wrapper">
+                    <div class="mt-4 text-center">
+                        <div class="d-flex justify-content-center mb-4">
                             <div class="verify-icon">
                                 <span class="material-symbols-outlined">lock_reset</span>
                             </div>
@@ -61,18 +61,18 @@
                     </div>
 
                     @if (session('success'))
-                        <div class="alert-success">
+                        <div class="alert auth-alert-success mt-3 py-2 px-3 small">
                             {{ session('success') }}
                         </div>
                     @endif
 
                     @if ($errors->any())
-                        <div class="alert-error">
+                        <div class="alert auth-alert-error mt-3 py-2 px-3 small">
                             {{ $errors->first() }}
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('password.verify.otp.submit') }}" class="auth-form"
+                    <form method="POST" action="{{ route('password.verify.otp.submit') }}" class="auth-form mt-4"
                         id="otp-form">
                         @csrf
                         <input type="hidden" name="otp" id="otp-hidden">
@@ -98,20 +98,20 @@
                             <span>Mã hết hạn sau <strong id="countdown">5:00</strong></span>
                         </div>
 
-                        <button type="submit" class="btn-submit" id="verify-btn" disabled>
+                        <button type="submit" class="btn btn-dark btn-auth w-100" id="verify-btn" disabled>
                             Xác thực
                         </button>
                     </form>
 
-                    <div class="otp-resend">
+                    <div class="otp-resend text-center mt-3 small text-muted">
                         <span>Không nhận được mã?</span>
-                        <form method="POST" action="{{ route('password.resend.otp') }}" style="display: inline;">
+                        <form method="POST" action="{{ route('password.resend.otp') }}" class="d-inline">
                             @csrf
                             <button type="submit" class="link-btn">Gửi lại mã</button>
                         </form>
                     </div>
 
-                    <p class="auth-footer" style="text-align: center;">
+                    <p class="auth-footer mt-4 small text-muted text-center">
                         Nhớ mật khẩu rồi?
                         <a href="{{ route('login') }}">Quay lại đăng nhập</a>
                     </p>

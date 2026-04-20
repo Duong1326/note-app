@@ -10,7 +10,7 @@
         <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
     </head>
     <body>
-        <main class="auth-main">
+        <main class="min-vh-100 d-flex align-items-center justify-content-center py-5 px-3">
             <div class="auth-card">
                 <section class="auth-panel-left">
                     <div class="panel-left-content">
@@ -19,7 +19,7 @@
                                 <span class="brand-icon">N</span>
                                 {{ config('app.name', 'Note App') }}
                             </a>
-                            <div class="hero-section">
+                            <div class="hero-section mt-5">
                                 <p class="hero-label">Password recovery</p>
                                 <h1 class="hero-title">Đặt lại mật khẩu dễ dàng và nhanh chóng.</h1>
                                 <p class="hero-desc">Nhập email đã đăng ký, chúng tôi sẽ gửi mã xác thực để bạn tạo mật khẩu mới.</p>
@@ -48,22 +48,22 @@
                         </div>
 
                         @if (session('success'))
-                            <div class="alert-success">
+                            <div class="alert auth-alert-success mt-3 py-2 px-3 small">
                                 {{ session('success') }}
                             </div>
                         @endif
 
                         @if ($errors->any())
-                            <div class="alert-error">
+                            <div class="alert auth-alert-error mt-3 py-2 px-3 small">
                                 {{ $errors->first() }}
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ route('password.email') }}" class="auth-form">
+                        <form method="POST" action="{{ route('password.email') }}" class="auth-form mt-4">
                             @csrf
 
-                            <div class="form-group">
-                                <label for="email">Email</label>
+                            <div class="mb-3">
+                                <label for="email" class="form-label fw-medium small">Email</label>
                                 <input
                                     id="email"
                                     type="email"
@@ -76,12 +76,12 @@
                                 >
                             </div>
 
-                            <button type="submit" class="btn-submit">
+                            <button type="submit" class="btn btn-dark btn-auth w-100">
                                 Gửi mã xác thực
                             </button>
                         </form>
 
-                        <p class="auth-footer">
+                        <p class="auth-footer mt-4 small text-muted">
                             Nhớ mật khẩu rồi?
                             <a href="{{ route('login') }}">Quay lại đăng nhập</a>
                         </p>

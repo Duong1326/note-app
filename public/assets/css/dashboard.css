@@ -1,6 +1,7 @@
 /* ================================================
    Fluid Notes – Dashboard CSS
    Bootstrap 5 compatible • Material Design palette
+   Only custom styles not covered by Bootstrap
    ================================================ */
 
 /* ── Color System (Material Design tokens) ───── */
@@ -66,17 +67,10 @@
 }
 
 /* ── Base ──────────────────────────────────────── */
-* {
-    box-sizing: border-box;
-}
-
 body {
     font-family: 'Inter', sans-serif;
     background: var(--fn-background);
     color: var(--fn-on-surface);
-    min-height: 100vh;
-    margin: 0;
-    overflow-x: hidden;
 }
 
 a {
@@ -123,10 +117,6 @@ a {
 }
 
 /* Nav Items */
-.fn-nav {
-    flex: 1;
-}
-
 .fn-nav-item {
     display: flex;
     align-items: center;
@@ -359,97 +349,7 @@ a {
     transform: scale(0.95);
 }
 
-/* ── Quick Actions ────────────────────────────── */
-.fn-quick-actions {
-    margin-bottom: 3rem;
-}
-
-.fn-action-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.25rem 1.5rem;
-    background: var(--fn-surface-container-lowest);
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    cursor: pointer;
-    transition: all var(--fn-transition-normal);
-    border: 1px solid transparent;
-}
-
-.fn-action-card:hover {
-    background: var(--fn-primary-container);
-    box-shadow: 0 4px 12px rgba(0, 74, 198, 0.15);
-    transform: translateY(-2px);
-}
-
-.fn-action-card:hover .fn-action-icon {
-    background: rgba(255, 255, 255, 0.2);
-    color: var(--fn-on-primary);
-}
-
-.fn-action-card:hover .fn-action-title,
-.fn-action-card:hover .fn-action-desc {
-    color: var(--fn-on-primary);
-}
-
-.fn-action-card:hover .fn-action-desc {
-    opacity: 0.7;
-}
-
-.fn-action-icon {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--fn-transition-normal);
-}
-
-.fn-action-icon.icon-new {
-    background: rgba(37, 99, 235, 0.1);
-    color: var(--fn-primary);
-}
-
-.fn-action-icon.icon-all {
-    background: rgba(172, 191, 255, 0.15);
-    color: var(--fn-secondary);
-}
-
-.fn-action-icon.icon-fav {
-    background: rgba(148, 55, 0, 0.08);
-    color: var(--fn-tertiary);
-}
-
-.fn-action-icon.icon-recent {
-    background: rgba(115, 118, 134, 0.08);
-    color: var(--fn-outline);
-}
-
-.fn-action-title {
-    font-weight: 700;
-    color: var(--fn-on-surface);
-    margin-bottom: 0.125rem;
-    transition: color var(--fn-transition-normal);
-}
-
-.fn-action-desc {
-    font-size: 0.75rem;
-    color: var(--fn-on-surface-variant);
-    margin: 0;
-    transition: all var(--fn-transition-normal);
-}
-
 /* ── Section Headers ──────────────────────────── */
-.fn-section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-}
-
 .fn-section-title {
     font-size: 1.25rem;
     font-weight: 700;
@@ -467,15 +367,6 @@ a {
 .fn-section-link:hover {
     color: var(--fn-primary);
     text-decoration: underline;
-}
-
-.fn-section-label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--fn-on-surface-variant);
-    margin: 0;
 }
 
 /* ── Note Cards ───────────────────────────────── */
@@ -569,19 +460,7 @@ a {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: 1rem;
-    border-top: 1px solid var(--fn-outline-variant);
-    opacity: 0.15;
     margin-top: auto;
-}
-
-.fn-note-card:hover .fn-note-meta {
-    border-top-color: var(--fn-outline-variant);
-}
-
-.fn-note-meta {
-    border-top: none;
-    padding-top: 0;
 }
 
 .fn-note-date {
@@ -608,22 +487,9 @@ a {
     color: var(--fn-on-primary-fixed);
 }
 
-.fn-note-avatars {
-    display: flex;
-}
-
-.fn-note-avatars>* {
-    margin-left: -0.5rem;
-}
-
-.fn-note-avatars>*:first-child {
-    margin-left: 0;
-}
-
-.fn-avatar-sm {
-    width: 28px;
-    height: 28px;
-    font-size: 0.625rem;
+.fn-pin-star {
+    color: var(--fn-tertiary);
+    font-size: 18px;
 }
 
 /* ── View Toggle & List View ──────────────────── */
@@ -776,164 +642,10 @@ a {
     background: var(--fn-secondary-fixed);
 }
 
-.fn-pin-star {
-    color: var(--fn-tertiary);
-    font-size: 18px;
-}
-
-/* ── Activity Widget ──────────────────────────── */
-.fn-activity-card {
-    padding: 2rem;
-    background: linear-gradient(135deg, var(--fn-surface-container-high), var(--fn-surface-container-highest));
-    border-radius: 1.5rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.fn-activity-card::before {
-    content: '';
-    position: absolute;
-    top: -1rem;
-    right: -1rem;
-    width: 96px;
-    height: 96px;
-    background: rgba(0, 74, 198, 0.05);
-    border-radius: 50%;
-    filter: blur(24px);
-    transition: background var(--fn-transition-normal);
-}
-
-.fn-activity-card:hover::before {
-    background: rgba(0, 74, 198, 0.1);
-}
-
-.fn-activity-content {
-    position: relative;
-    z-index: 1;
-}
-
-.fn-activity-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 0.75rem;
-    background: var(--fn-surface-container-lowest);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--fn-primary);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-    margin-bottom: 1rem;
-}
-
-.fn-activity-count {
-    font-size: 2rem;
-    font-weight: 900;
-    color: var(--fn-on-surface);
-    line-height: 1;
-    margin-bottom: 0.25rem;
-}
-
-.fn-activity-label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--fn-on-surface-variant);
-    margin-bottom: 1rem;
-}
-
-.fn-progress-track {
-    width: 100%;
-    height: 6px;
-    border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.5);
-    overflow: hidden;
-    margin-bottom: 0.5rem;
-}
-
-.fn-progress-fill {
-    height: 100%;
-    border-radius: 9999px;
-    background: var(--fn-primary);
-    transition: width 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.fn-progress-label {
-    font-size: 0.625rem;
-    font-weight: 700;
-    color: var(--fn-primary);
-}
-
-/* ── Pinned Notes List ────────────────────────── */
-.fn-pinned-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: var(--fn-surface-container-lowest);
-    border-radius: 1rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: all var(--fn-transition-normal);
-    margin-bottom: 0.75rem;
-}
-
-.fn-pinned-item:last-child {
-    margin-bottom: 0;
-}
-
-.fn-pinned-item:hover {
-    border-color: rgba(148, 55, 0, 0.15);
-    transform: translateX(4px);
-}
-
-.fn-pinned-icon {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    border-radius: 50%;
-    background: rgba(148, 55, 0, 0.05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--fn-tertiary);
-}
-
-.fn-pinned-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.fn-pinned-title {
-    font-size: 0.875rem;
-    font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: 0;
-}
-
-.fn-pinned-date {
-    font-size: 0.625rem;
-    color: var(--fn-on-surface-variant);
-    margin: 0;
-}
-
 /* ── Empty States ─────────────────────────────── */
-.fn-empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--fn-on-surface-variant);
-}
-
 .fn-empty-state .material-symbols-outlined {
     font-size: 48px;
     opacity: 0.3;
-    margin-bottom: 1rem;
-}
-
-.fn-empty-state p {
-    font-size: 0.875rem;
-    opacity: 0.6;
 }
 
 /* ── FAB (Mobile) ─────────────────────────────── */
@@ -1090,11 +802,6 @@ a {
 .fn-sidebar::-webkit-scrollbar-thumb {
     background: var(--fn-outline-variant);
     border-radius: 9999px;
-}
-
-/* ── Bootstrap Overrides ──────────────────────── */
-.card {
-    border: none;
 }
 
 /* ── Toast Notifications ─────────────────────── */

@@ -26,7 +26,7 @@
             <div class="col-12">
 
                 {{-- Section Header --}}
-                <div class="fn-section-header">
+                <div class="d-flex align-items-center justify-content-between mb-4">
                     <div class="d-flex align-items-center gap-3">
                         <h3 class="fn-section-title">
                             @if(isset($searchQuery) && $searchQuery)
@@ -62,7 +62,7 @@
                                             aria-expanded="false">
                                             more_vert
                                         </span>
-                                        <ul class="dropdown-menu dropdown-menu-end fn-dropdown-menu">
+                                        <ul class="dropdown-menu dropdown-menu-end fn-dropdown-menu shadow-sm border-0 rounded-3">
                                             {{-- Edit --}}
                                             <li>
                                                 <a class="dropdown-item d-flex align-items-center gap-2 py-2"
@@ -109,7 +109,7 @@
                                     @if($note->labels->count() > 0)
                                         <div class="fn-note-labels">
                                             @foreach($note->labels->take(3) as $label)
-                                                <span class="fn-label-badge" data-label-id="{{ $label->id }}">{{ $label->name }}</span>
+                                                <span class="badge rounded-pill fn-label-badge" data-label-id="{{ $label->id }}">{{ $label->name }}</span>
                                             @endforeach
                                         </div>
                                     @endif
@@ -133,13 +133,13 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="fn-empty-state">
+                    <div class="text-center py-5 text-muted fn-empty-state">
                         @if(isset($searchQuery) && $searchQuery)
-                            <span class="material-symbols-outlined">search_off</span>
-                            <p>No results found for "{{ $searchQuery }}".</p>
+                            <span class="material-symbols-outlined d-block mb-3">search_off</span>
+                            <p class="small opacity-75">No results found for "{{ $searchQuery }}".</p>
                         @else
-                            <span class="material-symbols-outlined">note_add</span>
-                            <p>You haven't created any notes yet.<br>Start by creating your first note!</p>
+                            <span class="material-symbols-outlined d-block mb-3">note_add</span>
+                            <p class="small opacity-75">You haven't created any notes yet.<br>Start by creating your first note!</p>
                         @endif
                     </div>
                 @endif

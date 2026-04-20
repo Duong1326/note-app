@@ -15,11 +15,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        // Tạo một tài khoản test để người dùng đăng nhập ngay
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Tài khoản Test',
+            'email' => 'test@gmail.com',
+            'password' => '123456', // Laravel 11 sẽ tự động hash (do casts 'hashed')
+            'email_verified_at' => now(),   // Đã xác thực email để bỏ qua OTP
         ]);
     }
 }

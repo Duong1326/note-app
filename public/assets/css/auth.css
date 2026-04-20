@@ -1,5 +1,6 @@
 /* ══════════════════════════════════════ */
-/*  Auth Design System                  */
+/*  Auth Design System (Bootstrap 5)    */
+/*  Only custom styles not in Bootstrap */
 /* ══════════════════════════════════════ */
 
 :root {
@@ -27,29 +28,14 @@
     --amber-300: #fcd34d;
 }
 
-* {
-    box-sizing: border-box;
-}
-
 body {
     font-family: 'Instrument Sans', sans-serif;
     color: var(--slate-900);
-    min-height: 100vh;
-    background: #ffffff;
-    margin: 0;
 }
 
 /* ══════════════════════════════════════ */
-/*  Layout                              */
+/*  Auth Card — Glassmorphism            */
 /* ══════════════════════════════════════ */
-
-.auth-main {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2.5rem 1rem;
-}
 
 .auth-card {
     width: 100%;
@@ -61,6 +47,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.6);
     background: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     box-shadow: 0 24px 90px rgba(15, 23, 42, 0.12);
 }
 
@@ -71,7 +58,7 @@ body {
 }
 
 /* ══════════════════════════════════════ */
-/*  Left Panel                          */
+/*  Left Panel — Dark Gradient           */
 /* ══════════════════════════════════════ */
 
 .auth-panel-left {
@@ -105,6 +92,10 @@ body {
     height: 100%;
 }
 
+/* ══════════════════════════════════════ */
+/*  Brand                                */
+/* ══════════════════════════════════════ */
+
 .brand-link {
     display: inline-flex;
     align-items: center;
@@ -132,10 +123,9 @@ body {
     font-weight: 600;
 }
 
-.hero-section {
-    margin-top: 4rem;
-    max-width: 28rem;
-}
+/* ══════════════════════════════════════ */
+/*  Hero Section                         */
+/* ══════════════════════════════════════ */
 
 .hero-label {
     font-size: 0.875rem;
@@ -176,10 +166,11 @@ body {
     font-size: 0.875rem;
     line-height: 1.5;
     color: rgba(255, 255, 255, 0.75);
+    margin: 0;
 }
 
 /* ══════════════════════════════════════ */
-/*  Right Panel                         */
+/*  Right Panel                          */
 /* ══════════════════════════════════════ */
 
 .auth-panel-right {
@@ -198,7 +189,7 @@ body {
 }
 
 /* ══════════════════════════════════════ */
-/*  Mobile Brand                        */
+/*  Mobile Brand                         */
 /* ══════════════════════════════════════ */
 
 .mobile-brand {
@@ -239,7 +230,7 @@ body {
 }
 
 /* ══════════════════════════════════════ */
-/*  Section Headers                     */
+/*  Section Headers                      */
 /* ══════════════════════════════════════ */
 
 .section-label {
@@ -248,6 +239,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.3em;
     color: var(--sky-700);
+    margin-bottom: 0;
 }
 
 .section-title {
@@ -266,67 +258,22 @@ body {
 }
 
 /* ══════════════════════════════════════ */
-/*  Alerts                              */
+/*  Form Enhancements (over Bootstrap)   */
 /* ══════════════════════════════════════ */
 
-.alert-success {
-    margin-top: 1.5rem;
+.auth-form .form-control {
     border-radius: 10px;
-    border: 1px solid var(--emerald-200);
-    background: var(--emerald-50);
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-    color: var(--emerald-700);
-}
-
-.alert-error {
-    margin-top: 1.5rem;
-    border-radius: 1rem;
-    border: 1px solid var(--rose-200);
-    background: var(--rose-50);
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-    color: var(--rose-700);
-}
-
-/* ══════════════════════════════════════ */
-/*  Form                                */
-/* ══════════════════════════════════════ */
-
-.auth-form {
-    margin-top: 2rem;
-}
-
-.form-group {
-    margin-bottom: 1.25rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--slate-700);
-}
-
-.form-group .form-control {
-    width: 100%;
-    border-radius: 10px;
-    border: 1px solid var(--slate-200);
-    background: #fff;
+    border-color: var(--slate-200);
     padding: 0.75rem 1rem;
     font-size: 0.9375rem;
-    color: var(--slate-900);
-    outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
-    font-family: inherit;
 }
 
-.form-group .form-control::placeholder {
+.auth-form .form-control::placeholder {
     color: var(--slate-400);
 }
 
-.form-group .form-control:focus {
+.auth-form .form-control:focus {
     border-color: var(--sky-500);
     box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.1);
 }
@@ -357,7 +304,7 @@ body {
 }
 
 /* ══════════════════════════════════════ */
-/*  Remember Me                         */
+/*  Remember Me (custom style)           */
 /* ══════════════════════════════════════ */
 
 .remember-wrapper {
@@ -380,44 +327,28 @@ body {
 }
 
 /* ══════════════════════════════════════ */
-/*  Buttons                             */
+/*  Submit Button (custom gradient)      */
 /* ══════════════════════════════════════ */
 
-.btn-submit {
-    display: inline-flex;
-    width: 100%;
-    align-items: center;
-    justify-content: center;
+.btn-auth {
     border-radius: 10px;
     background: var(--slate-950);
-    color: #fff;
     padding: 0.875rem 1.25rem;
-    font-size: 0.875rem;
     font-weight: 600;
-    border: none;
-    cursor: pointer;
     transition: background-color 0.2s, box-shadow 0.2s;
-    font-family: inherit;
 }
 
-.btn-submit:hover {
+.btn-auth:hover {
     background: var(--sky-900);
 }
 
-.btn-submit:focus {
-    outline: none;
+.btn-auth:focus {
     box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
 }
 
 /* ══════════════════════════════════════ */
-/*  Footer Links                        */
+/*  Auth Footer Link                     */
 /* ══════════════════════════════════════ */
-
-.auth-footer {
-    margin-top: 2rem;
-    font-size: 0.875rem;
-    color: var(--slate-500);
-}
 
 .auth-footer a {
     font-weight: 600;
@@ -431,7 +362,25 @@ body {
 }
 
 /* ══════════════════════════════════════ */
-/*  OTP Input Boxes                     */
+/*  Custom Alert Styles                  */
+/* ══════════════════════════════════════ */
+
+.auth-alert-success {
+    border-radius: 10px;
+    border: 1px solid var(--emerald-200);
+    background: var(--emerald-50);
+    color: var(--emerald-700);
+}
+
+.auth-alert-error {
+    border-radius: 1rem;
+    border: 1px solid var(--rose-200);
+    background: var(--rose-50);
+    color: var(--rose-700);
+}
+
+/* ══════════════════════════════════════ */
+/*  OTP Input Boxes (fully custom)       */
 /* ══════════════════════════════════════ */
 
 .otp-inputs {
@@ -496,7 +445,7 @@ body {
 }
 
 /* ══════════════════════════════════════ */
-/*  OTP Timer                           */
+/*  OTP Timer                            */
 /* ══════════════════════════════════════ */
 
 .otp-timer {
@@ -530,15 +479,8 @@ body {
 }
 
 /* ══════════════════════════════════════ */
-/*  OTP Resend                          */
+/*  OTP Resend                           */
 /* ══════════════════════════════════════ */
-
-.otp-resend {
-    text-align: center;
-    margin-top: 1.25rem;
-    font-size: 0.8125rem;
-    color: var(--slate-500);
-}
 
 .otp-resend .link-btn {
     color: var(--sky-700);
@@ -557,14 +499,8 @@ body {
 }
 
 /* ══════════════════════════════════════ */
-/*  Verify Icon                         */
+/*  Verify Icon                          */
 /* ══════════════════════════════════════ */
-
-.verify-icon-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 1.5rem;
-}
 
 .verify-icon {
     display: flex;
@@ -583,7 +519,6 @@ body {
 }
 
 .verify-title {
-    text-align: center;
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--slate-900);
@@ -591,7 +526,6 @@ body {
 }
 
 .verify-description {
-    text-align: center;
     font-size: 0.875rem;
     line-height: 1.5;
     color: var(--slate-500);
