@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Builder;
 
 class Note extends Model
@@ -20,12 +19,10 @@ class Note extends Model
         'content',
         'is_pinned',
         'pinned_at',
-        'is_locked',
     ];
 
     protected $casts = [
         'is_pinned' => 'boolean',
-        'is_locked' => 'boolean',
         'pinned_at' => 'datetime',
     ];
 
@@ -49,18 +46,6 @@ class Note extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(Attachment::class, 'note_id');
-    }
-
-    /** Share records for this note */
-    public function shares(): HasMany
-    {
-        return $this->hasMany(Share::class, 'note_id');
-    }
-
-    /** Password protection record */
-    public function notePassword(): HasOne
-    {
-        return $this->hasOne(NotePassword::class, 'note_id');
     }
 
     // ──────────────────────────────────────────────
@@ -107,29 +92,5 @@ class Note extends Model
     public function isPinned(): bool
     {
         return (bool) $this->is_pinned;
-    }
-
-    public function isLocked(): bool
-    {
-        return (bool) $this->is_locked;
-    }
-
-    public function isShared(): bool
-    {
-        return $this->shares()->exists();
-    }
-
-    /**
-     * Verify a plain-text password against the note's password hash.
-     */
-    public function verifyLockPassword(string $plain): bool
-    {
-        $notePassword = $this->notePassword;
-
-        if (!$notePassword) {
-            return false;
-        }
-
-        return $notePassword->verify($plain);
     }
 }

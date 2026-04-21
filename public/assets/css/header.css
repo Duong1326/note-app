@@ -1,0 +1,179 @@
+/* ================================================
+   Fluid Notes – Header / Top Bar
+   Search, actions, user menu
+   ================================================ */
+
+.fn-header {
+    position: sticky;
+    top: 0;
+    z-index: 1040;
+    height: var(--fn-header-height);
+    background: rgba(250, 248, 255, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 40px 60px -10px rgba(19, 27, 46, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+}
+
+/* ── Search Box ──────────────────────────────── */
+.fn-search-box {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+}
+
+.fn-search-box .material-symbols-outlined {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--fn-on-surface-variant);
+    font-size: 20px;
+}
+
+.fn-search-input {
+    width: 100%;
+    background: var(--fn-surface-container-low);
+    border: none;
+    border-radius: 9999px;
+    padding: 0.625rem 2.5rem 0.625rem 3rem;
+    font-size: 0.875rem;
+    color: var(--fn-on-surface);
+    font-family: 'Inter', sans-serif;
+    transition: box-shadow var(--fn-transition-fast);
+    outline: none;
+}
+
+.fn-search-input::placeholder {
+    color: var(--fn-on-surface-variant);
+    opacity: 0.6;
+}
+
+.fn-search-input:focus {
+    box-shadow: 0 0 0 3px rgba(0, 74, 198, 0.15);
+}
+
+/* Clear search button */
+.fn-search-clear {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    display: flex;
+    color: var(--fn-on-surface-variant);
+    text-decoration: none;
+}
+
+/* ── Header Actions ──────────────────────────── */
+.fn-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.fn-icon-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--fn-on-surface-variant);
+    cursor: pointer;
+    transition: background var(--fn-transition-fast);
+}
+
+.fn-icon-btn:hover {
+    background: var(--fn-surface-container-high);
+}
+
+.fn-icon-btn:active {
+    transform: scale(0.95);
+}
+
+.fn-notification-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background: var(--fn-tertiary);
+    border-radius: 50%;
+}
+
+.fn-header-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--fn-outline-variant);
+    opacity: 0.3;
+    margin: 0 0.5rem;
+}
+
+/* ── User Button ─────────────────────────────── */
+.fn-user-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+    border-radius: 9999px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background var(--fn-transition-fast);
+}
+
+.fn-user-btn:hover {
+    background: var(--fn-surface-container-high);
+}
+
+.fn-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.fn-user-avatar-initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--fn-primary-container);
+    color: var(--fn-on-primary);
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.fn-user-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fn-on-surface);
+}
+
+.fn-user-chevron {
+    color: var(--fn-on-surface-variant);
+}
+
+/* ── Dropdown Menu (shared) ──────────────────── */
+.fn-dropdown-menu {
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    min-width: 160px;
+    z-index: 1050;
+    border: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 575.98px) {
+    .fn-header {
+        padding: 0 1rem;
+    }
+}

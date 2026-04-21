@@ -23,7 +23,7 @@ class AuthControler extends Controller
 
     public function showVerifyOtp()
     {
-        // Chỉ cho phép truy cập nếu có phiên đăng ký
+        // Only allow access if there is an active registration session
         if (!session('registration')) {
             return redirect()->route('register')
                 ->with('error', 'Vui lòng đăng ký trước.');

@@ -50,9 +50,9 @@ until php -r "
 done
 echo "MySQL is ready!"
 
-# Run migrations
+# Run migrations (safe: only runs new migrations, skips already-applied ones)
 echo "Running migrations..."
-php artisan migrate --force 2>/dev/null || echo "Migration failed or already up to date"
+php artisan migrate --force && echo "Migrations applied successfully." || echo "WARNING: Migration step had issues (check logs)."
 
 # Cache config for faster startup
 echo "Optimizing Laravel..."

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthControler;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\NoteControler;
 
@@ -71,4 +72,24 @@ Route::middleware('auth')->group(function () {
     Route::post('/notes/{note}/unpin', [NoteControler::class, 'unpin'])->name('notes.unpin');
 
     Route::resource('labels', LabelController::class)->only(['index', 'store', 'update', 'destroy']);
+
+    // Attachment (Cloudinary image upload)
+    Route::post('/notes/{note}/attachments', [AttachmentController::class, 'store'])->name('attachments.store');
+    Route::delete('/notes/{note}/attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
+
+    // Profile
+    Route::get('/profile', function () {
+        return view('profile');
+    })->name('profile');
+
+    Route::put('/profile', function (\Illuminate\Http\Request $request) {
+        $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'bio'  => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $request->user()->update($request->only('name', 'bio'));
+
+        return back()->with('success', 'Cập nhật thông tin thành công!');
+    })->name('profile.update');
 });

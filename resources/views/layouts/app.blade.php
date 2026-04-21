@@ -18,8 +18,10 @@
     {{-- Bootstrap 5 --}}
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
 
-    {{-- App Styles --}}
-    <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
+    {{-- App Styles (split for maintainability) --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/app-base.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/header.css') }}">
 
     @stack('styles')
 </head>
@@ -29,7 +31,7 @@
     {{-- Sidebar Overlay (mobile) --}}
     <div class="fn-sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-    {{-- ═══ Sidebar Navigation ═══ --}}
+    {{-- Sidebar Navigation --}}
     <aside class="fn-sidebar" id="sidebar">
         <div class="fn-sidebar-brand">
             <h1>Fluid Notes</h1>
@@ -51,16 +53,18 @@
                                         <span class="fn-sidebar-label-name">{{ $label->name }}</span>
                                     </div>
                                     <div class="fn-sidebar-label-actions">
-                                        <button onclick="startRenameLabel({{ $label->id }})" title="Đổi tên"><span
-                                                class="material-symbols-outlined">edit</span></button>
-                                        <button onclick="deleteLabel({{ $label->id }})" title="Xóa"><span
-                                                class="material-symbols-outlined">delete</span></button>
+                                        <button onclick="startRenameLabel({{ $label->id }})" title="Rename">
+                                            <span class="material-symbols-outlined">edit</span>
+                                        </button>
+                                        <button onclick="deleteLabel({{ $label->id }})" title="Delete">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="fn-sidebar-label-edit d-none">
                                     <input type="text" class="fn-sidebar-label-input" value="{{ $label->name }}"
-                                        onkeydown="if(event.key==='Enter')saveRenameLabel({{ $label->id }});if(event.key==='Escape')cancelRenameLabel({{ $label->id }});"
-                                        onblur="cancelRenameLabel({{ $label->id }})">
+                                        onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveRenameLabel({{ $label->id }}); } else if(event.key==='Escape') { event.preventDefault(); cancelRenameLabel({{ $label->id }}); }"
+                                        onblur="setTimeout(() => saveRenameLabel({{ $label->id }}), 150)">
                                 </div>
                             </div>
                         @endforeach
@@ -75,8 +79,8 @@
                     <div class="fn-sidebar-label-add-form d-none" id="sidebarLabelAddForm">
                         <input type="text" id="newSidebarLabelInput" class="fn-sidebar-label-input"
                             placeholder="Label name..."
-                            onkeydown="if(event.key==='Enter')createLabel();if(event.key==='Escape')toggleAddLabelForm();"
-                            onblur="toggleAddLabelForm()">
+                            onkeydown="if(event.key==='Enter'){ event.preventDefault(); createLabel(); } else if(event.key==='Escape') { event.preventDefault(); toggleAddLabelForm(true); }"
+                            onblur="setTimeout(() => onSidebarLabelBlur(), 150)">
                     </div>
                 </div>
             </div>
@@ -99,7 +103,7 @@
 
     </aside>
 
-    {{-- ═══ Main Content ═══ --}}
+    {{-- Main Content --}}
     <main class="fn-main">
         {{-- Top Navigation Bar --}}
         <header class="fn-header">
@@ -107,17 +111,14 @@
                 <button class="fn-menu-toggle" onclick="toggleSidebar()">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
-                <form action="{{ route('dashboard') }}" method="GET" class="fn-search-box m-0 p-0"
-                    style="background:transparent;">
+                <form action="{{ route('dashboard') }}" method="GET" class="fn-search-box m-0 p-0">
                     <div class="fn-search-box">
                         <span class="material-symbols-outlined">search</span>
-                        <input type="text" name="q" class="fn-search-input" placeholder="Search your notes..."
-                            id="globalSearch" value="{{ request('q') }}" style="padding-right: 2.5rem;">
+                        <input type="text" name="q" class="fn-search-input"
+                            placeholder="Search your notes..." id="globalSearch" value="{{ request('q') }}">
                         @if(request('q'))
-                            <a href="{{ route('dashboard') }}" class="text-muted text-decoration-none"
-                                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); z-index: 10; display: flex;">
-                                <span class="material-symbols-outlined"
-                                    style="position: static; transform: none; left: auto; font-size: 18px;">close</span>
+                            <a href="{{ route('dashboard') }}" class="fn-search-clear" title="Clear search">
+                                <span class="material-symbols-outlined fn-icon-sm">close</span>
                             </a>
                         @endif
                     </div>
@@ -134,37 +135,30 @@
                 </button>
                 <div class="fn-header-divider"></div>
                 <button class="fn-user-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="fn-user-avatar d-flex align-items-center justify-content-center"
-                        style="background: var(--fn-primary-container); color: var(--fn-on-primary); font-weight: 700; font-size: 0.8rem;">
+                    <div class="fn-user-avatar fn-user-avatar-initial">
                         {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                     </div>
                     <span class="fn-user-name d-none d-sm-inline">{{ Auth::user()->name }}</span>
-                    <span class="material-symbols-outlined"
-                        style="font-size: 18px; color: var(--fn-on-surface-variant);">expand_more</span>
+                    <span class="material-symbols-outlined fn-icon-sm fn-user-chevron">expand_more</span>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius: 0.75rem;">
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 fn-dropdown-menu">
                     <li>
-                        <a class="dropdown-item py-2 px-3" href="#">
-                            <span class="material-symbols-outlined me-2"
-                                style="font-size: 18px; vertical-align: middle;">person</span>
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('profile') }}">
+                            <span class="material-symbols-outlined fn-icon-sm">person</span>
                             Profile
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item py-2 px-3" href="#">
-                            <span class="material-symbols-outlined me-2"
-                                style="font-size: 18px; vertical-align: middle;">settings</span>
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#">
+                            <span class="material-symbols-outlined fn-icon-sm">settings</span>
                             Settings
                         </a>
                     </li>
+                    <li><hr class="dropdown-divider"></li>
                     <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li>
-                        <a class="dropdown-item py-2 px-3 text-danger" href="#"
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" href="#"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <span class="material-symbols-outlined me-2"
-                                style="font-size: 18px; vertical-align: middle;">logout</span>
+                            <span class="material-symbols-outlined fn-icon-sm">logout</span>
                             Logout
                         </a>
                     </li>
@@ -177,7 +171,7 @@
     </main>
 
     {{-- FAB (Mobile) --}}
-    <button class="fn-fab" onclick="window.location.href='#'">
+    <button class="fn-fab" onclick="openNewNoteModal()">
         <span class="material-symbols-outlined">add</span>
     </button>
 

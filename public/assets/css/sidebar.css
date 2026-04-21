@@ -1,0 +1,297 @@
+/* ================================================
+   Fluid Notes – Sidebar
+   Navigation, labels, scrollbar
+   ================================================ */
+
+/* ── Sidebar Shell ───────────────────────────── */
+.fn-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: var(--fn-sidebar-width);
+    height: 100vh;
+    background: var(--fn-surface-container-low);
+    display: flex;
+    flex-direction: column;
+    padding: 1.75rem;
+    z-index: 1050;
+    transition: transform var(--fn-transition-normal);
+    overflow-y: auto;
+}
+
+.fn-sidebar-brand {
+    margin-bottom: 2rem;
+    padding: 0 0.5rem;
+}
+
+.fn-sidebar-brand h1 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--fn-on-surface);
+    margin-bottom: 0.125rem;
+}
+
+.fn-sidebar-brand p {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-weight: 700;
+    color: var(--fn-on-surface-variant);
+    opacity: 0.6;
+    margin: 0;
+}
+
+/* ── Nav Items ───────────────────────────────── */
+.fn-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    color: var(--fn-on-surface-variant);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all var(--fn-transition-normal);
+    margin-bottom: 0.25rem;
+    cursor: pointer;
+}
+
+.fn-nav-item:hover {
+    background: rgba(226, 231, 255, 0.5);
+    color: var(--fn-on-surface);
+    transform: translateX(4px);
+}
+
+.fn-nav-item.active {
+    background: var(--fn-surface-container-high);
+    color: var(--fn-primary);
+    box-shadow: 0 1px 3px rgba(0, 74, 198, 0.08);
+    transform: none;
+}
+
+.fn-nav-item .material-symbols-outlined {
+    font-size: 22px;
+}
+
+/* ── Sidebar Footer ──────────────────────────── */
+.fn-sidebar-footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(195, 198, 215, 0.2);
+}
+
+.fn-sidebar-footer .fn-nav-item {
+    margin-bottom: 0.125rem;
+}
+
+/* ── Sidebar Labels (Notion-style) ───────────── */
+.fn-sidebar-labels {
+    margin-top: 1.5rem;
+    padding: 0 0.5rem;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.fn-sidebar-labels-header {
+    padding: 0 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.fn-sidebar-labels-header h3 {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--fn-on-surface-variant);
+    letter-spacing: 0.05em;
+    margin: 0;
+    opacity: 0.7;
+}
+
+.fn-sidebar-labels-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.fn-sidebar-label-item {
+    border-radius: 0.375rem;
+    transition: background 0.1s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.fn-sidebar-label-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.fn-sidebar-label-view {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.375rem 0.75rem;
+    min-height: 32px;
+}
+
+.fn-sidebar-label-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    flex: 1;
+    color: var(--fn-on-surface);
+}
+
+.fn-sidebar-label-info .material-symbols-outlined {
+    font-size: 16px;
+    opacity: 0.6;
+}
+
+.fn-sidebar-label-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Label Actions (show on hover) */
+.fn-sidebar-label-actions {
+    display: flex;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.fn-sidebar-label-item:hover .fn-sidebar-label-actions {
+    opacity: 1;
+}
+
+.fn-sidebar-label-actions button {
+    border: none;
+    background: transparent;
+    color: var(--fn-on-surface-variant);
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.fn-sidebar-label-actions button .material-symbols-outlined {
+    font-size: 14px;
+}
+
+.fn-sidebar-label-actions button:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--fn-on-surface);
+}
+
+/* Label Edit Mode */
+.fn-sidebar-label-edit {
+    padding: 2px 0.5rem;
+}
+
+.fn-sidebar-label-input {
+    width: 100%;
+    border: 1px solid var(--fn-primary);
+    background: var(--fn-surface-container-lowest);
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--fn-on-surface);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* Add New Label */
+.fn-sidebar-label-add-wrapper {
+    margin-top: 2px;
+}
+
+.fn-sidebar-label-add-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background: transparent;
+    border: none;
+    color: var(--fn-on-surface-variant);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: background 0.1s ease, opacity 0.1s ease;
+}
+
+.fn-sidebar-label-add-btn .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.fn-sidebar-label-add-btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+    opacity: 1;
+}
+
+.fn-sidebar-label-add-form {
+    padding: 2px 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* ── Sidebar Overlay (mobile) ────────────────── */
+.fn-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(19, 27, 46, 0.4);
+    z-index: 1045;
+    opacity: 0;
+    transition: opacity var(--fn-transition-normal);
+}
+
+.fn-sidebar-overlay.show {
+    opacity: 1;
+}
+
+.fn-menu-toggle {
+    display: none;
+    border: none;
+    background: transparent;
+    color: var(--fn-on-surface-variant);
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+/* ── Scrollbar ───────────────────────────────── */
+.fn-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.fn-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.fn-sidebar::-webkit-scrollbar-thumb {
+    background: var(--fn-outline-variant);
+    border-radius: 9999px;
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 991.98px) {
+    .fn-sidebar {
+        transform: translateX(-100%);
+    }
+
+    .fn-sidebar.show {
+        transform: translateX(0);
+    }
+
+    .fn-sidebar-overlay.show {
+        display: block;
+    }
+
+    .fn-menu-toggle {
+        display: inline-flex;
+    }
+}

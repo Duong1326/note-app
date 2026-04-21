@@ -18,7 +18,7 @@ class NoteService
     {
         try {
             $query = Note::ownedBy($user->id)
-                ->with(['labels', 'attachments', 'notePassword'])
+                ->with(['labels', 'attachments'])
                 ->defaultOrder();
 
             if (!empty($filters['q'])) {
@@ -59,16 +59,10 @@ class NoteService
                     $note->labels()->sync($data['label_ids']);
                 }
 
-                if (!empty($data['password'])) {
-                    $note->notePassword()->create([
-                        'password_hash' => bcrypt($data['password']),
-                    ]);
-                }
-
                 return $note;
             });
 
-            return $note->load(['labels', 'attachments', 'notePassword']);
+            return $note->load(['labels', 'attachments']);
 
         } catch (Exception $e) {
             Log::error('Lỗi khi tạo Ghi chú: ' . $e->getMessage());
@@ -126,24 +120,17 @@ class NoteService
                 if (array_key_exists('is_pinned', $data)) {
                     $note->is_pinned = $data['is_pinned'];
                 }
-                
+
                 $note->save();
 
                 if (array_key_exists('label_ids', $data)) {
                     $note->labels()->sync($data['label_ids'] ?? []);
                 }
 
-                if (!empty($data['password'])) {
-                    $note->notePassword()->updateOrCreate(
-                        ['note_id' => $note->id],
-                        ['password_hash' => bcrypt($data['password'])]
-                    );
-                }
-
                 return $note;
             });
 
-            return $updated->load(['labels', 'attachments', 'notePassword']);
+            return $updated->load(['labels', 'attachments']);
 
         } catch (Exception $e) {
             Log::error('Lỗi khi cập nhật Ghi chú: ' . $e->getMessage());

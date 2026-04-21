@@ -8,7 +8,6 @@ use App\Http\Requests\Note\UpdateNoteRequest;
 use App\Models\Note;
 use App\Services\LabelService;
 use App\Services\NoteService;
-use App\Services\PreferenceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,7 +18,6 @@ class NoteControler extends Controller
     public function __construct(
         private NoteService $noteService,
         private LabelService $labelService,
-        private PreferenceService $prefService,
     ) {
     }
 
@@ -34,9 +32,8 @@ class NoteControler extends Controller
 
         $notes = $this->noteService->listForUser($user, $filters);
         $labels = $this->labelService->listForUser($user);
-        $preferences = $this->prefService->getForUser($user);
 
-        return view('notes.index', compact('notes', 'labels', 'preferences', 'filters'));
+        return view('notes.index', compact('notes', 'labels', 'filters'));
     }
 
     public function store(StoreNoteRequest $request): JsonResponse|RedirectResponse
@@ -47,12 +44,17 @@ class NoteControler extends Controller
             return response()->json([
                 'success' => true,
                 'note' => [
-                    'id' => $note->id,
-                    'title' => $note->title,
-                    'content' => $note->content,
-                    'is_pinned' => $note->is_pinned,
-                    'updated_at' => $note->updated_at?->diffForHumans(),
-                    'labels' => $note->labels->map(fn($l) => ['id' => $l->id, 'name' => $l->name]),
+                    'id'          => $note->id,
+                    'title'       => $note->title,
+                    'content'     => $note->content,
+                    'is_pinned'   => $note->is_pinned,
+                    'updated_at'  => $note->updated_at?->diffForHumans(),
+                    'labels'      => $note->labels->map(fn($l) => ['id' => $l->id, 'name' => $l->name]),
+                    'attachments' => $note->attachments->map(fn($a) => [
+                        'id'            => $a->id,
+                        'url'           => $a->secure_url,
+                        'thumbnail_url' => $a->thumbnailUrl(400),
+                    ]),
                 ],
             ]);
         }
@@ -68,12 +70,17 @@ class NoteControler extends Controller
             return response()->json([
                 'success' => true,
                 'note' => [
-                    'id' => $updated->id,
-                    'title' => $updated->title,
-                    'content' => $updated->content,
-                    'is_pinned' => $updated->is_pinned,
-                    'updated_at' => $updated->updated_at?->diffForHumans(),
-                    'labels' => $updated->labels->map(fn($l) => ['id' => $l->id, 'name' => $l->name]),
+                    'id'          => $updated->id,
+                    'title'       => $updated->title,
+                    'content'     => $updated->content,
+                    'is_pinned'   => $updated->is_pinned,
+                    'updated_at'  => $updated->updated_at?->diffForHumans(),
+                    'labels'      => $updated->labels->map(fn($l) => ['id' => $l->id, 'name' => $l->name]),
+                    'attachments' => $updated->attachments->map(fn($a) => [
+                        'id'            => $a->id,
+                        'url'           => $a->secure_url,
+                        'thumbnail_url' => $a->thumbnailUrl(400),
+                    ]),
                 ],
             ]);
         }

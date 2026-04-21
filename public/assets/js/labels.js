@@ -1,133 +1,148 @@
 /**
- * labels.js – Sidebar Label Management AJAX logic.
+ * labels.js – Sidebar and modal label management via AJAX.
  */
 
-function toggleAddLabelForm() {
-    const btn = document.getElementById('sidebarAddBtn');
-    const form = document.getElementById('sidebarLabelAddForm');
+// ═══════════════════════════════════════════════════
+// Sidebar Label Form
+// ═══════════════════════════════════════════════════
+
+function toggleAddLabelForm(forceClose = false) {
+    const btn   = document.getElementById('sidebarAddBtn');
+    const form  = document.getElementById('sidebarLabelAddForm');
     const input = document.getElementById('newSidebarLabelInput');
 
-    if (form.classList.contains('d-none')) {
-        form.classList.remove('d-none');
-        btn.classList.add('d-none');
-        input.focus();
-    } else {
+    if (forceClose || !form.classList.contains('d-none')) {
         form.classList.add('d-none');
         btn.classList.remove('d-none');
         input.value = '';
+    } else {
+        form.classList.remove('d-none');
+        btn.classList.add('d-none');
+        input.focus();
+    }
+}
+
+async function onSidebarLabelBlur() {
+    const input = document.getElementById('newSidebarLabelInput');
+    const name  = input?.value.trim();
+    if (name) {
+        await createLabel();
+    } else {
+        toggleAddLabelForm(true);
     }
 }
 
 async function createLabel() {
     const input = document.getElementById('newSidebarLabelInput');
-    const name = input.value.trim();
+    const name  = input.value.trim();
     if (!name) return toggleAddLabelForm();
 
     try {
         const body = new URLSearchParams({ name });
-        const res = await apiFetch(window.FN_LABEL_STORE_URL, 'POST', body);
+        const res  = await apiFetch(window.FN_LABEL_STORE_URL, 'POST', body);
         const data = await res.json();
 
         if (!res.ok) {
-            const msg = data.errors?.name?.[0] || data.message || 'Có lỗi xảy ra';
+            const msg = data.errors?.name?.[0] || data.message || 'An error occurred';
             showToast(msg, 'error');
             return;
         }
 
         const label = data.data;
-        appendLabelItem(label);
-
-        toggleAddLabelForm(); // Hide form on success
-        addLabelCheckbox(label); // Also update the note modal checkboxes
+        appendLabelItem(label);   // update sidebar list
+        toggleAddLabelForm();     // hide form
+        addLabelCheckbox(label);  // sync modal checkboxes
 
     } catch {
-        showToast('Lỗi kết nối', 'error');
+        showToast('Connection error', 'error');
     }
 }
 
+// ═══════════════════════════════════════════════════
+// Sidebar Label CRUD
+// ═══════════════════════════════════════════════════
+
 async function deleteLabel(labelId) {
-    if (!confirm('Bạn có chắc chắn muốn xóa nhãn này?')) return;
+    if (!confirm('Are you sure you want to delete this label?')) return;
 
     const row = document.querySelector(`.fn-sidebar-label-item[data-label-id="${labelId}"]`);
 
     try {
         const res = await apiFetch(`/labels/${labelId}`, 'DELETE');
-        if (!res.ok) throw new Error('Xóa nhãn thất bại');
+        if (!res.ok) throw new Error('Failed to delete label');
 
         if (row) {
             row.style.transition = 'opacity 0.3s ease, margin-top 0.3s ease';
-            row.style.opacity = '0';
-            row.style.marginTop = `-${row.offsetHeight}px`;
+            row.style.opacity    = '0';
+            row.style.marginTop  = `-${row.offsetHeight}px`;
             setTimeout(() => row.remove(), 320);
         }
 
         // Remove checkbox from note modal
-        document.getElementById(`modal_label_${labelId}`)?.closest('.fn-checkbox-label')?.remove();
+        document.getElementById(`modal_label_${labelId}`)
+            ?.closest('.fn-checkbox-label')?.remove();
 
-        // Remove badges from visible note cards
+        // Fade-remove badges from visible note cards
         document.querySelectorAll(`.fn-label-badge[data-label-id="${labelId}"]`).forEach(badge => {
             badge.style.transition = 'opacity 0.2s';
-            badge.style.opacity = '0';
+            badge.style.opacity    = '0';
             setTimeout(() => {
                 const parent = badge.parentNode;
                 badge.remove();
                 if (parent && parent.children.length === 0) {
-                    parent.remove(); // removes .fn-note-labels if empty
+                    parent.remove(); // remove .fn-note-labels if now empty
                 }
             }, 200);
         });
 
-        // Update data-labels attribute inside edit buttons so the modal won't try checking deleted labels
+        // Remove deleted label id from edit-button data attributes
         document.querySelectorAll('.dropdown-item[data-labels]').forEach(btn => {
             try {
-                let labelsArr = JSON.parse(btn.getAttribute('data-labels') || '[]');
-                labelsArr = labelsArr.filter(id => id != labelId);
-                btn.setAttribute('data-labels', JSON.stringify(labelsArr));
-            } catch (e) { }
+                let arr = JSON.parse(btn.getAttribute('data-labels') || '[]');
+                arr = arr.filter(id => id != labelId);
+                btn.setAttribute('data-labels', JSON.stringify(arr));
+            } catch { /* ignore parse errors */ }
         });
+
     } catch (err) {
-        if (row) {
-            row.style.opacity = '';
-            row.style.marginTop = '';
-        }
-        showToast(err.message || 'Có lỗi xảy ra', 'error');
+        if (row) { row.style.opacity = ''; row.style.marginTop = ''; }
+        showToast(err.message || 'An error occurred', 'error');
     }
 }
 
 async function saveRenameLabel(labelId) {
-    const row = document.querySelector(`.fn-sidebar-label-item[data-label-id="${labelId}"]`);
-    const input = row?.querySelector('.fn-sidebar-label-input');
+    const row     = document.querySelector(`.fn-sidebar-label-item[data-label-id="${labelId}"]`);
+    const input   = row?.querySelector('.fn-sidebar-label-input');
     const newName = input?.value.trim();
 
     if (!newName) return cancelRenameLabel(labelId);
 
     try {
         const body = new URLSearchParams({ name: newName, _method: 'PUT' });
-        const res = await apiFetch(`/labels/${labelId}`, 'POST', body);
+        const res  = await apiFetch(`/labels/${labelId}`, 'POST', body);
         const data = await res.json();
 
         if (!res.ok) {
-            const msg = data.errors?.name?.[0] || data.message || 'Có lỗi xảy ra';
+            const msg = data.errors?.name?.[0] || data.message || 'An error occurred';
             showToast(msg, 'error');
             return;
         }
 
-        // Update display
-        const nameEl = row.querySelector('.fn-sidebar-label-name');
-        nameEl.textContent = data.data.name;
-
+        // Update sidebar display name
+        row.querySelector('.fn-sidebar-label-name').textContent = data.data.name;
         cancelRenameLabel(labelId);
 
-        // Update checkbox label in note modal
+        // Sync modal checkbox label text
         const cbLabel = document.querySelector(`label[for="modal_label_${labelId}"] .fn-checkbox-text`);
         if (cbLabel) cbLabel.textContent = data.data.name;
 
-        // Update badges on visible note cards using attribute selector for bulletproof accuracy
+        // Sync badge text on all visible note cards
         document.querySelectorAll(`.fn-label-badge[data-label-id="${labelId}"]`).forEach(badge => {
             badge.textContent = data.data.name;
         });
+
     } catch {
-        showToast('Lỗi kết nối', 'error');
+        showToast('Connection error', 'error');
     }
 }
 
@@ -147,14 +162,18 @@ function appendLabelItem(label) {
                     <span class="fn-sidebar-label-name">${escapeHtml(label.name)}</span>
                 </div>
                 <div class="fn-sidebar-label-actions">
-                    <button onclick="startRenameLabel(${label.id})" title="Đổi tên"><span class="material-symbols-outlined">edit</span></button>
-                    <button onclick="deleteLabel(${label.id})" title="Xóa"><span class="material-symbols-outlined">delete</span></button>
+                    <button onclick="startRenameLabel(${label.id})" title="Rename">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button onclick="deleteLabel(${label.id})" title="Delete">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
                 </div>
             </div>
             <div class="fn-sidebar-label-edit d-none">
                 <input type="text" class="fn-sidebar-label-input" value="${escapeAttr(label.name)}"
                     onkeydown="if(event.key==='Enter')saveRenameLabel(${label.id});if(event.key==='Escape')cancelRenameLabel(${label.id});"
-                    onblur="cancelRenameLabel(${label.id})">
+                    onblur="saveRenameLabel(${label.id})">
             </div>
         </div>`;
 
@@ -180,7 +199,7 @@ function cancelRenameLabel(labelId) {
     row.querySelector('.fn-sidebar-label-view').classList.remove('d-none');
     row.querySelector('.fn-sidebar-label-edit').classList.add('d-none');
 
-    // Reset input value to current name
+    // Reset input to current display name
     const name = row.querySelector('.fn-sidebar-label-name').textContent;
     row.querySelector('.fn-sidebar-label-input').value = name;
 }
@@ -188,8 +207,7 @@ function cancelRenameLabel(labelId) {
 function addLabelCheckbox(label) {
     const chipsContainer = document.getElementById('modalLabelsChips');
     if (!chipsContainer) return;
-
-    if (document.getElementById(`modal_label_${label.id}`)) return;
+    if (document.getElementById(`modal_label_${label.id}`)) return; // already exists
 
     const chip = document.createElement('label');
     chip.className = 'fn-checkbox-label';
@@ -209,11 +227,11 @@ function addLabelCheckbox(label) {
 // ═══════════════════════════════════════════════════
 
 function toggleModalAddLabelForm(forceClose = false) {
-    const btn = document.getElementById('modalAddLabelBtn');
+    const btn   = document.getElementById('modalAddLabelBtn');
     const input = document.getElementById('modalNewLabelInput');
     if (!btn || !input) return;
 
-    if (forceClose || input.classList.contains('d-none') === false) {
+    if (forceClose || !input.classList.contains('d-none')) {
         input.classList.add('d-none');
         btn.classList.remove('d-none');
         input.value = '';
@@ -224,9 +242,23 @@ function toggleModalAddLabelForm(forceClose = false) {
     }
 }
 
+/**
+ * Called on blur of the modal label input.
+ * Saves the label if text is present; otherwise just closes the input.
+ */
+async function onModalLabelBlur() {
+    const input = document.getElementById('modalNewLabelInput');
+    const name  = input?.value.trim();
+    if (name) {
+        await createLabelFromModal();
+    } else {
+        toggleModalAddLabelForm(true);
+    }
+}
+
 async function createLabelFromModal() {
     const input = document.getElementById('modalNewLabelInput');
-    const name = input.value.trim();
+    const name  = input.value.trim();
     if (!name) {
         toggleModalAddLabelForm(true);
         return;
@@ -234,26 +266,26 @@ async function createLabelFromModal() {
 
     try {
         const body = new URLSearchParams({ name });
-        const res = await apiFetch(window.FN_LABEL_STORE_URL, 'POST', body);
+        const res  = await apiFetch(window.FN_LABEL_STORE_URL, 'POST', body);
         const data = await res.json();
 
         if (!res.ok) {
-            const msg = data.errors?.name?.[0] || data.message || 'Có lỗi xảy ra';
+            const msg = data.errors?.name?.[0] || data.message || 'An error occurred';
             showToast(msg, 'error');
             return;
         }
 
         const label = data.data;
-        appendLabelItem(label); // update sidebar
-        addLabelCheckbox(label); // update modal
+        appendLabelItem(label); // sync sidebar
+        addLabelCheckbox(label); // sync modal
 
-        // Auto-check the newly created label
+        // Auto-check the new label
         const checkbox = document.getElementById(`modal_label_${label.id}`);
         if (checkbox) checkbox.checked = true;
 
         toggleModalAddLabelForm(true);
 
     } catch {
-        showToast('Lỗi kết nối', 'error');
+        showToast('Connection error', 'error');
     }
 }

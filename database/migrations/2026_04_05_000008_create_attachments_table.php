@@ -14,10 +14,10 @@ return new class extends Migration
                   ->constrained('notes')
                   ->cascadeOnDelete();
 
-            $table->string('file_path');          // Đường dẫn file (khớp với Model)
-            $table->string('disk')->default('public'); // Disk lưu trữ
-            $table->string('mime_type', 100)->nullable(); // Loại file
-            $table->unsignedBigInteger('size')->nullable(); // Dung lượng (bytes)
+            $table->string('cloudinary_public_id');   // Cloudinary public_id (e.g. notes/5/abc123)
+            $table->string('secure_url', 500);        // HTTPS URL từ Cloudinary
+            $table->string('mime_type', 100)->nullable();
+            $table->unsignedBigInteger('size')->nullable(); // bytes
             $table->timestamp('created_at')->nullable();
         });
     }

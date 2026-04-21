@@ -1,9 +1,10 @@
-{{-- ═══ Modal Overlay: Create New Note ═══ --}}
+{{-- ═══ Note Modal Overlay (Create / Edit) ═══ --}}
 <div class="fn-modal-overlay" id="newNoteModal">
     <div class="fn-modal-card">
-        {{-- Modal Header --}}
+
+        {{-- Header --}}
         <div class="fn-modal-header">
-            <div class="fn-modal-header-left">
+            <div class="d-flex align-items-center gap-2">
                 <div class="fn-modal-icon">
                     <span class="material-symbols-outlined">edit_note</span>
                 </div>
@@ -14,10 +15,11 @@
             </button>
         </div>
 
-        {{-- Modal Form --}}
+        {{-- Form --}}
         <form action="{{ route('notes.store') }}" method="POST" id="createNoteForm">
             @csrf
             <div class="fn-modal-body">
+
                 {{-- Title --}}
                 <div class="fn-modal-field">
                     <input type="text" name="title" id="modalNoteTitle" class="fn-modal-title-input"
@@ -39,15 +41,18 @@
                             </label>
                         @endforeach
                     </div>
-                    {{-- Add Label Inline Button --}}
+
+                    {{-- Inline label creation --}}
                     <div class="fn-modal-add-label-wrapper">
-                        <button type="button" class="fn-modal-add-label-btn" id="modalAddLabelBtn" onclick="toggleModalAddLabelForm()">
-                            <span class="material-symbols-outlined" style="font-size:16px;">add</span> Add Label
+                        <button type="button" class="fn-modal-add-label-btn" id="modalAddLabelBtn"
+                            onclick="toggleModalAddLabelForm()">
+                            <span class="material-symbols-outlined fn-icon-sm">add</span>
+                            Add Label
                         </button>
-                        <input type="text" id="modalNewLabelInput" class="fn-modal-add-label-input d-none" 
-                            placeholder="Type and enter..." 
-                            onkeydown="if(event.key==='Enter'){ event.preventDefault(); createLabelFromModal(); } else if(event.key==='Escape') { event.preventDefault(); toggleModalAddLabelForm(); }"
-                            onblur="setTimeout(() => { toggleModalAddLabelForm(true) }, 200)">
+                        <input type="text" id="modalNewLabelInput" class="fn-modal-add-label-input d-none"
+                            placeholder="Type and press Enter..."
+                            onkeydown="if(event.key==='Enter'){ event.preventDefault(); createLabelFromModal(); } else if(event.key==='Escape') { event.preventDefault(); toggleModalAddLabelForm(true); }"
+                            onblur="setTimeout(() => onModalLabelBlur(), 150)">
                     </div>
                 </div>
 
@@ -56,34 +61,62 @@
                     <textarea name="content" id="modalNoteContent" class="fn-modal-content-input"
                         placeholder="Start typing your ideas here..." rows="8"></textarea>
                 </div>
+
+                {{-- Image Attachments --}}
+                <div class="fn-modal-field fn-attachment-section d-none" id="attachmentSection">
+                    <label class="fn-modal-labels-title d-flex align-items-center gap-1">
+                        <span class="material-symbols-outlined fn-icon-sm">image</span>
+                        Images
+                    </label>
+
+                    {{-- Existing attachments (edit mode) --}}
+                    <div class="fn-attachment-grid" id="existingAttachments"></div>
+
+                    {{-- Pending previews (queued for upload) --}}
+                    <div class="fn-attachment-grid" id="pendingPreviews"></div>
+
+                    {{-- Drop zone --}}
+                    <label class="fn-attachment-dropzone" id="attachmentDropzone" for="attachmentFileInput">
+                        <span class="material-symbols-outlined">add_photo_alternate</span>
+                        <span>Click or drag images here</span>
+                        <span class="fn-attachment-hint">JPEG, PNG, GIF, WebP &bull; max 10 MB each</span>
+                    </label>
+                    <input type="file" id="attachmentFileInput"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" multiple class="d-none">
+                </div>
+
             </div>
 
-            {{-- Modal Footer --}}
+            {{-- Footer --}}
             <div class="fn-modal-footer">
                 <div class="fn-modal-toolbar">
-                    <button type="button" class="fn-modal-tool-btn" title="Attach image">
+                    <button type="button" class="fn-modal-tool-btn fn-attach-toggle-btn" id="btnToggleAttachment"
+                        title="Attach image" onclick="toggleAttachmentSection()">
                         <span class="material-symbols-outlined">image</span>
-                    </button>
-                    <button type="button" class="fn-modal-tool-btn" title="Add attachment">
-                        <span class="material-symbols-outlined">attachment</span>
                     </button>
                     <button type="button" class="fn-modal-tool-btn" title="Add list">
                         <span class="material-symbols-outlined">list</span>
                     </button>
                 </div>
                 <div class="fn-modal-actions">
-                    <button type="button" class="fn-modal-btn-cancel" id="btnCancelNote">Cancel</button>
-                    <button type="submit" class="fn-modal-btn-save">
-                        Save Changes
-                    </button>
+                    <button type="button" class="fn-modal-btn-cancel" id="btnCancelNote"
+                        onclick="closeNewNoteModal()">Cancel</button>
+                    <button type="submit" class="fn-modal-btn-save">Save Changes</button>
                 </div>
             </div>
         </form>
+
     </div>
+</div>
+
+{{-- Lightbox Overlay --}}
+<div class="fn-lightbox-overlay d-none" id="imageLightbox" onclick="closeLightbox(event)">
+    <button type="button" class="fn-lightbox-close" onclick="closeLightbox(event)">
+        <span class="material-symbols-outlined">close</span>
+    </button>
+    <img src="" id="lightboxImage" class="fn-lightbox-img" alt="Enlarged" onclick="event.stopPropagation()">
 </div>
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/note-create.css') }}">
 @endpush
-
-

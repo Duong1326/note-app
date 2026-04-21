@@ -1,0 +1,381 @@
+/* ================================================
+   Fluid Notes – Profile Page Styles
+   Bootstrap 5 compatible • Material Design palette
+   ================================================ */
+
+/* ── Profile Layout ─────────────────────────── */
+.fn-profile-header {
+    margin-bottom: 2.5rem;
+}
+
+.fn-profile-header h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--fn-on-surface);
+    margin-bottom: 0.5rem;
+}
+
+.fn-profile-header p {
+    font-size: 1rem;
+    color: var(--fn-on-surface-variant);
+    max-width: 600px;
+    line-height: 1.6;
+}
+
+/* ── Card Panels ────────────────────────────── */
+.fn-profile-card {
+    background: var(--fn-surface-container-low);
+    border-radius: 1rem;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow var(--fn-transition-normal);
+}
+
+.fn-profile-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--fn-primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.fn-profile-card:hover::before {
+    opacity: 0.03;
+}
+
+.fn-profile-card:hover {
+    box-shadow: 0 4px 24px rgba(0, 74, 198, 0.06);
+}
+
+/* ── Avatar Card ────────────────────────────── */
+.fn-avatar-wrapper {
+    position: relative;
+    width: 128px;
+    height: 128px;
+    margin: 0 auto 1.5rem;
+}
+
+.fn-avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--fn-surface);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.fn-avatar-edit-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    background: var(--fn-surface-container-highest);
+    border: 1px solid var(--fn-outline-variant);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fn-avatar-edit-btn:hover {
+    background: var(--fn-surface-variant);
+    transform: scale(1.05);
+}
+
+.fn-avatar-edit-btn .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--fn-primary);
+}
+
+.fn-profile-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--fn-on-surface);
+    margin-bottom: 0.25rem;
+}
+
+.fn-profile-email {
+    font-size: 0.875rem;
+    color: var(--fn-on-surface-variant);
+    margin-bottom: 1.5rem;
+}
+
+.fn-profile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    background: rgba(172, 191, 255, 0.3);
+    color: var(--fn-on-secondary-container);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.fn-profile-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--fn-primary);
+}
+
+/* ── Section Titles ─────────────────────────── */
+.fn-section-heading {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--fn-on-surface);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.fn-section-heading .material-symbols-outlined {
+    color: var(--fn-primary);
+    font-size: 22px;
+}
+
+/* ── Form Controls ──────────────────────────── */
+.fn-form-label {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fn-on-surface-variant);
+    margin-bottom: 0.5rem;
+}
+
+.fn-form-input,
+.fn-form-select,
+.fn-form-textarea {
+    width: 100%;
+    background: var(--fn-surface);
+    border: 1px solid var(--fn-outline-variant);
+    color: var(--fn-on-surface);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.fn-form-input:focus,
+.fn-form-select:focus,
+.fn-form-textarea:focus {
+    border-color: var(--fn-primary);
+    box-shadow: 0 0 0 3px rgba(0, 74, 198, 0.12);
+}
+
+.fn-form-input[readonly] {
+    background: var(--fn-surface-container);
+    cursor: default;
+    opacity: 0.8;
+}
+
+.fn-form-textarea {
+    resize: none;
+    line-height: 1.6;
+}
+
+.fn-form-select {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 2.5rem;
+}
+
+.fn-select-wrapper {
+    position: relative;
+}
+
+.fn-select-wrapper .material-symbols-outlined {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--fn-on-surface-variant);
+    pointer-events: none;
+    font-size: 20px;
+}
+
+.fn-form-hint {
+    font-size: 0.75rem;
+    color: var(--fn-on-surface-variant);
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.fn-form-hint .material-symbols-outlined {
+    font-size: 14px;
+}
+
+/* ── Security Row ───────────────────────────── */
+.fn-security-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--fn-outline-variant);
+}
+
+.fn-security-row:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.fn-security-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fn-on-surface);
+}
+
+.fn-security-desc {
+    font-size: 0.875rem;
+    color: var(--fn-on-surface-variant);
+    max-width: 400px;
+}
+
+.fn-badge-recommended {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    background: var(--fn-surface-variant);
+    color: var(--fn-primary);
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+}
+
+/* ── Toggle Switch ──────────────────────────── */
+.fn-toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.fn-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.fn-toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--fn-surface-dim);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: background 0.25s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.fn-toggle-track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: var(--fn-surface-container-lowest);
+    border-radius: 50%;
+    border: 1px solid var(--fn-outline-variant);
+    transition: transform 0.25s ease;
+}
+
+.fn-toggle input:checked + .fn-toggle-track {
+    background: var(--fn-primary);
+}
+
+.fn-toggle input:checked + .fn-toggle-track::after {
+    transform: translateX(20px);
+    border-color: transparent;
+}
+
+/* ── Buttons ────────────────────────────────── */
+.fn-btn-outline {
+    padding: 0.625rem 1.25rem;
+    background: var(--fn-surface);
+    border: 1px solid var(--fn-outline-variant);
+    color: var(--fn-on-surface);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.fn-btn-outline:hover {
+    background: var(--fn-surface-container-high);
+}
+
+.fn-btn-primary {
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, var(--fn-primary), var(--fn-primary-container));
+    color: var(--fn-on-primary);
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0, 74, 198, 0.2);
+    transition: all 0.2s ease;
+}
+
+.fn-btn-primary:hover {
+    box-shadow: 0 8px 25px rgba(0, 74, 198, 0.3);
+    transform: translateY(-1px);
+}
+
+.fn-btn-primary:active {
+    transform: scale(0.97);
+}
+
+.fn-btn-ghost {
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: none;
+    color: var(--fn-on-surface-variant);
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.fn-btn-ghost:hover {
+    color: var(--fn-on-surface);
+}
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 767.98px) {
+    .fn-profile-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .fn-profile-card {
+        padding: 1.5rem;
+    }
+
+    .fn-security-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

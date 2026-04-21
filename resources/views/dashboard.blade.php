@@ -5,7 +5,7 @@
 @section('content')
     <div class="fn-dashboard">
 
-        {{-- ═══ Welcome Section ═══ --}}
+        {{-- Welcome Section --}}
         <section class="fn-welcome fn-animate-in">
             <div class="row align-items-end justify-content-between g-4">
                 <div class="col-12 col-md-8">
@@ -21,7 +21,7 @@
             </div>
         </section>
 
-        {{-- ═══ Recent Notes ═══ --}}
+        {{-- Recent Notes --}}
         <div class="row g-4">
             <div class="col-12">
 
@@ -37,64 +37,70 @@
                         </h3>
                         <div class="fn-view-toggle">
                             <button type="button" class="fn-toggle-btn active" id="btnGridView"
-                                onclick="setNotesView('grid')" title="Dạng lưới">
-                                <span class="material-symbols-outlined" style="font-size:18px;">grid_view</span>
+                                onclick="setNotesView('grid')" title="Grid view">
+                                <span class="material-symbols-outlined fn-icon-sm">grid_view</span>
                             </button>
-                            <button type="button" class="fn-toggle-btn" id="btnListView" onclick="setNotesView('list')"
-                                title="Dạng danh sách">
-                                <span class="material-symbols-outlined" style="font-size:18px;">view_list</span>
+                            <button type="button" class="fn-toggle-btn" id="btnListView"
+                                onclick="setNotesView('list')" title="List view">
+                                <span class="material-symbols-outlined fn-icon-sm">view_list</span>
                             </button>
                         </div>
                     </div>
                     <a href="{{ route('notes.index') }}" class="fn-section-link">View archive</a>
                 </div>
 
-                {{-- Notes Grid/List --}}
+                {{-- Notes Grid / List --}}
                 @if($recentNotes->count() > 0)
                     <div class="row g-3" id="notesContainer">
                         @foreach($recentNotes as $note)
-                            <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-animate-in note-col" data-note-id="{{ $note->id }}">
+                            <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-animate-in note-col"
+                                data-note-id="{{ $note->id }}">
                                 <div class="fn-note-card">
+
+                                    {{-- Thumbnail --}}
+                                    @if($note->attachments->count() > 0)
+                                        <img class="fn-note-thumb"
+                                            src="{{ $note->attachments->first()->thumbnailUrl(400) }}"
+                                            alt="Note image">
+                                    @endif
 
                                     {{-- Dropdown Menu --}}
                                     <div class="dropdown fn-note-dropdown">
-                                        <span class="material-symbols-outlined fn-note-more" data-bs-toggle="dropdown"
-                                            aria-expanded="false">
-                                            more_vert
-                                        </span>
+                                        <span class="material-symbols-outlined fn-note-more"
+                                            data-bs-toggle="dropdown" aria-expanded="false">more_vert</span>
                                         <ul class="dropdown-menu dropdown-menu-end fn-dropdown-menu shadow-sm border-0 rounded-3">
                                             {{-- Edit --}}
                                             <li>
                                                 <a class="dropdown-item d-flex align-items-center gap-2 py-2"
-                                                    href="javascript:void(0)" data-id="{{ $note->id }}"
-                                                    data-title="{{ $note->title }}" data-content="{{ $note->content }}"
+                                                    href="javascript:void(0)"
+                                                    data-id="{{ $note->id }}"
+                                                    data-title="{{ $note->title }}"
+                                                    data-content="{{ $note->content }}"
                                                     data-labels="{{ $note->labels->pluck('id')->toJson() }}"
+                                                    data-attachments="{{ $note->attachments->map(fn($a) => ['id' => $a->id, 'url' => $a->secure_url, 'thumbnail_url' => $a->thumbnailUrl(400)])->toJson() }}"
                                                     onclick="openEditNoteModal(this)">
-                                                    <span class="material-symbols-outlined" style="font-size:18px;">edit</span>
-                                                    Sửa
+                                                    <span class="material-symbols-outlined fn-icon-sm">edit</span>
+                                                    Edit
                                                 </a>
                                             </li>
-                                            {{-- Pin / Unpin (AJAX) --}}
+                                            {{-- Pin / Unpin --}}
                                             <li>
                                                 <a class="dropdown-item d-flex align-items-center gap-2 py-2"
                                                     href="javascript:void(0)"
                                                     onclick="togglePinAjax({{ $note->id }}, {{ $note->is_pinned ? 'true' : 'false' }})">
-                                                    <span class="material-symbols-outlined"
-                                                        style="font-size:18px;{{ $note->is_pinned ? "font-variation-settings:'FILL' 1;" : '' }}">
-                                                        push_pin
-                                                    </span>
-                                                    {{ $note->is_pinned ? 'Bỏ ghim' : 'Ghim' }}
+                                                    <span class="material-symbols-outlined fn-icon-sm"
+                                                        @if($note->is_pinned) style="font-variation-settings:'FILL' 1;" @endif>push_pin</span>
+                                                    {{ $note->is_pinned ? 'Unpin' : 'Pin' }}
                                                 </a>
                                             </li>
-                                            <li>
-                                                <hr class="dropdown-divider">
-                                            </li>
-                                            {{-- Delete (AJAX) --}}
+                                            <li><hr class="dropdown-divider"></li>
+                                            {{-- Delete --}}
                                             <li>
                                                 <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger"
-                                                    href="javascript:void(0)" onclick="deleteNoteAjax({{ $note->id }})">
-                                                    <span class="material-symbols-outlined" style="font-size:18px;">delete</span>
-                                                    Xóa
+                                                    href="javascript:void(0)"
+                                                    onclick="deleteNoteAjax({{ $note->id }})">
+                                                    <span class="material-symbols-outlined fn-icon-sm">delete</span>
+                                                    Delete
                                                 </a>
                                             </li>
                                         </ul>
@@ -109,7 +115,8 @@
                                     @if($note->labels->count() > 0)
                                         <div class="fn-note-labels">
                                             @foreach($note->labels->take(3) as $label)
-                                                <span class="badge rounded-pill fn-label-badge" data-label-id="{{ $label->id }}">{{ $label->name }}</span>
+                                                <span class="badge rounded-pill fn-label-badge"
+                                                    data-label-id="{{ $label->id }}">{{ $label->name }}</span>
                                             @endforeach
                                         </div>
                                     @endif
@@ -119,9 +126,7 @@
 
                                     {{-- Meta --}}
                                     <div class="fn-note-meta">
-                                        <span class="fn-note-date">
-                                            {{ $note->updated_at->diffForHumans() }}
-                                        </span>
+                                        <span class="fn-note-date">{{ $note->updated_at->diffForHumans() }}</span>
                                         @if($note->is_pinned)
                                             <span class="material-symbols-outlined fn-pin-star"
                                                 style="font-variation-settings:'FILL' 1;">star</span>
@@ -147,15 +152,16 @@
             </div>
         </div>
 
-
-
     </div>
 
     @include('components::note-modal')
 @endsection
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
+@endpush
+
 @push('scripts')
-    {{-- Pass server-side config to JS --}}
     <script>
         window.FN_STORE_URL = '{{ route("notes.store") }}';
         window.FN_LABEL_STORE_URL = '{{ route("labels.store") }}';

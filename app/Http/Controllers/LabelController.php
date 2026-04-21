@@ -85,11 +85,13 @@ class LabelController extends Controller
         }
     }
 
+    /**
+     * Ensure the authenticated user owns the label.
+     */
     private function authorizeLabel(Label $label, Request $request): void
     {
         if ($label->user_id !== $request->user()->id) {
             abort(403, 'Bạn không có quyền thao tác trên nhãn này.');
         }
     }
-
 }

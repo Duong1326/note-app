@@ -1,309 +1,16 @@
 /* ================================================
-   Fluid Notes – Dashboard CSS
-   Bootstrap 5 compatible • Material Design palette
-   Only custom styles not covered by Bootstrap
+   Fluid Notes – Dashboard Page
+   Welcome section, note cards, views, FAB, toasts
    ================================================ */
 
-/* ── Color System (Material Design tokens) ───── */
-:root {
-    --fn-primary: #004ac6;
-    --fn-primary-container: #2563eb;
-    --fn-on-primary: #ffffff;
-    --fn-on-primary-container: #eeefff;
-    --fn-on-primary-fixed: #00174b;
-    --fn-primary-fixed: #dbe1ff;
-    --fn-primary-fixed-dim: #b4c5ff;
-    --fn-inverse-primary: #b4c5ff;
-
-    --fn-secondary: #495c95;
-    --fn-secondary-container: #acbfff;
-    --fn-on-secondary: #ffffff;
-    --fn-on-secondary-container: #394c84;
-    --fn-secondary-fixed: #dbe1ff;
-    --fn-secondary-fixed-dim: #b4c5ff;
-
-    --fn-tertiary: #943700;
-    --fn-tertiary-container: #bc4800;
-    --fn-on-tertiary: #ffffff;
-    --fn-on-tertiary-container: #ffede6;
-    --fn-tertiary-fixed: #ffdbcd;
-    --fn-tertiary-fixed-dim: #ffb596;
-
-    --fn-error: #ba1a1a;
-    --fn-error-container: #ffdad6;
-    --fn-on-error: #ffffff;
-    --fn-on-error-container: #93000a;
-
-    --fn-surface: #faf8ff;
-    --fn-surface-dim: #d2d9f4;
-    --fn-surface-bright: #faf8ff;
-    --fn-surface-variant: #dae2fd;
-    --fn-surface-tint: #0053db;
-    --fn-surface-container-lowest: #ffffff;
-    --fn-surface-container-low: #f2f3ff;
-    --fn-surface-container: #eaedff;
-    --fn-surface-container-high: #e2e7ff;
-    --fn-surface-container-highest: #dae2fd;
-
-    --fn-on-surface: #131b2e;
-    --fn-on-surface-variant: #434655;
-    --fn-inverse-surface: #283044;
-    --fn-inverse-on-surface: #eef0ff;
-
-    --fn-outline: #737686;
-    --fn-outline-variant: #c3c6d7;
-
-    --fn-background: #faf8ff;
-    --fn-on-background: #131b2e;
-
-    /* Layout */
-    --fn-sidebar-width: 280px;
-    --fn-header-height: 72px;
-
-    /* Transitions */
-    --fn-transition-fast: 0.2s ease;
-    --fn-transition-normal: 0.3s ease;
-    --fn-transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ── Base ──────────────────────────────────────── */
-body {
-    font-family: 'Inter', sans-serif;
-    background: var(--fn-background);
-    color: var(--fn-on-surface);
-}
-
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
-/* ── Sidebar ──────────────────────────────────── */
-.fn-sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: var(--fn-sidebar-width);
-    height: 100vh;
-    background: var(--fn-surface-container-low);
-    display: flex;
-    flex-direction: column;
-    padding: 1.75rem;
-    z-index: 1050;
-    transition: transform var(--fn-transition-normal);
-    overflow-y: auto;
-}
-
-.fn-sidebar-brand {
-    margin-bottom: 2rem;
-    padding: 0 0.5rem;
-}
-
-.fn-sidebar-brand h1 {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--fn-on-surface);
-    margin-bottom: 0.125rem;
-}
-
-.fn-sidebar-brand p {
-    font-size: 0.625rem;
-    text-transform: uppercase;
-    letter-spacing: 0.25em;
-    font-weight: 700;
-    color: var(--fn-on-surface-variant);
-    opacity: 0.6;
-    margin: 0;
-}
-
-/* Nav Items */
-.fn-nav-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
-    color: var(--fn-on-surface-variant);
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all var(--fn-transition-normal);
-    margin-bottom: 0.25rem;
-    cursor: pointer;
-}
-
-.fn-nav-item:hover {
-    background: rgba(226, 231, 255, 0.5);
-    color: var(--fn-on-surface);
-    transform: translateX(4px);
-}
-
-.fn-nav-item.active {
-    background: var(--fn-surface-container-high);
-    color: var(--fn-primary);
-    box-shadow: 0 1px 3px rgba(0, 74, 198, 0.08);
-    transform: none;
-}
-
-.fn-nav-item .material-symbols-outlined {
-    font-size: 22px;
-}
-
-/* Sidebar Footer */
-.fn-sidebar-footer {
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(195, 198, 215, 0.2);
-}
-
-.fn-sidebar-footer .fn-nav-item {
-    margin-bottom: 0.125rem;
-}
-
-/* ── Main Content Area ────────────────────────── */
-.fn-main {
-    margin-left: var(--fn-sidebar-width);
-    min-height: 100vh;
-}
-
-/* ── Header / Top Bar ─────────────────────────── */
-.fn-header {
-    position: sticky;
-    top: 0;
-    z-index: 1040;
-    height: var(--fn-header-height);
-    background: rgba(250, 248, 255, 0.8);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 40px 60px -10px rgba(19, 27, 46, 0.06);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2rem;
-}
-
-.fn-search-box {
-    position: relative;
-    width: 100%;
-    max-width: 420px;
-}
-
-.fn-search-box .material-symbols-outlined {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--fn-on-surface-variant);
-    font-size: 20px;
-}
-
-.fn-search-input {
-    width: 100%;
-    background: var(--fn-surface-container-low);
-    border: none;
-    border-radius: 9999px;
-    padding: 0.625rem 1rem 0.625rem 3rem;
-    font-size: 0.875rem;
-    color: var(--fn-on-surface);
-    font-family: 'Inter', sans-serif;
-    transition: box-shadow var(--fn-transition-fast);
-    outline: none;
-}
-
-.fn-search-input::placeholder {
-    color: var(--fn-on-surface-variant);
-    opacity: 0.6;
-}
-
-.fn-search-input:focus {
-    box-shadow: 0 0 0 3px rgba(0, 74, 198, 0.15);
-}
-
-/* Header Right */
-.fn-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.fn-icon-btn {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: var(--fn-on-surface-variant);
-    cursor: pointer;
-    transition: background var(--fn-transition-fast);
-}
-
-.fn-icon-btn:hover {
-    background: var(--fn-surface-container-high);
-}
-
-.fn-icon-btn:active {
-    transform: scale(0.95);
-}
-
-.fn-notification-dot {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 8px;
-    height: 8px;
-    background: var(--fn-tertiary);
-    border-radius: 50%;
-}
-
-.fn-header-divider {
-    width: 1px;
-    height: 32px;
-    background: var(--fn-outline-variant);
-    opacity: 0.3;
-    margin: 0 0.5rem;
-}
-
-/* User button */
-.fn-user-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem 0.75rem 0.25rem 0.25rem;
-    border-radius: 9999px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    transition: background var(--fn-transition-fast);
-}
-
-.fn-user-btn:hover {
-    background: var(--fn-surface-container-high);
-}
-
-.fn-user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.fn-user-name {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--fn-on-surface);
-}
-
-/* ── Dashboard Content ────────────────────────── */
+/* ── Dashboard Layout ────────────────────────── */
 .fn-dashboard {
     padding: 2.5rem;
     max-width: 1280px;
     margin: 0 auto;
 }
 
-/* Welcome Section */
+/* ── Welcome Section ─────────────────────────── */
 .fn-welcome {
     margin-bottom: 3rem;
 }
@@ -349,7 +56,7 @@ a {
     transform: scale(0.95);
 }
 
-/* ── Section Headers ──────────────────────────── */
+/* ── Section Headers ─────────────────────────── */
 .fn-section-title {
     font-size: 1.25rem;
     font-weight: 700;
@@ -369,7 +76,7 @@ a {
     text-decoration: underline;
 }
 
-/* ── Note Cards ───────────────────────────────── */
+/* ── Note Cards ──────────────────────────────── */
 .note-col {
     position: relative;
     z-index: 1;
@@ -397,18 +104,9 @@ a {
     flex-direction: column;
 }
 
-.fn-dropdown-menu {
-    border-radius: 0.75rem;
-    font-size: 0.875rem;
-    min-width: 160px;
-    z-index: 1050;
-    border: none;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
 .fn-note-card:hover {
-    border-color: rgba(0, 74, 198, 0.15);
-    box-shadow: 0 4px 16px rgba(0, 74, 198, 0.08);
+    border-color: rgba(0, 74, 198, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 74, 198, 0.1);
     transform: translateY(-2px);
 }
 
@@ -433,6 +131,7 @@ a {
     padding-right: 0.5rem;
 }
 
+/* Dropdown trigger on card */
 .fn-note-more {
     color: var(--fn-outline);
     opacity: 0.4;
@@ -442,6 +141,12 @@ a {
 
 .fn-note-card:hover .fn-note-more {
     opacity: 0.7;
+}
+
+.fn-note-card>.fn-note-dropdown {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
 }
 
 .fn-note-excerpt {
@@ -492,7 +197,7 @@ a {
     font-size: 18px;
 }
 
-/* ── View Toggle & List View ──────────────────── */
+/* ── View Toggle ─────────────────────────────── */
 .fn-view-toggle {
     display: flex;
     background: var(--fn-surface-container-high);
@@ -528,17 +233,7 @@ a {
     transition: all 0.3s ease;
 }
 
-/* ─────────────────────────────────────────────── */
-/* ── List View Layout                          ── */
-/* ─────────────────────────────────────────────── */
-
-/* Dropdown floats at top-right in grid view (absolute within card) */
-.fn-note-card>.fn-note-dropdown {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-}
-
+/* ── List View Layout ────────────────────────── */
 .fn-view-list {
     display: flex !important;
     flex-direction: column !important;
@@ -552,7 +247,6 @@ a {
     padding: 0 !important;
 }
 
-/* Card becomes a horizontal row in list mode */
 .fn-view-list .fn-note-card {
     flex-direction: row;
     align-items: center;
@@ -565,7 +259,6 @@ a {
     transform: none;
 }
 
-/* In list view: dropdown is no longer absolute, it flows at the end */
 .fn-view-list .fn-note-card>.fn-note-dropdown {
     position: static;
     flex-shrink: 0;
@@ -573,7 +266,6 @@ a {
     margin-left: auto;
 }
 
-/* Title column */
 .fn-view-list .fn-note-card-header {
     flex-shrink: 0;
     width: 180px;
@@ -608,20 +300,7 @@ a {
     white-space: nowrap;
 }
 
-/* Small screens: hide excerpt & labels */
-@media (max-width: 767.98px) {
-
-    .fn-view-list .fn-note-labels,
-    .fn-view-list .fn-note-excerpt {
-        display: none;
-    }
-
-    .fn-view-list .fn-note-card-header {
-        width: auto;
-        flex: 1;
-    }
-}
-
+/* ── Avatar (small, for cards) ───────────────── */
 .fn-avatar-sm {
     width: 24px;
     height: 24px;
@@ -634,21 +313,16 @@ a {
     justify-content: center;
 }
 
-.fn-avatar-sm.bg-1 {
-    background: var(--fn-primary-fixed);
-}
+.fn-avatar-sm.bg-1 { background: var(--fn-primary-fixed); }
+.fn-avatar-sm.bg-2 { background: var(--fn-secondary-fixed); }
 
-.fn-avatar-sm.bg-2 {
-    background: var(--fn-secondary-fixed);
-}
-
-/* ── Empty States ─────────────────────────────── */
+/* ── Empty States ────────────────────────────── */
 .fn-empty-state .material-symbols-outlined {
     font-size: 48px;
     opacity: 0.3;
 }
 
-/* ── FAB (Mobile) ─────────────────────────────── */
+/* ── FAB (Mobile) ────────────────────────────── */
 .fn-fab {
     display: none;
     position: fixed;
@@ -675,133 +349,6 @@ a {
 
 .fn-fab:active {
     transform: scale(0.9);
-}
-
-/* ── Sidebar Overlay (mobile) ─────────────────── */
-.fn-sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(19, 27, 46, 0.4);
-    z-index: 1045;
-    opacity: 0;
-    transition: opacity var(--fn-transition-normal);
-}
-
-.fn-sidebar-overlay.show {
-    opacity: 1;
-}
-
-/* Mobile hamburger */
-.fn-menu-toggle {
-    display: none;
-    border: none;
-    background: transparent;
-    color: var(--fn-on-surface-variant);
-    cursor: pointer;
-    padding: 0.25rem;
-}
-
-/* ── Responsive ───────────────────────────────── */
-@media (max-width: 991.98px) {
-    .fn-sidebar {
-        transform: translateX(-100%);
-    }
-
-    .fn-sidebar.show {
-        transform: translateX(0);
-    }
-
-    .fn-sidebar-overlay.show {
-        display: block;
-    }
-
-    .fn-main {
-        margin-left: 0;
-    }
-
-    .fn-menu-toggle {
-        display: inline-flex;
-    }
-
-    .fn-fab {
-        display: flex;
-    }
-
-    .fn-dashboard {
-        padding: 1.5rem;
-    }
-
-    .fn-welcome-title {
-        font-size: 1.75rem;
-    }
-}
-
-@media (max-width: 575.98px) {
-    .fn-header {
-        padding: 0 1rem;
-    }
-
-    .fn-dashboard {
-        padding: 1rem;
-    }
-
-    .fn-welcome-title {
-        font-size: 1.5rem;
-    }
-
-    .fn-btn-new-note {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-/* ── Animations ───────────────────────────────── */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(16px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.fn-animate-in {
-    animation: fadeInUp 0.5s ease forwards;
-    opacity: 0;
-}
-
-.fn-animate-in:nth-child(1) {
-    animation-delay: 0.05s;
-}
-
-.fn-animate-in:nth-child(2) {
-    animation-delay: 0.1s;
-}
-
-.fn-animate-in:nth-child(3) {
-    animation-delay: 0.15s;
-}
-
-.fn-animate-in:nth-child(4) {
-    animation-delay: 0.2s;
-}
-
-/* ── Scrollbar ────────────────────────────────── */
-.fn-sidebar::-webkit-scrollbar {
-    width: 4px;
-}
-
-.fn-sidebar::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.fn-sidebar::-webkit-scrollbar-thumb {
-    background: var(--fn-outline-variant);
-    border-radius: 9999px;
 }
 
 /* ── Toast Notifications ─────────────────────── */
@@ -832,38 +379,21 @@ a {
     max-width: 380px;
 }
 
-.fn-toast.fn-toast-success .material-symbols-outlined {
-    color: #4ade80;
-}
-
-.fn-toast.fn-toast-error .material-symbols-outlined {
-    color: #f87171;
-}
+.fn-toast.fn-toast-success .material-symbols-outlined { color: #4ade80; }
+.fn-toast.fn-toast-error .material-symbols-outlined { color: #f87171; }
 
 .fn-toast.fn-toast-exit {
     animation: toastSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes toastSlideIn {
-    from {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateX(100%); }
+    to   { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes toastSlideOut {
-    from {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(100%);
-    }
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(100%); }
 }
 
 /* ── Note Card AJAX Animations ───────────────── */
@@ -887,171 +417,48 @@ a {
 }
 
 @keyframes noteSlideIn {
-    from {
-        opacity: 0;
-        transform: scale(0.85) translateY(-10px);
+    from { opacity: 0; transform: scale(0.85) translateY(-10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 991.98px) {
+    .fn-fab {
+        display: flex;
     }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
+
+    .fn-dashboard {
+        padding: 1.5rem;
+    }
+
+    .fn-welcome-title {
+        font-size: 1.75rem;
     }
 }
 
-/* ================================================
-   Sidebar Labels (Notion Style)
-   ================================================ */
+@media (max-width: 767.98px) {
+    .fn-view-list .fn-note-labels,
+    .fn-view-list .fn-note-excerpt {
+        display: none;
+    }
 
-.fn-sidebar-labels {
-    margin-top: 1.5rem;
-    padding: 0 0.5rem;
-    flex-grow: 1;
-    overflow-y: auto;
+    .fn-view-list .fn-note-card-header {
+        width: auto;
+        flex: 1;
+    }
 }
 
-.fn-sidebar-labels-header {
-    padding: 0 0.75rem;
-    margin-bottom: 0.25rem;
-}
+@media (max-width: 575.98px) {
+    .fn-dashboard {
+        padding: 1rem;
+    }
 
-.fn-sidebar-labels-header h3 {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    color: var(--fn-on-surface-variant);
-    letter-spacing: 0.05em;
-    margin: 0;
-    opacity: 0.7;
-}
+    .fn-welcome-title {
+        font-size: 1.5rem;
+    }
 
-.fn-sidebar-labels-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-}
-
-.fn-sidebar-label-item {
-    border-radius: 0.375rem;
-    transition: background 0.1s ease;
-    cursor: pointer;
-    position: relative;
-}
-
-.fn-sidebar-label-item:hover {
-    background: rgba(0, 0, 0, 0.04);
-}
-
-.fn-sidebar-label-view {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.375rem 0.75rem;
-    min-height: 32px;
-}
-
-.fn-sidebar-label-info {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-width: 0;
-    flex: 1;
-    color: var(--fn-on-surface);
-}
-
-.fn-sidebar-label-info .material-symbols-outlined {
-    font-size: 16px;
-    opacity: 0.6;
-}
-
-.fn-sidebar-label-name {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Actions */
-.fn-sidebar-label-actions {
-    display: flex;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-}
-
-.fn-sidebar-label-item:hover .fn-sidebar-label-actions {
-    opacity: 1;
-}
-
-.fn-sidebar-label-actions button {
-    border: none;
-    background: transparent;
-    color: var(--fn-on-surface-variant);
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 0;
-}
-
-.fn-sidebar-label-actions button .material-symbols-outlined {
-    font-size: 14px;
-}
-
-.fn-sidebar-label-actions button:hover {
-    background: rgba(0, 0, 0, 0.08);
-    color: var(--fn-on-surface);
-}
-
-/* Edit Mode */
-.fn-sidebar-label-edit {
-    padding: 2px 0.5rem;
-}
-
-.fn-sidebar-label-input {
-    width: 100%;
-    border: 1px solid var(--fn-primary);
-    background: var(--fn-surface-container-lowest);
-    border-radius: 0.25rem;
-    padding: 0.25rem 0.375rem;
-    font-size: 0.8125rem;
-    color: var(--fn-on-surface);
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-}
-
-/* Add New Wrapper */
-.fn-sidebar-label-add-wrapper {
-    margin-top: 2px;
-}
-
-.fn-sidebar-label-add-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem 0.75rem;
-    background: transparent;
-    border: none;
-    color: var(--fn-on-surface-variant);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    border-radius: 0.375rem;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: background 0.1s ease, opacity 0.1s ease;
-}
-
-.fn-sidebar-label-add-btn .material-symbols-outlined {
-    font-size: 18px;
-}
-
-.fn-sidebar-label-add-btn:hover {
-    background: rgba(0, 0, 0, 0.04);
-    opacity: 1;
-}
-
-.fn-sidebar-label-add-form {
-    padding: 2px 0.5rem;
-    margin-bottom: 0.5rem;
+    .fn-btn-new-note {
+        width: 100%;
+        justify-content: center;
+    }
 }
