@@ -42,7 +42,7 @@ services:
       - app
 
   mysql:
-    image: mariadb:lts-alpine
+    image: mariadb:11
     container_name: note-app-mysql
     restart: unless-stopped
     ports:

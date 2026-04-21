@@ -32,8 +32,8 @@ class AuthService
             ],
         ]);
 
-        // Gửi email OTP
-        Mail::to($data['email'])->send(
+        // Gửi email OTP qua queue (không block request)
+        Mail::to($data['email'])->queue(
             new VerificationCodeMail($otp, $data['name'])
         );
     }
@@ -55,7 +55,7 @@ class AuthService
             ]);
         }
 
-        if ($inputOtp !== $registration['otp']) {
+        if ((string)$inputOtp !== (string)$registration['otp']) {
             throw ValidationException::withMessages([
                 'otp' => ['Mã xác thực không đúng. Vui lòng thử lại.'],
             ]);
@@ -99,7 +99,7 @@ class AuthService
         $registration['otp_expires_at'] = now()->addMinutes(5);
         session(['registration' => $registration]);
 
-        Mail::to($registration['email'])->send(
+        Mail::to($registration['email'])->queue(
             new VerificationCodeMail($otp, $registration['name'])
         );
     }
