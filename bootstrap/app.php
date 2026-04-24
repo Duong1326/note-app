@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'note.token' => \App\Http\Middleware\CheckNoteToken::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

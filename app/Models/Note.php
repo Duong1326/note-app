@@ -19,11 +19,19 @@ class Note extends Model
         'content',
         'is_pinned',
         'pinned_at',
+        'password_hash',
+        'is_locked',
     ];
+
+    /**
+     * Never expose the raw password hash in JSON / API responses.
+     */
+    protected $hidden = ['password_hash'];
 
     protected $casts = [
         'is_pinned' => 'boolean',
         'pinned_at' => 'datetime',
+        'is_locked' => 'boolean',
     ];
 
     // ──────────────────────────────────────────────
@@ -92,5 +100,10 @@ class Note extends Model
     public function isPinned(): bool
     {
         return (bool) $this->is_pinned;
+    }
+
+    public function isPasswordProtected(): bool
+    {
+        return $this->is_locked && !empty($this->password_hash);
     }
 }

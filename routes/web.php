@@ -5,8 +5,11 @@ use App\Http\Controllers\Auth\AuthControler;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LabelController;
+use App\Http\Controllers\NoteLockController;
 use App\Http\Controllers\NoteControler;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -42,54 +45,35 @@ Route::post('/verify-otp', [AuthControler::class, 'verifyOtp'])->name('verify.ot
 Route::post('/resend-otp', [AuthControler::class, 'resendOtp'])
     ->middleware('throttle:3,1')->name('verify.otp.resend');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        $user = auth()->user();
-        $notesQuery = $user->notes();
-
-        if (request()->has('q') && !empty(request()->q)) {
-            $q = request()->q;
-            $notesQuery->where(function($query) use ($q) {
-                $query->where('title', 'like', "%{$q}%")
-                      ->orWhere('content', 'like', "%{$q}%");
-            });
-        }
-
-        return view('dashboard', [
-            'recentNotes' => $notesQuery->clone()->with('labels')->defaultOrder()->take(request()->has('q') ? 50 : 6)->get(),
-            'pinnedNotes' => $notesQuery->clone()->where('is_pinned', true)->defaultOrder()->get(),
-            'totalNotes' => $notesQuery->clone()->count(),
-            'weeklyNotes' => $notesQuery->clone()->where('created_at', '>=', now()->subWeek())->count(),
-            'labels' => $user->labels()->orderBy('name')->get(),
-            'searchQuery' => request()->q,
-        ]);
-    })->name('dashboard');
+Route::middleware(['auth', \App\Http\Middleware\PreventBackHistory::class])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('/logout', [AuthControler::class, 'logout'])->name('logout');
 
-    Route::resource('notes', NoteControler::class);
-    Route::post('/notes/{note}/pin', [NoteControler::class, 'pin'])->name('notes.pin');
-    Route::post('/notes/{note}/unpin', [NoteControler::class, 'unpin'])->name('notes.unpin');
+    Route::resource('notes', NoteControler::class)->only(['store']);
+
+    // Mutation routes that require a valid unlock token for locked notes
+    Route::middleware('note.token')->group(function () {
+        Route::put('/notes/{note}',    [NoteControler::class, 'update'])->name('notes.update');
+        Route::delete('/notes/{note}', [NoteControler::class, 'destroy'])->name('notes.destroy');
+        Route::post('/notes/{note}/pin',   [NoteControler::class, 'pin'])->name('notes.pin');
+        Route::post('/notes/{note}/unpin', [NoteControler::class, 'unpin'])->name('notes.unpin');
+
+        // Attachment (Cloudinary image upload)
+        Route::post('/notes/{note}/attachments', [AttachmentController::class, 'store'])->name('attachments.store');
+        Route::delete('/notes/{note}/attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
+    });
+
+    // Note lock management
+    Route::post('/notes/{note}/lock/verify',  [NoteLockController::class, 'verify'])->name('notes.lock.verify');
+    Route::post('/notes/{note}/lock/enable',  [NoteLockController::class, 'enable'])->name('notes.lock.enable');
+    Route::put('/notes/{note}/lock/password', [NoteLockController::class, 'changePassword'])->name('notes.lock.change');
+    Route::delete('/notes/{note}/lock',       [NoteLockController::class, 'disable'])->name('notes.lock.disable');
 
     Route::resource('labels', LabelController::class)->only(['index', 'store', 'update', 'destroy']);
 
-    // Attachment (Cloudinary image upload)
-    Route::post('/notes/{note}/attachments', [AttachmentController::class, 'store'])->name('attachments.store');
-    Route::delete('/notes/{note}/attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
-
     // Profile
-    Route::get('/profile', function () {
-        return view('profile');
-    })->name('profile');
-
-    Route::put('/profile', function (\Illuminate\Http\Request $request) {
-        $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'bio'  => ['nullable', 'string', 'max:500'],
-        ]);
-
-        $request->user()->update($request->only('name', 'bio'));
-
-        return back()->with('success', 'Cập nhật thông tin thành công!');
-    })->name('profile.update');
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
 });

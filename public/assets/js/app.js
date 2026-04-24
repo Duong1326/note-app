@@ -57,3 +57,11 @@ function escapeAttr(str) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 }
+
+// ── BFCache Handler ───────────────────────────────
+// Fix stale data when navigating back via the browser's Back button (bfcache)
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});

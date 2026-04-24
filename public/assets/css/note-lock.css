@@ -1,0 +1,125 @@
+/* ================================================================
+   note-lock.css  –  Styles specific to the note password-lock feature
+   ================================================================ */
+
+/* ── Locked card visuals ───────────────────────────────────────── */
+
+.fn-lock-badge {
+    font-size: 14px;
+    color: var(--fn-outline);
+    opacity: 0.6;
+    user-select: none;
+    transition: opacity var(--fn-transition-fast);
+}
+
+.note-col[data-locked="1"] .fn-note-excerpt {
+    filter: blur(4px);
+    user-select: none;
+    pointer-events: none;
+    transition: filter 0.2s ease;
+}
+
+.note-col[data-locked="1"] .fn-note-card:hover .fn-note-excerpt {
+    filter: blur(2px);
+}
+
+.note-col[data-locked="1"] .fn-note-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(0, 74, 198, 0.03) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+/* ── Lock modal size ───────────────────────────────────────────── */
+
+.fn-lock-modal {
+    max-width: 420px;
+    width: 100%;
+}
+
+/* ── Lock icon variants (gradient pill next to title) ─────────── */
+
+.fn-lock-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--fn-primary), var(--fn-primary-container));
+    box-shadow: 0 4px 12px rgba(0, 74, 198, 0.25);
+}
+
+.fn-lock-icon-wrap .material-symbols-outlined {
+    font-size: 22px;
+    color: var(--fn-on-primary);
+}
+
+.fn-lock-icon-wrap.fn-lock-change {
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+}
+
+.fn-lock-icon-wrap.fn-lock-danger {
+    background: linear-gradient(135deg, #dc2626, #f87171);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+
+/* ── Password input with eye-toggle ───────────────────────────── */
+
+.fn-pw-wrap {
+    position: relative;
+}
+
+.fn-pw-wrap .form-control {
+    padding-right: 2.5rem;
+}
+
+.fn-pw-eye {
+    position: absolute;
+    top: 50%;
+    right: 0.625rem;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: var(--fn-outline);
+    display: flex;
+    align-items: center;
+    transition: color 0.2s ease;
+}
+
+.fn-pw-eye:hover { color: var(--fn-primary); }
+
+.fn-pw-eye .material-symbols-outlined { font-size: 18px; }
+
+/* ── Primary gradient button (used for lock actions) ──────────── */
+
+.btn-lock-primary {
+    background: linear-gradient(135deg, var(--fn-primary), var(--fn-primary-container));
+    color: var(--fn-on-primary);
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 74, 198, 0.2);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.btn-lock-primary:hover:not(:disabled) {
+    box-shadow: 0 6px 16px rgba(0, 74, 198, 0.3);
+    transform: translateY(-1px);
+    color: var(--fn-on-primary);
+}
+
+.btn-lock-danger {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.btn-lock-danger:hover:not(:disabled) {
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+    transform: translateY(-1px);
+    color: #fff;
+}

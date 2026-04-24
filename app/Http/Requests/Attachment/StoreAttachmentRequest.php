@@ -15,7 +15,7 @@ class StoreAttachmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image' => ['required', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
+            'image' => ['required', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:10240'],
         ];
     }
 
@@ -25,7 +25,7 @@ class StoreAttachmentRequest extends FormRequest
             'image.required' => 'Vui lòng chọn ảnh.',
             'image.image'    => 'File phải là ảnh.',
             'image.mimes'    => 'Ảnh phải có định dạng: jpeg, jpg, png, gif, webp.',
-            'image.max'      => 'Kích thước ảnh không được vượt quá 5MB.',
+            'image.max'      => 'Kích thước ảnh không được vượt quá 10MB.',
         ];
     }
 }

@@ -41,7 +41,7 @@
         @auth
             <div class="fn-sidebar-labels">
                 <div class="fn-sidebar-labels-header">
-                    <h3>LABELS</h3>
+                    <h3>NHÃN</h3>
                 </div>
                 <div class="fn-sidebar-labels-list" id="sidebarLabelsList">
                     @if(isset($sidebarLabels))
@@ -53,10 +53,10 @@
                                         <span class="fn-sidebar-label-name">{{ $label->name }}</span>
                                     </div>
                                     <div class="fn-sidebar-label-actions">
-                                        <button onclick="startRenameLabel({{ $label->id }})" title="Rename">
+                                        <button onclick="startRenameLabel({{ $label->id }})" title="Đổi tên">
                                             <span class="material-symbols-outlined">edit</span>
                                         </button>
-                                        <button onclick="deleteLabel({{ $label->id }})" title="Delete">
+                                        <button onclick="deleteLabel({{ $label->id }})" title="Xóa">
                                             <span class="material-symbols-outlined">delete</span>
                                         </button>
                                     </div>
@@ -74,11 +74,11 @@
                     <button type="button" class="fn-sidebar-label-add-btn" id="sidebarAddBtn"
                         onclick="toggleAddLabelForm()">
                         <span class="material-symbols-outlined">add</span>
-                        Add new
+                        Thêm mới
                     </button>
                     <div class="fn-sidebar-label-add-form d-none" id="sidebarLabelAddForm">
                         <input type="text" id="newSidebarLabelInput" class="fn-sidebar-label-input"
-                            placeholder="Label name..."
+                            placeholder="Tên nhãn..."
                             onkeydown="if(event.key==='Enter'){ event.preventDefault(); createLabel(); } else if(event.key==='Escape') { event.preventDefault(); toggleAddLabelForm(true); }"
                             onblur="setTimeout(() => onSidebarLabelBlur(), 150)">
                     </div>
@@ -89,14 +89,14 @@
         <div class="fn-sidebar-footer">
             <a href="#" class="fn-nav-item">
                 <span class="material-symbols-outlined">help</span>
-                <span>Help</span>
+                <span>Trợ giúp</span>
             </a>
             <form method="POST" action="{{ route('logout') }}" id="logout-form">
                 @csrf
                 <a href="#" class="fn-nav-item"
                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <span class="material-symbols-outlined">logout</span>
-                    <span>Logout</span>
+                    <span>Đăng xuất</span>
                 </a>
             </form>
         </div>
@@ -114,10 +114,10 @@
                 <form action="{{ route('dashboard') }}" method="GET" class="fn-search-box m-0 p-0">
                     <div class="fn-search-box">
                         <span class="material-symbols-outlined">search</span>
-                        <input type="text" name="q" class="fn-search-input"
-                            placeholder="Search your notes..." id="globalSearch" value="{{ request('q') }}">
+                        <input type="text" name="q" class="fn-search-input" placeholder="Tìm kiếm ghi chú..."
+                            id="globalSearch" value="{{ request('q') }}">
                         @if(request('q'))
-                            <a href="{{ route('dashboard') }}" class="fn-search-clear" title="Clear search">
+                            <a href="{{ route('dashboard') }}" class="fn-search-clear" title="Xóa tìm kiếm">
                                 <span class="material-symbols-outlined fn-icon-sm">close</span>
                             </a>
                         @endif
@@ -126,18 +126,22 @@
             </div>
 
             <div class="fn-header-actions">
-                <button class="fn-icon-btn" title="Dark mode">
+                <button class="fn-icon-btn" title="Chế độ tối">
                     <span class="material-symbols-outlined">dark_mode</span>
                 </button>
-                <button class="fn-icon-btn" title="Notifications">
+                <button class="fn-icon-btn" title="Thông báo">
                     <span class="material-symbols-outlined">notifications</span>
                     <span class="fn-notification-dot"></span>
                 </button>
                 <div class="fn-header-divider"></div>
                 <button class="fn-user-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="fn-user-avatar fn-user-avatar-initial">
-                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                    </div>
+                    @if(Auth::user()->avatarUrl())
+                        <img src="{{ Auth::user()->avatarUrl() }}" alt="Avatar" class="fn-user-avatar">
+                    @else
+                        <div class="fn-user-avatar fn-user-avatar-initial">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </div>
+                    @endif
                     <span class="fn-user-name d-none d-sm-inline">{{ Auth::user()->name }}</span>
                     <span class="material-symbols-outlined fn-icon-sm fn-user-chevron">expand_more</span>
                 </button>
@@ -145,21 +149,23 @@
                     <li>
                         <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('profile') }}">
                             <span class="material-symbols-outlined fn-icon-sm">person</span>
-                            Profile
+                            Hồ sơ
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#">
                             <span class="material-symbols-outlined fn-icon-sm">settings</span>
-                            Settings
+                            Cài đặt
                         </a>
                     </li>
-                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
                     <li>
                         <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" href="#"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <span class="material-symbols-outlined fn-icon-sm">logout</span>
-                            Logout
+                            Đăng xuất
                         </a>
                     </li>
                 </ul>

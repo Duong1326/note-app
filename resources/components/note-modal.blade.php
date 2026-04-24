@@ -8,7 +8,7 @@
                 <div class="fn-modal-icon">
                     <span class="material-symbols-outlined">edit_note</span>
                 </div>
-                <h2 class="fn-modal-title">New Note</h2>
+                <h2 class="fn-modal-title">Ghi chú mới</h2>
             </div>
             <button type="button" class="fn-modal-close" onclick="closeNewNoteModal()">
                 <span class="material-symbols-outlined">close</span>
@@ -23,12 +23,12 @@
                 {{-- Title --}}
                 <div class="fn-modal-field">
                     <input type="text" name="title" id="modalNoteTitle" class="fn-modal-title-input"
-                        placeholder="Note Title" required />
+                        placeholder="Tiêu đề ghi chú" required />
                 </div>
 
                 {{-- Labels --}}
                 <div class="fn-modal-field fn-modal-labels-container">
-                    <label class="fn-modal-labels-title">Labels</label>
+                    <label class="fn-modal-labels-title">Nhãn</label>
                     <div class="fn-modal-chips" id="modalLabelsChips">
                         @foreach($labels as $label)
                             <label class="fn-checkbox-label" for="modal_label_{{ $label->id }}">
@@ -47,10 +47,10 @@
                         <button type="button" class="fn-modal-add-label-btn" id="modalAddLabelBtn"
                             onclick="toggleModalAddLabelForm()">
                             <span class="material-symbols-outlined fn-icon-sm">add</span>
-                            Add Label
+                            Thêm nhãn
                         </button>
                         <input type="text" id="modalNewLabelInput" class="fn-modal-add-label-input d-none"
-                            placeholder="Type and press Enter..."
+                            placeholder="Nhập và nhấn Enter..."
                             onkeydown="if(event.key==='Enter'){ event.preventDefault(); createLabelFromModal(); } else if(event.key==='Escape') { event.preventDefault(); toggleModalAddLabelForm(true); }"
                             onblur="setTimeout(() => onModalLabelBlur(), 150)">
                     </div>
@@ -59,14 +59,14 @@
                 {{-- Content --}}
                 <div class="fn-modal-field">
                     <textarea name="content" id="modalNoteContent" class="fn-modal-content-input"
-                        placeholder="Start typing your ideas here..." rows="8"></textarea>
+                        placeholder="Bắt đầu viết ý tưởng của bạn tại đây..." rows="8"></textarea>
                 </div>
 
                 {{-- Image Attachments --}}
                 <div class="fn-modal-field fn-attachment-section d-none" id="attachmentSection">
                     <label class="fn-modal-labels-title d-flex align-items-center gap-1">
                         <span class="material-symbols-outlined fn-icon-sm">image</span>
-                        Images
+                        Hình ảnh
                     </label>
 
                     {{-- Existing attachments (edit mode) --}}
@@ -78,8 +78,8 @@
                     {{-- Drop zone --}}
                     <label class="fn-attachment-dropzone" id="attachmentDropzone" for="attachmentFileInput">
                         <span class="material-symbols-outlined">add_photo_alternate</span>
-                        <span>Click or drag images here</span>
-                        <span class="fn-attachment-hint">JPEG, PNG, GIF, WebP &bull; max 10 MB each</span>
+                        <span>Nhấn hoặc kéo thả ảnh vào đây</span>
+                        <span class="fn-attachment-hint">JPEG, PNG, GIF, WebP &bull; tối đa 10 MB mỗi ảnh</span>
                     </label>
                     <input type="file" id="attachmentFileInput"
                         accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" multiple class="d-none">
@@ -91,17 +91,17 @@
             <div class="fn-modal-footer">
                 <div class="fn-modal-toolbar">
                     <button type="button" class="fn-modal-tool-btn fn-attach-toggle-btn" id="btnToggleAttachment"
-                        title="Attach image" onclick="toggleAttachmentSection()">
+                        title="Đính kèm ảnh" onclick="toggleAttachmentSection()">
                         <span class="material-symbols-outlined">image</span>
                     </button>
-                    <button type="button" class="fn-modal-tool-btn" title="Add list">
+                    <button type="button" class="fn-modal-tool-btn" title="Thêm danh sách">
                         <span class="material-symbols-outlined">list</span>
                     </button>
                 </div>
                 <div class="fn-modal-actions">
                     <button type="button" class="fn-modal-btn-cancel" id="btnCancelNote"
-                        onclick="closeNewNoteModal()">Cancel</button>
-                    <button type="submit" class="fn-modal-btn-save">Save Changes</button>
+                        onclick="closeNewNoteModal()">Hủy</button>
+                    <button type="submit" class="fn-modal-btn-save">Lưu thay đổi</button>
                 </div>
             </div>
         </form>

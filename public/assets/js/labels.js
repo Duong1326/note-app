@@ -43,7 +43,7 @@ async function createLabel() {
         const data = await res.json();
 
         if (!res.ok) {
-            const msg = data.errors?.name?.[0] || data.message || 'An error occurred';
+            const msg = data.errors?.name?.[0] || data.message || 'Có lỗi xảy ra';
             showToast(msg, 'error');
             return;
         }
@@ -54,7 +54,7 @@ async function createLabel() {
         addLabelCheckbox(label);  // sync modal checkboxes
 
     } catch {
-        showToast('Connection error', 'error');
+        showToast('Lỗi kết nối', 'error');
     }
 }
 
@@ -63,7 +63,7 @@ async function createLabel() {
 // ═══════════════════════════════════════════════════
 
 async function deleteLabel(labelId) {
-    if (!confirm('Are you sure you want to delete this label?')) return;
+    if (!confirm('Bạn có chắc chắn muốn xóa nhãn này?')) return;
 
     const row = document.querySelector(`.fn-sidebar-label-item[data-label-id="${labelId}"]`);
 
@@ -106,7 +106,7 @@ async function deleteLabel(labelId) {
 
     } catch (err) {
         if (row) { row.style.opacity = ''; row.style.marginTop = ''; }
-        showToast(err.message || 'An error occurred', 'error');
+        showToast(err.message || 'Có lỗi xảy ra', 'error');
     }
 }
 
@@ -123,7 +123,7 @@ async function saveRenameLabel(labelId) {
         const data = await res.json();
 
         if (!res.ok) {
-            const msg = data.errors?.name?.[0] || data.message || 'An error occurred';
+            const msg = data.errors?.name?.[0] || data.message || 'Có lỗi xảy ra';
             showToast(msg, 'error');
             return;
         }
@@ -142,7 +142,7 @@ async function saveRenameLabel(labelId) {
         });
 
     } catch {
-        showToast('Connection error', 'error');
+        showToast('Lỗi kết nối', 'error');
     }
 }
 
@@ -162,10 +162,10 @@ function appendLabelItem(label) {
                     <span class="fn-sidebar-label-name">${escapeHtml(label.name)}</span>
                 </div>
                 <div class="fn-sidebar-label-actions">
-                    <button onclick="startRenameLabel(${label.id})" title="Rename">
+                    <button onclick="startRenameLabel(${label.id})" title="Đổi tên">
                         <span class="material-symbols-outlined">edit</span>
                     </button>
-                    <button onclick="deleteLabel(${label.id})" title="Delete">
+                    <button onclick="deleteLabel(${label.id})" title="Xóa">
                         <span class="material-symbols-outlined">delete</span>
                     </button>
                 </div>
@@ -270,7 +270,7 @@ async function createLabelFromModal() {
         const data = await res.json();
 
         if (!res.ok) {
-            const msg = data.errors?.name?.[0] || data.message || 'An error occurred';
+            const msg = data.errors?.name?.[0] || data.message || 'Có lỗi xảy ra';
             showToast(msg, 'error');
             return;
         }
@@ -286,6 +286,6 @@ async function createLabelFromModal() {
         toggleModalAddLabelForm(true);
 
     } catch {
-        showToast('Connection error', 'error');
+        showToast('Lỗi kết nối', 'error');
     }
 }

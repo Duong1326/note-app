@@ -157,4 +157,33 @@ class NoteService
 
         return $note;
     }
+
+    // ──────────────────────────────────────────────
+    // Password Lock
+    // ──────────────────────────────────────────────
+
+    public function setPassword(Note $note, string $password): void
+    {
+        $note->update([
+            'password_hash' => \Illuminate\Support\Facades\Hash::make($password),
+            'is_locked'     => true,
+        ]);
+    }
+
+    public function removePassword(Note $note): void
+    {
+        $note->update([
+            'password_hash' => null,
+            'is_locked'     => false,
+        ]);
+    }
+
+    public function verifyPassword(Note $note, string $password): bool
+    {
+        if (!$note->isPasswordProtected()) {
+            return true;
+        }
+
+        return \Illuminate\Support\Facades\Hash::check($password, $note->password_hash);
+    }
 }

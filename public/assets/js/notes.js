@@ -8,10 +8,11 @@
 // 1. API Helpers
 // ═══════════════════════════════════════════════════
 
-async function apiFetch(url, method = 'GET', body = null) {
+async function apiFetch(url, method = 'GET', body = null, extraHeaders = {}) {
     const headers = {
         'X-CSRF-TOKEN': getCsrfToken(),
         'Accept': 'application/json',
+        ...extraHeaders,
     };
     if (body && !(body instanceof FormData)) {
         headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -96,7 +97,7 @@ function patchNoteCard(noteId, note) {
 
     col.querySelector('.fn-note-title').textContent = note.title;
     col.querySelector('.fn-note-excerpt').textContent = (note.content ?? '').replace(/<[^>]*>/g, '').substring(0, 120);
-    col.querySelector('.fn-note-date').textContent = note.updated_at ?? 'Just now';
+    col.querySelector('.fn-note-date').textContent = note.updated_at ?? 'Vừa xong';
 
     updateCardLabels(col, note.labels);
     updateCardThumbnail(col, note.attachments);
@@ -115,9 +116,13 @@ function patchPinCard(col, noteId, isPinned) {
     if (pinLink) {
         const icon = pinLink.querySelector('.material-symbols-outlined');
         icon.style.fontVariationSettings = isPinned ? "'FILL' 1" : '';
-        const textNode = [...pinLink.childNodes].find(n => n.nodeType === Node.TEXT_NODE);
-        if (textNode) textNode.textContent = isPinned ? ' Unpin' : ' Pin';
-        else pinLink.appendChild(document.createTextNode(isPinned ? ' Unpin' : ' Pin'));
+
+        // Xóa tất cả text node cũ (tránh hiện "Bỏ ghim Ghim" đồng thời)
+        [...pinLink.childNodes]
+            .filter(n => n.nodeType === Node.TEXT_NODE)
+            .forEach(n => n.remove());
+        pinLink.appendChild(document.createTextNode(isPinned ? ' Bỏ ghim' : ' Ghim'));
+
         pinLink.setAttribute('onclick', `togglePinAjax(${noteId}, ${isPinned})`);
     }
     const meta = col.querySelector('.fn-note-meta');
@@ -144,14 +149,36 @@ function buildNoteCardHtml(note) {
         ? `<img class="fn-note-thumb" src="${escapeAttr(note.attachments[0].thumbnail_url || note.attachments[0].url)}" alt="Note image">`
         : '';
     const pinFill = note.is_pinned ? ` style="font-variation-settings:'FILL' 1;"` : '';
-    const pinText = note.is_pinned ? 'Unpin' : 'Pin';
+    const pinText = note.is_pinned ? 'Bỏ ghim' : 'Ghim';
     const pinStar = note.is_pinned
         ? `<span class="material-symbols-outlined fn-pin-star" style="font-variation-settings:'FILL' 1;">star</span>`
         : '';
+    const lockBadge = note.is_locked
+        ? `<span class="material-symbols-outlined fn-lock-badge" title="Ghi chú đã khoá">lock</span>`
+        : '';
+    const lockMenuItems = note.is_locked
+        ? `<li class="fn-lock-menu-item">
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                   href="javascript:void(0)" onclick="openChangeLockModal(${note.id})">
+                    <span class="material-symbols-outlined fn-icon-sm">key</span> Đổi mật khẩu khoá
+                </a>
+           </li>
+           <li class="fn-lock-menu-item">
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-warning"
+                   href="javascript:void(0)" onclick="openDisableLockModal(${note.id})">
+                    <span class="material-symbols-outlined fn-icon-sm">no_encryption</span> Gỡ khoá
+                </a>
+           </li>`
+        : `<li class="fn-lock-menu-item">
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                   href="javascript:void(0)" onclick="openEnableLockModal(${note.id})">
+                    <span class="material-symbols-outlined fn-icon-sm">lock_add</span> Khoá bằng mật khẩu
+                </a>
+           </li>`;
     const excerpt = (note.content ?? '').replace(/<[^>]*>/g, '').substring(0, 120);
 
     return `
-        <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-note-adding note-col" data-note-id="${note.id}">
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-note-adding note-col" data-note-id="${note.id}"${note.is_pinned ? ' data-pinned="1"' : ''}${note.is_locked ? ' data-locked="1"' : ''}>
             <div class="fn-note-card">
                 ${thumbHtml}
                 <div class="dropdown fn-note-dropdown">
@@ -168,7 +195,7 @@ function buildNoteCardHtml(note) {
                                data-attachments='${escapeAttr(attachmentsJson)}'
                                onclick="openEditNoteModal(this)">
                                 <span class="material-symbols-outlined fn-icon-sm">edit</span>
-                                Edit
+                                Chỉnh sửa
                             </a>
                         </li>
                         <li>
@@ -185,9 +212,11 @@ function buildNoteCardHtml(note) {
                                href="javascript:void(0)"
                                onclick="deleteNoteAjax(${note.id})">
                                 <span class="material-symbols-outlined fn-icon-sm">delete</span>
-                                Delete
+                                Xóa
                             </a>
                         </li>
+                        <li><hr class="dropdown-divider"></li>
+                        ${lockMenuItems}
                     </ul>
                 </div>
                 <div class="fn-note-card-header">
@@ -196,8 +225,11 @@ function buildNoteCardHtml(note) {
                 ${labelsHtml}
                 <p class="fn-note-excerpt">${escapeHtml(excerpt)}</p>
                 <div class="fn-note-meta">
-                    <span class="fn-note-date">${note.updated_at ?? 'Just now'}</span>
-                    ${pinStar}
+                    <span class="fn-note-date">${note.updated_at ?? 'Vừa xong'}</span>
+                    <div class="d-flex align-items-center gap-1">
+                        ${pinStar}
+                        ${lockBadge}
+                    </div>
                 </div>
             </div>
         </div>`;
@@ -223,69 +255,98 @@ function prependNoteCard(note) {
 // ═══════════════════════════════════════════════════
 
 async function deleteNoteAjax(noteId) {
-    if (!confirm('Are you sure you want to delete this note?')) return;
-    const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
-    try {
-        const res = await apiFetch(`/notes/${noteId}`, 'DELETE');
-        if (!res.ok) throw new Error('Delete failed');
-        if (col) removeNoteCard(col);
-    } catch (err) {
-        if (col) { col.style.opacity = ''; col.style.transform = ''; col.style.pointerEvents = ''; }
-        showToast(err.message || 'An error occurred', 'error');
-    }
+    requireUnlock(noteId, async () => {
+        if (!confirm('Bạn có chắc chắn muốn xóa ghi chú này?')) return;
+        const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
+        try {
+            const token   = getLockToken(noteId);
+            const headers = token ? { 'X-Note-Token': token } : {};
+            const res = await apiFetch(`/notes/${noteId}`, 'DELETE', null, headers);
+            if (!res.ok) throw new Error('Delete failed');
+            clearLockToken(noteId); // one-time: action done
+            if (col) removeNoteCard(col);
+        } catch (err) {
+            if (col) { col.style.opacity = ''; col.style.transform = ''; col.style.pointerEvents = ''; }
+            showToast(err.message || 'Có lỗi xảy ra', 'error');
+        }
+    });
 }
 
 async function togglePinAjax(noteId, currentlyPinned) {
-    const url = currentlyPinned ? `/notes/${noteId}/unpin` : `/notes/${noteId}/pin`;
-    try {
-        const res = await apiFetch(url, 'POST');
-        if (!res.ok) throw new Error('Failed to toggle pin state');
-        const { is_pinned: isPinned } = await res.json();
-        const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
-        if (col) {
-            patchPinCard(col, noteId, isPinned);
-            moveCardAfterPin(col, isPinned);
+    requireUnlock(noteId, async () => {
+        const url = currentlyPinned ? `/notes/${noteId}/unpin` : `/notes/${noteId}/pin`;
+        try {
+            const token   = getLockToken(noteId);
+            const headers = token ? { 'X-Note-Token': token } : {};
+            const res = await apiFetch(url, 'POST', null, headers);
+            if (!res.ok) throw new Error('Failed to toggle pin state');
+            const { is_pinned: isPinned } = await res.json();
+            clearLockToken(noteId); // one-time: action done
+            const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
+            if (col) {
+                patchPinCard(col, noteId, isPinned);
+                moveCardAfterPin(col, isPinned);
+            }
+        } catch (err) {
+            showToast(err.message || 'Có lỗi xảy ra', 'error');
         }
-    } catch (err) {
-        showToast(err.message || 'An error occurred', 'error');
-    }
+    });
 }
 
 /**
- * Smoothly reposition a card after pin/unpin.
- * Pinned cards go to the top; unpinned cards go after the last pinned card.
+ * Shared fade-out → reposition → fade-in animation for card movement.
+ * @param {Element} col - The note-col element to animate.
+ * @param {function} repositionFn - Called while col is hidden to reposition it.
  */
-function moveCardAfterPin(col, isPinned) {
-    const container = document.getElementById('notesContainer');
-    if (!container) return;
-
-    // Fade out
+function _animateCardMove(col, repositionFn) {
     col.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
     col.style.opacity = '0';
     col.style.transform = 'scale(0.95)';
-
     setTimeout(() => {
-        if (isPinned) {
-            // Move to the very top
-            container.prepend(col);
-        } else {
-            // Move after the last pinned card
-            const pinnedCards = container.querySelectorAll('.note-col .fn-pin-star');
-            if (pinnedCards.length > 0) {
-                const lastPinnedCol = pinnedCards[pinnedCards.length - 1].closest('.note-col');
-                lastPinnedCol.insertAdjacentElement('afterend', col);
-            } else {
-                // No pinned cards left, put at the top
-                container.prepend(col);
-            }
-        }
-
-        // Fade back in
+        repositionFn();
         requestAnimationFrame(() => {
             col.style.opacity = '1';
             col.style.transform = 'scale(1)';
         });
     }, 260);
+}
+
+function moveCardAfterPin(col, isPinned) {
+    const container = document.getElementById('notesContainer');
+    if (!container) return;
+
+    // Update data attribute FIRST so pinned sibling queries are accurate
+    if (isPinned) col.dataset.pinned = '1';
+    else delete col.dataset.pinned;
+
+    _animateCardMove(col, () => {
+        if (isPinned) {
+            container.prepend(col);
+        } else {
+            const pinnedCols = [...container.querySelectorAll('.note-col[data-pinned="1"]')]
+                .filter(c => c !== col);
+            if (pinnedCols.length > 0) {
+                pinnedCols[pinnedCols.length - 1].insertAdjacentElement('afterend', col);
+            } else {
+                container.prepend(col);
+            }
+        }
+    });
+}
+
+function moveCardToTopOfUnpinned(col) {
+    const container = document.getElementById('notesContainer');
+    if (!container || !col || col.dataset.pinned === '1') return;
+
+    _animateCardMove(col, () => {
+        const pinnedCols = [...container.querySelectorAll('.note-col[data-pinned="1"]')]
+            .filter(c => c !== col);
+        if (pinnedCols.length > 0) {
+            pinnedCols[pinnedCols.length - 1].insertAdjacentElement('afterend', col);
+        } else {
+            container.prepend(col);
+        }
+    });
 }
 
 // ═══════════════════════════════════════════════════
@@ -398,7 +459,7 @@ async function removeExistingAttachment(noteId, attachmentId, btn) {
         }
     } catch (err) {
         thumb.classList.remove('uploading');
-        showToast(err.message || 'Could not delete image', 'error');
+        showToast(err.message || 'Không thể xóa ảnh', 'error');
     }
 }
 
@@ -424,11 +485,11 @@ async function uploadPendingFiles(noteId) {
                 results.push(data.attachment);
                 if (thumb) thumb.remove();
             } else {
-                showToast(data.message || 'Image upload failed', 'error');
+                showToast(data.message || 'Tải ảnh thất bại', 'error');
                 if (thumb) thumb.classList.remove('uploading');
             }
         } catch {
-            showToast('Connection error during upload', 'error');
+            showToast('Lỗi kết nối khi tải ảnh', 'error');
             if (thumb) thumb.classList.remove('uploading');
         }
     }
@@ -442,12 +503,18 @@ async function uploadPendingFiles(noteId) {
 
 let _editingNoteId = null;
 
+/**
+ * Snapshot of the note state when the edit modal was opened.
+ * Used to detect if the user actually made any changes before saving.
+ */
+let _originalSnapshot = null;
+
 function openNewNoteModal() {
     _editingNoteId = null;
     _pendingFiles = [];
     _existingAttachments = [];
 
-    document.querySelector('.fn-modal-title').innerText = 'New Note';
+    document.querySelector('.fn-modal-title').innerText = 'Ghi chú mới';
     document.getElementById('createNoteForm').reset();
     document.getElementById('existingAttachments').innerHTML = '';
     document.getElementById('pendingPreviews').innerHTML = '';
@@ -475,6 +542,13 @@ function openEditNoteModal(btn) {
         cb.checked = labels.includes(parseInt(cb.value));
     });
 
+    // Snapshot để phát hiện thay đổi khi submit
+    _originalSnapshot = {
+        title:    btn.dataset.title,
+        content:  btn.dataset.content ?? '',
+        labelIds: labels.map(String).sort().join(','),
+    };
+
     renderExistingAttachments();
     document.getElementById('pendingPreviews').innerHTML = '';
 
@@ -490,7 +564,7 @@ function openEditNoteModal(btn) {
         document.getElementById('btnToggleAttachment').classList.remove('active');
     }
 
-    document.querySelector('.fn-modal-title').innerText = 'Edit Note';
+    document.querySelector('.fn-modal-title').innerText = 'Chỉnh sửa ghi chú';
     _showModal();
 }
 
@@ -498,9 +572,14 @@ function closeNewNoteModal() {
     document.getElementById('newNoteModal').classList.remove('show');
     document.body.style.overflow = '';
     document.getElementById('createNoteForm').reset();
+
+    // One-time unlock: clear token so next access requires re-authentication
+    if (_editingNoteId) clearLockToken(_editingNoteId);
+
     _editingNoteId = null;
     _pendingFiles = [];
     _existingAttachments = [];
+    _originalSnapshot = null;
 }
 
 function _showModal() {
@@ -513,13 +592,29 @@ async function submitNoteForm() {
     const content = document.getElementById('modalNoteContent').value;
 
     if (!title) {
-        showToast('Please enter a note title', 'error');
+        showToast('Vui lòng nhập tiêu đề ghi chú', 'error');
         document.getElementById('modalNoteTitle').focus();
         return;
     }
 
     const labelIds = [...document.querySelectorAll('input[name="label_ids[]"]:checked')].map(cb => cb.value);
     const isEditing = _editingNoteId !== null;
+
+    // ── Kiểm tra thay đổi (chỉ áp dụng khi đang edit) ──
+    if (isEditing && _originalSnapshot) {
+        const currentLabelIds = labelIds.map(String).sort().join(',');
+        const hasChanges =
+            title          !== _originalSnapshot.title      ||
+            content        !== _originalSnapshot.content    ||
+            currentLabelIds !== _originalSnapshot.labelIds  ||
+            _pendingFiles.length > 0;                        // có ảnh mới
+
+        if (!hasChanges) {
+            // Không có gì thay đổi → đóng modal, không gọi API
+            closeNewNoteModal();
+            return;
+        }
+    }
     const url = isEditing ? `/notes/${_editingNoteId}` : window.FN_STORE_URL;
     const method = isEditing ? 'PUT' : 'POST';
 
@@ -527,13 +622,15 @@ async function submitNoteForm() {
     labelIds.forEach(id => body.append('label_ids[]', id));
 
     try {
-        const res = await apiFetch(url, method, body);
+        const token   = isEditing ? getLockToken(_editingNoteId) : null;
+        const headers = token ? { 'X-Note-Token': token } : {};
+        const res  = await apiFetch(url, method, body, headers);
         const data = await res.json();
 
         if (!res.ok) {
             const firstError = data.errors
                 ? Object.values(data.errors).flat()[0]
-                : (data.message || 'An error occurred');
+                : (data.message || 'Có lỗi xảy ra');
             showToast(firstError, 'error');
             return;
         }
@@ -551,13 +648,17 @@ async function submitNoteForm() {
             // Merge remaining existing attachments with newly uploaded ones
             data.note.attachments = [..._existingAttachments, ...uploadedImages];
             patchNoteCard(_editingNoteId, data.note);
+
+            // Re-sort: move the updated card to the top of unpinned notes
+            const col = document.querySelector(`.note-col[data-note-id="${_editingNoteId}"]`);
+            moveCardToTopOfUnpinned(col);
         } else {
             prependNoteCard(data.note);
         }
 
         closeNewNoteModal();
     } catch {
-        showToast('Connection error, please try again', 'error');
+        showToast('Lỗi kết nối, vui lòng thử lại', 'error');
     }
 }
 
@@ -599,9 +700,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // File input change — validate size and queue for upload
     const fileInput = document.getElementById('attachmentFileInput');
     fileInput?.addEventListener('change', () => {
-        const files = [...fileInput.files].filter(f => f.size <= 5 * 1024 * 1024);
+        const files = [...fileInput.files].filter(f => f.size <= 10 * 1024 * 1024);
         if (files.length < fileInput.files.length) {
-            showToast('Some images exceeded 5 MB and were skipped', 'error');
+            showToast('Một số ảnh vượt quá 10 MB và đã bị bỏ qua', 'error');
         }
         _pendingFiles = [..._pendingFiles, ...files];
         renderPendingPreviews();
@@ -630,7 +731,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ignore clicks on interactive elements inside the card
         if (e.target.closest('.dropdown') || e.target.closest('button') || e.target.closest('a')) return;
 
+        const col    = card.closest('.note-col');
+        const noteId = col?.dataset.noteId;
         const editBtn = card.querySelector('.dropdown-item[onclick*="openEditNoteModal"]');
-        if (editBtn) openEditNoteModal(editBtn);
+        if (!editBtn || !noteId) return;
+
+        requireUnlock(noteId, () => openEditNoteModal(editBtn));
     });
 });
