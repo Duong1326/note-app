@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Note extends Model
 {
@@ -56,6 +57,18 @@ class Note extends Model
         return $this->hasMany(Attachment::class, 'note_id');
     }
 
+    /** Share records for this note */
+    public function shares(): HasMany
+    {
+        return $this->hasMany(NoteShare::class, 'note_id');
+    }
+
+    /** Get the share record for a specific user */
+    public function shareFor(int $userId): ?NoteShare
+    {
+        return $this->shares()->where('shared_with_user_id', $userId)->first();
+    }
+
     // ──────────────────────────────────────────────
     // Query Scopes
     // ──────────────────────────────────────────────
@@ -64,6 +77,14 @@ class Note extends Model
     public function scopeOwnedBy(Builder $query, int $userId): Builder
     {
         return $query->where('user_id', $userId);
+    }
+
+    /** Notes shared with $userId (via note_shares) */
+    public function scopeSharedWith(Builder $query, int $userId): Builder
+    {
+        return $query->whereHas('shares', function (Builder $q) use ($userId) {
+            $q->where('shared_with_user_id', $userId);
+        });
     }
 
     /**

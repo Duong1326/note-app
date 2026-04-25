@@ -23,10 +23,11 @@ class DashboardController extends Controller
         $isSearch = $request->filled('q');
 
         return view('dashboard', [
-            'recentNotes' => $notesQuery->clone()->with('labels')->defaultOrder()->take($isSearch ? 50 : 6)->get(),
+            'recentNotes' => $notesQuery->clone()->with(['labels', 'attachments', 'shares'])->defaultOrder()->take($isSearch ? 50 : 6)->get(),
             'pinnedNotes' => $notesQuery->clone()->where('is_pinned', true)->defaultOrder()->get(),
             'totalNotes'  => $notesQuery->clone()->count(),
             'weeklyNotes' => $notesQuery->clone()->where('created_at', '>=', now()->subWeek())->count(),
+            'sharedNotes' => $user->sharedNotes()->with(['note.labels', 'note.attachments', 'note.user:id,name,avatar_url'])->latest()->get(),
             'labels'      => $user->labels()->orderBy('name')->get(),
             'searchQuery' => $request->q,
         ]);

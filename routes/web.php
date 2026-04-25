@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\NoteLockController;
 use App\Http\Controllers\NoteControler;
+use App\Http\Controllers\NoteShareController;
 use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
@@ -76,4 +77,11 @@ Route::middleware(['auth', \App\Http\Middleware\PreventBackHistory::class])->gro
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+
+    // Note Sharing
+    Route::get('/shared-notes', [NoteShareController::class, 'sharedWithMe'])->name('notes.shared');
+    Route::get('/notes/{note}/shares', [NoteShareController::class, 'index'])->name('notes.shares.index');
+    Route::post('/notes/{note}/shares', [NoteShareController::class, 'store'])->name('notes.shares.store');
+    Route::put('/notes/{note}/shares/{share}', [NoteShareController::class, 'update'])->name('notes.shares.update');
+    Route::delete('/notes/{note}/shares/{share}', [NoteShareController::class, 'destroy'])->name('notes.shares.destroy');
 });

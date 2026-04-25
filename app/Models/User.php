@@ -52,10 +52,10 @@ class User extends Authenticatable
         return $this->hasMany(Label::class, 'user_id');
     }
 
-    /** Notes shared WITH this user (as a recipient) */
+    /** Notes shared WITH this user (as a recipient) — returns NoteShare records */
     public function sharedNotes(): HasMany
     {
-        return $this->hasMany(Share::class, 'shared_with_user_id');
+        return $this->hasMany(NoteShare::class, 'shared_with_user_id');
     }
 
     /** User preferences (theme, font_size, note_color) */

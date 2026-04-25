@@ -133,6 +133,16 @@
                                                     </a>
                                                 </li>
                                             @endif
+                                            <li><hr class="dropdown-divider"></li>
+                                            {{-- Share --}}
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                                                    href="javascript:void(0)"
+                                                    onclick="openShareModal({{ $note->id }})">
+                                                    <span class="material-symbols-outlined fn-icon-sm" style="color:#0f9b58">share</span>
+                                                    Chia sẻ
+                                                </a>
+                                            </li>
                                         </ul>
                                     </div>
 
@@ -166,6 +176,10 @@
                                                 <span class="material-symbols-outlined fn-lock-badge"
                                                     title="Ghi chú đã khoá">lock</span>
                                             @endif
+                                            @if($note->shares->count() > 0)
+                                                <span class="material-symbols-outlined fn-share-badge"
+                                                    title="Đang chia sẻ">group</span>
+                                            @endif
                                         </div>
                                     </div>
 
@@ -190,13 +204,81 @@
 
     </div>
 
+    {{-- ═══════════════════════════════════════════
+         SHARED WITH ME SECTION
+    ═══════════════════════════════════════════ --}}
+    @if($sharedNotes->count() > 0)
+        <div class="fn-shared-section fn-animate-in">
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <h3 class="fn-section-title">Được chia sẻ với tôi</h3>
+                <span class="fn-shared-badge">{{ $sharedNotes->count() }}</span>
+            </div>
+
+            <div class="row g-3" id="sharedNotesContainer">
+                @foreach($sharedNotes as $share)
+                    @php $note = $share->note; @endphp
+                    <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-animate-in">
+                        <div class="fn-note-card fn-shared-card">
+
+                            {{-- Thumbnail --}}
+                            @if($note->attachments->count() > 0)
+                                <img class="fn-note-thumb"
+                                    src="{{ $note->attachments->first()->thumbnailUrl(400) }}"
+                                    alt="Note image">
+                            @endif
+
+                            {{-- Owner attribution --}}
+                            <div class="fn-shared-owner">
+                                <div class="fn-shared-owner-avatar">
+                                    @if($note->user->avatarUrl())
+                                        <img src="{{ $note->user->avatarUrl() }}" alt="{{ $note->user->name }}">
+                                    @else
+                                        {{ strtoupper(substr($note->user->name, 0, 2)) }}
+                                    @endif
+                                </div>
+                                <span class="fn-shared-owner-name">{{ $note->user->name }}</span>
+                                <span class="fn-perm-badge {{ $share->permission }}">{{ $share->permission === 'edit' ? 'Chỉnh sửa' : 'Chỉ đọc' }}</span>
+                            </div>
+
+                            {{-- Title --}}
+                            <div class="fn-note-card-header">
+                                <h4 class="fn-note-title">{{ $note->title }}</h4>
+                            </div>
+
+                            {{-- Labels --}}
+                            @if($note->labels->count() > 0)
+                                <div class="fn-note-labels">
+                                    @foreach($note->labels->take(3) as $label)
+                                        <span class="badge rounded-pill fn-label-badge">{{ $label->name }}</span>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            {{-- Excerpt --}}
+                            <p class="fn-note-excerpt">{{ Str::limit(strip_tags($note->content), 120) }}</p>
+
+                            {{-- Meta --}}
+                            <div class="fn-note-meta">
+                                <span class="fn-note-date">{{ $note->updated_at->diffForHumans() }}</span>
+                                <span class="material-symbols-outlined fn-share-badge" title="Ghi chú được chia sẻ">group</span>
+                            </div>
+
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     @include('components::note-modal')
     @include('components::note-lock-modals')
+    @include('components::note-share-modal')
 @endsection
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/note-lock.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/note-share.css') }}">
 @endpush
 
 @push('scripts')
@@ -207,4 +289,5 @@
     <script src="{{ asset('assets/js/note-lock.js') }}"></script>
     <script src="{{ asset('assets/js/notes.js') }}"></script>
     <script src="{{ asset('assets/js/labels.js') }}"></script>
+    <script src="{{ asset('assets/js/note-share.js') }}"></script>
 @endpush
