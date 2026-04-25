@@ -76,7 +76,7 @@
 
                         <div class="otp-inputs" id="otp-inputs">
                             <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]"
-                                autocomplete="one-time-code" data-index="0" autofocus>
+                                autocomplete="off" data-index="0" autofocus>
                             <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]"
                                 data-index="1">
                             <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]"
@@ -140,7 +140,6 @@
                     updateHiddenInput();
                     if (hiddenInput.value.length === 6) {
                         submitBtn.disabled = false;
-                        form.submit();
                     }
                 });
 
@@ -163,7 +162,7 @@
                         const nextIndex = Math.min(pastedData.length, inputs.length - 1);
                         inputs[nextIndex].focus();
                         updateHiddenInput();
-                        if (pastedData.length === 6) form.submit();
+                        if (pastedData.length === 6) submitBtn.disabled = false;
                     }
                 });
 
