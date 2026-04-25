@@ -37,8 +37,8 @@ COPY . .
 RUN composer install --prefer-dist --optimize-autoloader --no-interaction --no-dev
 
 # Cấp quyền cho thư mục storage & cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 10000
 
