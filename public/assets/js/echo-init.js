@@ -1,18 +1,3 @@
-/**
- * ─────────────────────────────────────────────────────────
- * Echo Initialization & Real-time Event Listeners
- * ─────────────────────────────────────────────────────────
- *
- * Initializes Laravel Echo with Pusher and sets up listeners
- * for real-time notifications (note sharing, updates, etc.)
- *
- * Dependencies:
- *   - Pusher JS SDK (loaded via CDN in layout)
- *   - Laravel Echo (loaded via CDN in layout)
- *   - CSRF meta tag in <head>
- *   - window.__userId set in layout (authenticated user ID)
- */
-
 /* ── State ─────────────────────────────────────────── */
 let _notifications = [];
 let _notificationDropdownOpen = false;
@@ -66,12 +51,56 @@ function _subscribeToUserChannel() {
         })
         .listen('.share.revoked', (data) => {
             _handleShareRevoked(data);
+        })
+        .listen('.note.deleted', (data) => {
+            _handleNoteDeleted(data);
         });
 
     console.log(`[Echo] Subscribed to private channel: user.${userId}`);
 }
 
 /* ── Event Handlers ────────────────────────────────── */
+function _handleNoteDeleted(data) {
+    // Show toast notification
+    const notification = {
+        id: Date.now(),
+        type: 'revoke',
+        icon: 'delete',
+        title: 'Ghi chú đã bị xóa',
+        message: `<strong>${data.deleted_by.name}</strong> đã xóa "${_truncate(data.note_title, 30)}"`,
+        noteId: data.note_id,
+        time: new Date(),
+        unread: true,
+    };
+    _addNotification(notification);
+    _showRealtimeToast(notification);
+
+    // Remove from shared notes container with fade-out animation
+    const sharedCol = document.querySelector(
+        `#sharedNotesContainer .fn-shared-note-col[data-note-id="${data.note_id}"]`
+    );
+    if (sharedCol) {
+        sharedCol.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+        sharedCol.style.opacity = '0';
+        sharedCol.style.transform = 'scale(0.85)';
+        setTimeout(() => {
+            sharedCol.remove();
+            // Hide section header if no shared notes remain
+            const container = document.getElementById('sharedNotesContainer');
+            const section   = document.getElementById('sharedSection');
+            if (section && container && container.children.length === 0) {
+                section.style.display = 'none';
+            }
+        }, 380);
+    }
+
+    // Close shared modal if it's open for this note
+    const sharedModal = document.getElementById('sharedNoteModal');
+    if (sharedModal && sharedModal.classList.contains('show') &&
+        String(sharedModal.dataset.noteId) === String(data.note_id)) {
+        if (typeof closeSharedNoteModal === 'function') closeSharedNoteModal();
+    }
+}
 
 function _handleNoteShared(data) {
     const notification = {
@@ -114,9 +143,9 @@ function _handleNoteUpdated(data) {
     _addNotification(notification);
     _showRealtimeToast(notification);
 
-    const excerpt      = data.note_excerpt || '';
-    const attachments  = data.attachments  || [];
-    const thumbUrl     = attachments.length > 0
+    const excerpt = data.note_excerpt || '';
+    const attachments = data.attachments || [];
+    const thumbUrl = attachments.length > 0
         ? (attachments[0].thumbnail_url || attachments[0].url)
         : null;
 
@@ -150,10 +179,10 @@ function _handleNoteUpdated(data) {
         String(sharedModal.dataset.noteId) === String(data.note_id)) {
 
         if (data.updated_by.id !== window.__userId) {
-            const titleInput   = sharedModal.querySelector('.sn-title');
+            const titleInput = sharedModal.querySelector('.sn-title');
             const contentInput = sharedModal.querySelector('.sn-content');
-            if (titleInput   && !titleInput.matches(':focus'))   titleInput.value   = data.note_title;
-            if (contentInput && !contentInput.matches(':focus'))  contentInput.value = data.note_content || '';
+            if (titleInput && !titleInput.matches(':focus')) titleInput.value = data.note_title;
+            if (contentInput && !contentInput.matches(':focus')) contentInput.value = data.note_content || '';
         }
     }
 }
@@ -173,8 +202,8 @@ function _updateCardThumbnail(col, url) {
         } else {
             const img = document.createElement('img');
             img.className = 'fn-note-thumb';
-            img.src       = url;
-            img.alt       = 'Note image';
+            img.src = url;
+            img.alt = 'Note image';
             card.insertAdjacentElement('afterbegin', img);
         }
     } else if (thumb) {
@@ -433,8 +462,8 @@ function _timeAgo(date) {
     const now = new Date();
     const diff = Math.floor((now - new Date(date)) / 1000);
 
-    if (diff < 10)   return 'Vừa xong';
-    if (diff < 60)   return `${diff} giây trước`;
+    if (diff < 10) return 'Vừa xong';
+    if (diff < 60) return `${diff} giây trước`;
     if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
     if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
     return `${Math.floor(diff / 86400)} ngày trước`;

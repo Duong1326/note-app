@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Note\StoreNoteRequest;
 use App\Http\Requests\Note\UpdateNoteRequest;
 use App\Events\NoteUpdated;
+use App\Events\NoteDeleted;
 use App\Models\Note;
 use App\Services\LabelService;
 use App\Services\NoteService;
@@ -105,7 +106,18 @@ class NoteControler extends Controller
 
     public function destroy(Note $note): JsonResponse|RedirectResponse
     {
+        // Capture data before deletion (model will be gone after)
+        $noteId        = $note->id;
+        $noteTitle     = $note->title ?: 'Ghi chú không có tiêu đề';
+        $sharedUserIds = $note->shares()->pluck('shared_with_user_id')->toArray();
+        $deletedBy     = request()->user();
+
         $this->noteService->delete($note);
+
+        // Notify shared users in real-time so they remove the card
+        if (!empty($sharedUserIds)) {
+            NoteDeleted::dispatch($noteId, $noteTitle, $deletedBy, $sharedUserIds);
+        }
 
         if (request()->expectsJson()) {
             return response()->json(['success' => true]);
