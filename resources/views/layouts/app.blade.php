@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/app-base.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/sidebar.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/header.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/notifications.css') }}">
 
     @stack('styles')
 </head>
@@ -129,10 +130,25 @@
                 <button class="fn-icon-btn" title="Chế độ tối">
                     <span class="material-symbols-outlined">dark_mode</span>
                 </button>
-                <button class="fn-icon-btn" title="Thông báo">
-                    <span class="material-symbols-outlined">notifications</span>
-                    <span class="fn-notification-dot"></span>
-                </button>
+                <div class="fn-notification-wrapper" id="notificationWrapper">
+                    <button class="fn-icon-btn" title="Thông báo" onclick="toggleNotificationDropdown()">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span class="fn-notification-dot" id="notificationDot"></span>
+                    </button>
+                    {{-- Notification Dropdown Panel --}}
+                    <div class="fn-notification-dropdown" id="notificationDropdown">
+                        <div class="fn-notification-header">
+                            <h3>Thông báo <span class="fn-badge" id="notificationBadge" style="display:none;">0</span></h3>
+                            <button class="fn-notification-clear-btn" onclick="markAllAsRead()">Đánh dấu đã đọc</button>
+                        </div>
+                        <div class="fn-notification-list" id="notificationList">
+                            <div class="fn-notification-empty">
+                                <span class="material-symbols-outlined">notifications_off</span>
+                                <p>Không có thông báo nào</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="fn-header-divider"></div>
                 <button class="fn-user-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     @if(Auth::user()->avatarUrl())
@@ -189,6 +205,23 @@
 
     {{-- Toast Container --}}
     <div class="fn-toast-container" id="toastContainer"></div>
+
+    @auth
+    {{-- Pusher & Laravel Echo (CDN) --}}
+    <script src="https://js.pusher.com/8.4/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.19.0/dist/echo.iife.js"></script>
+
+    {{-- Pass config to JS --}}
+    <script>
+        window.__userId = {{ Auth::id() }};
+        window.__pusherKey = '{{ config("broadcasting.connections.pusher.key") }}';
+        window.__pusherCluster = '{{ config("broadcasting.connections.pusher.options.cluster") }}';
+        window.__appDebug = {{ config('app.debug') ? 'true' : 'false' }};
+    </script>
+
+    {{-- Echo initialization & notification listeners --}}
+    <script src="{{ asset('assets/js/echo-init.js') }}"></script>
+    @endauth
 
     @stack('scripts')
 </body>

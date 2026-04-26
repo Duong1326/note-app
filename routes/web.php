@@ -80,7 +80,9 @@ Route::middleware(['auth', \App\Http\Middleware\PreventBackHistory::class])->gro
 
     // Note Sharing
     Route::get('/shared-notes', [NoteShareController::class, 'sharedWithMe'])->name('notes.shared');
+    Route::get('/shared-notes/cards', [NoteShareController::class, 'sharedWithMeCards'])->name('notes.shared.cards');
     Route::get('/notes/{note}/shares', [NoteShareController::class, 'index'])->name('notes.shares.index');
+    Route::get('/notes/{note}/shared-view', [NoteShareController::class, 'sharedView'])->name('notes.shared.view');
     Route::post('/notes/{note}/shares', [NoteShareController::class, 'store'])->name('notes.shares.store');
     Route::put('/notes/{note}/shares/{share}', [NoteShareController::class, 'update'])->name('notes.shares.update');
     Route::delete('/notes/{note}/shares/{share}', [NoteShareController::class, 'destroy'])->name('notes.shares.destroy');

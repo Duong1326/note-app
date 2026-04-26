@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Note\StoreNoteRequest;
 use App\Http\Requests\Note\UpdateNoteRequest;
+use App\Events\NoteUpdated;
 use App\Models\Note;
 use App\Services\LabelService;
 use App\Services\NoteService;
@@ -64,7 +65,21 @@ class NoteControler extends Controller
 
     public function update(UpdateNoteRequest $request, Note $note): JsonResponse|RedirectResponse
     {
-        $updated = $this->noteService->update($note, $request->validated(), $request->user()->id);
+        try {
+            $updated = $this->noteService->update($note, $request->validated(), $request->user()->id);
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 403);
+            }
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+
+        // Broadcast real-time update to owner + all share recipients
+        $updated->loadMissing('shares');
+        NoteUpdated::dispatch($updated, $request->user());
 
         if ($request->expectsJson()) {
             return response()->json([

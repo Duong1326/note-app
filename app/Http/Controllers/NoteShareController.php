@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NoteShared;
+use App\Events\SharePermissionChanged;
+use App\Events\ShareRevoked;
 use App\Http\Requests\Note\ShareNoteRequest;
 use App\Http\Requests\Note\UpdateShareRequest;
 use App\Models\Note;
@@ -83,6 +86,9 @@ class NoteShareController extends Controller
                 'avatar_url' => $recipient->avatarUrl(),
                 'permission' => $share->permission,
             ];
+
+            // Broadcast real-time notification to the recipient
+            broadcast(new NoteShared($share, $note, $request->user()))->toOthers();
         }
 
         return response()->json([
@@ -108,7 +114,11 @@ class NoteShareController extends Controller
         $this->authorizeOwner($request, $note);
         abort_if($share->note_id !== $note->id, 404);
 
+        $oldPermission = $share->permission;
         $share->update(['permission' => $request->validated('permission')]);
+
+        // Broadcast permission change to the affected user
+        broadcast(new SharePermissionChanged($share, $request->user(), $oldPermission))->toOthers();
 
         return response()->json([
             'success'    => true,
@@ -130,12 +140,102 @@ class NoteShareController extends Controller
         $this->authorizeOwner($request, $note);
         abort_if($share->note_id !== $note->id, 404);
 
+        $sharedWithUserId = $share->shared_with_user_id;
+        $noteTitle = $note->title;
         $share->delete();
+
+        // Broadcast revocation to the affected user
+        broadcast(new ShareRevoked($sharedWithUserId, $note->id, $noteTitle, $request->user()))->toOthers();
 
         return response()->json([
             'success' => true,
             'message' => 'Đã thu hồi quyền truy cập.',
         ]);
+    }
+
+    // ──────────────────────────────────────────────
+    // Fetch note data for shared view/edit modal
+    // ──────────────────────────────────────────────
+
+    /**
+     * GET /notes/{note}/shared-view
+     * Returns note content for a shared user to display in view/edit modal.
+     */
+    public function sharedView(Request $request, Note $note): JsonResponse
+    {
+        $user = $request->user();
+
+        // Owner or shared user can access
+        $share = null;
+        if ($note->user_id !== $user->id) {
+            $share = $note->shareFor($user->id);
+            abort_if(!$share, 403, 'Bạn không có quyền truy cập ghi chú này.');
+        }
+
+        return response()->json([
+            'success'    => true,
+            'permission' => $share?->permission ?? 'edit', // owner always has edit
+            'note' => [
+                'id'          => $note->id,
+                'title'       => $note->title,
+                'content'     => $note->content,
+                'is_pinned'   => $note->is_pinned,
+                'updated_at'  => $note->updated_at?->diffForHumans(),
+                'labels'      => $note->labels->map(fn($l) => ['id' => $l->id, 'name' => $l->name]),
+                'attachments' => $note->load('attachments')->attachments->map(fn($a) => [
+                    'id'            => $a->id,
+                    'url'           => $a->secure_url,
+                    'thumbnail_url' => $a->thumbnailUrl(400),
+                ]),
+                'owner'       => [
+                    'name'       => $note->user->name ?? '',
+                    'avatar_url' => $note->user?->avatarUrl(),
+                ],
+            ],
+        ]);
+    }
+
+    // ──────────────────────────────────────────────
+    // Shared notes as card data (for real-time insert)
+    // ──────────────────────────────────────────────
+
+    /**
+     * GET /shared-notes/cards
+     * Returns all shared notes formatted for DOM card rendering.
+     * Used by Echo to refresh the shared section after receiving NoteShared event.
+     */
+    public function sharedWithMeCards(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $shares = NoteShare::where('shared_with_user_id', $user->id)
+            ->with([
+                'note' => fn($q) => $q->with(['attachments', 'labels', 'user:id,name,avatar_url']),
+            ])
+            ->latest()
+            ->get()
+            ->map(fn(NoteShare $s) => [
+                'share_id'   => $s->id,
+                'permission' => $s->permission,
+                'note'       => [
+                    'id'          => $s->note->id,
+                    'title'       => $s->note->title,
+                    'content'     => $s->note->content,
+                    'updated_at'  => $s->note->updated_at?->diffForHumans(),
+                    'labels'      => $s->note->labels->map(fn($l) => ['id' => $l->id, 'name' => $l->name]),
+                    'attachments' => $s->note->attachments->map(fn($a) => [
+                        'id'            => $a->id,
+                        'url'           => $a->secure_url,
+                        'thumbnail_url' => $a->thumbnailUrl(400),
+                    ]),
+                    'owner'       => [
+                        'name'       => $s->note->user->name ?? '',
+                        'avatar_url' => $s->note->user?->avatarUrl(),
+                    ],
+                ],
+            ]);
+
+        return response()->json(['success' => true, 'shared_notes' => $shares]);
     }
 
     // ──────────────────────────────────────────────

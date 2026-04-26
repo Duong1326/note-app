@@ -105,8 +105,14 @@ class NoteService
         int $updatedByUserId
     ): Note {
         try {
-            // Kiểm tra quyền: chỉ chủ sở hữu mới được cập nhật
-            if ($note->user_id !== $updatedByUserId) {
+            // Kiểm tra quyền: chủ sở hữu HOẶC người được share với quyền 'edit'
+            $isOwner = $note->user_id === $updatedByUserId;
+            $hasEditPermission = !$isOwner && $note->shares()
+                ->where('shared_with_user_id', $updatedByUserId)
+                ->where('permission', 'edit')
+                ->exists();
+
+            if (!$isOwner && !$hasEditPermission) {
                 throw new Exception('Bạn không có quyền chỉnh sửa ghi chú này.');
             }
 
@@ -133,6 +139,10 @@ class NoteService
             return $updated->load(['labels', 'attachments']);
 
         } catch (Exception $e) {
+            // Re-throw permission/authorization errors with original message
+            if (str_contains($e->getMessage(), 'quyền') || str_contains($e->getMessage(), 'permission')) {
+                throw $e;
+            }
             Log::error('Lỗi khi cập nhật Ghi chú: ' . $e->getMessage());
             throw new Exception('Không thể cập nhật ghi chú lúc này. Vui lòng thử lại sau.');
         }
