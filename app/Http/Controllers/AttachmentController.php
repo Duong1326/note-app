@@ -6,6 +6,7 @@ use App\Http\Requests\Attachment\StoreAttachmentRequest;
 use App\Models\Attachment;
 use App\Models\Note;
 use App\Services\CloudinaryService;
+use App\Events\NoteUpdated;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -38,12 +39,18 @@ class AttachmentController extends Controller
                 'size' => $result['bytes'],
             ]);
 
+            $thumbnailUrl = $this->cloudinary->thumbnailUrl($attachment->secure_url, 400);
+
+            // Broadcast real-time update so shared users see the new image
+            $note->loadMissing('shares');
+            NoteUpdated::dispatch($note->fresh(['attachments', 'shares']), $request->user());
+
             return response()->json([
-                'success' => true,
+                'success'    => true,
                 'attachment' => [
-                    'id' => $attachment->id,
-                    'url' => $attachment->secure_url,
-                    'thumbnail_url' => $this->cloudinary->thumbnailUrl($attachment->secure_url, 400),
+                    'id'            => $attachment->id,
+                    'url'           => $attachment->secure_url,
+                    'thumbnail_url' => $thumbnailUrl,
                 ],
             ]);
         } catch (Exception $e) {

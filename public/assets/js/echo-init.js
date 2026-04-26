@@ -114,10 +114,13 @@ function _handleNoteUpdated(data) {
     _addNotification(notification);
     _showRealtimeToast(notification);
 
-    const excerpt = data.note_excerpt || '';
+    const excerpt      = data.note_excerpt || '';
+    const attachments  = data.attachments  || [];
+    const thumbUrl     = attachments.length > 0
+        ? (attachments[0].thumbnail_url || attachments[0].url)
+        : null;
 
     // ── Update card in DOM (owner view: #notesContainer) ───────────
-    // Owner's cards use selector: .note-col[data-note-id]
     const ownerCol = document.querySelector(`#notesContainer .note-col[data-note-id="${data.note_id}"]`);
     if (ownerCol) {
         const titleEl = ownerCol.querySelector('.fn-note-title');
@@ -126,10 +129,10 @@ function _handleNoteUpdated(data) {
         if (excerptEl) excerptEl.textContent = excerpt;
         const dateEl = ownerCol.querySelector('.fn-note-date');
         if (dateEl) dateEl.textContent = 'Vừa cập nhật';
+        _updateCardThumbnail(ownerCol, thumbUrl);
     }
 
     // ── Update card in DOM (shared user view: #sharedNotesContainer) ──
-    // Shared cards use selector: .fn-shared-note-col[data-note-id]
     const sharedCol = document.querySelector(`#sharedNotesContainer .fn-shared-note-col[data-note-id="${data.note_id}"]`);
     if (sharedCol) {
         const titleEl = sharedCol.querySelector('.fn-note-title');
@@ -138,20 +141,44 @@ function _handleNoteUpdated(data) {
         if (excerptEl) excerptEl.textContent = excerpt;
         const dateEl = sharedCol.querySelector('.fn-note-date');
         if (dateEl) dateEl.textContent = 'Vừa cập nhật';
+        _updateCardThumbnail(sharedCol, thumbUrl);
     }
 
-    // ── If the shared note modal is currently open for this note, update it too ─
+    // ── If the shared note modal is open for this note, update it too ─
     const sharedModal = document.getElementById('sharedNoteModal');
     if (sharedModal && sharedModal.classList.contains('show') &&
         String(sharedModal.dataset.noteId) === String(data.note_id)) {
 
-        // Only overwrite if user isn’t the one who just edited
         if (data.updated_by.id !== window.__userId) {
-            const titleInput = sharedModal.querySelector('.sn-title');
+            const titleInput   = sharedModal.querySelector('.sn-title');
             const contentInput = sharedModal.querySelector('.sn-content');
-            if (titleInput && !titleInput.matches(':focus')) titleInput.value = data.note_title;
-            if (contentInput && !contentInput.matches(':focus')) contentInput.value = data.note_content || '';
+            if (titleInput   && !titleInput.matches(':focus'))   titleInput.value   = data.note_title;
+            if (contentInput && !contentInput.matches(':focus'))  contentInput.value = data.note_content || '';
         }
+    }
+}
+
+/**
+ * Set or remove the thumbnail image on a note card.
+ * @param {Element} col      – .note-col or .fn-shared-note-col element
+ * @param {string|null} url  – thumbnail URL, or null to remove
+ */
+function _updateCardThumbnail(col, url) {
+    const card = col.querySelector('.fn-note-card');
+    if (!card) return;
+    let thumb = card.querySelector('.fn-note-thumb');
+    if (url) {
+        if (thumb) {
+            thumb.src = url;
+        } else {
+            const img = document.createElement('img');
+            img.className = 'fn-note-thumb';
+            img.src       = url;
+            img.alt       = 'Note image';
+            card.insertAdjacentElement('afterbegin', img);
+        }
+    } else if (thumb) {
+        thumb.remove();
     }
 }
 

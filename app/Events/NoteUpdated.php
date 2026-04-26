@@ -52,17 +52,25 @@ class NoteUpdated implements ShouldBroadcastNow
         // Strip HTML tags and truncate for an excerpt preview
         $rawContent = strip_tags($this->note->content ?? '');
 
+        // Map attachments so the client can update thumbnails on note cards
+        $attachments = $this->note->attachments->map(fn($a) => [
+            'id'            => $a->id,
+            'url'           => $a->secure_url,
+            'thumbnail_url' => $a->thumbnailUrl(400),
+        ])->values()->all();
+
         return [
-            'note_id'    => $this->note->id,
-            'note_title' => $this->note->title ?: 'Ghi chú không có tiêu đề',
+            'note_id'      => $this->note->id,
+            'note_title'   => $this->note->title ?: 'Ghi chú không có tiêu đề',
             'note_content' => $this->note->content ?? '',
             'note_excerpt' => mb_substr($rawContent, 0, 120),
-            'updated_by' => [
+            'attachments'  => $attachments,
+            'updated_by'   => [
                 'id'         => $this->updatedBy->id,
                 'name'       => $this->updatedBy->name,
                 'avatar_url' => $this->updatedBy->avatarUrl(),
             ],
-            'updated_at' => $this->note->updated_at->toIso8601String(),
+            'updated_at'   => $this->note->updated_at->toIso8601String(),
         ];
     }
 
