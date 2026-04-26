@@ -178,17 +178,44 @@ function _renderSharedCards(sharedNotes) {
     if (section)    section.style.display  = '';
     if (countBadge) countBadge.textContent = sharedNotes.length;
 
-    // Only insert cards that aren't already in the DOM
     const existing = new Set(
         [...container.querySelectorAll('[data-note-id]')].map(el => el.dataset.noteId)
     );
 
     for (const share of sharedNotes) {
-        if (existing.has(String(share.note.id))) continue;
-        const col = _buildSharedCard(share);
-        container.insertBefore(col, container.firstChild);
-        requestAnimationFrame(() => col.classList.add('fn-animate-in'));
+        const noteIdStr = String(share.note.id);
+
+        if (existing.has(noteIdStr)) {
+            // ── Card already in DOM → patch it in-place instead of skipping ──
+            _patchSharedCard(noteIdStr, share.note);
+        } else {
+            // ── New shared note → insert card ────────────────────────────────
+            const col = _buildSharedCard(share);
+            container.insertBefore(col, container.firstChild);
+            requestAnimationFrame(() => col.classList.add('fn-animate-in'));
+        }
     }
+}
+
+/**
+ * Patch an existing shared note card in the DOM without re-building it.
+ * Called both from _renderSharedCards and from the real-time echo handler.
+ * @param {string|number} noteId
+ * @param {{ title: string, content: string, updated_at: string }} note
+ */
+function _patchSharedCard(noteId, note) {
+    const col = document.querySelector(
+        `#sharedNotesContainer .fn-shared-note-col[data-note-id="${noteId}"]`
+    );
+    if (!col) return;
+
+    const titleEl   = col.querySelector('.fn-note-title');
+    const excerptEl = col.querySelector('.fn-note-excerpt');
+    const dateEl    = col.querySelector('.fn-note-date');
+
+    if (titleEl)   titleEl.textContent   = note.title || 'Không có tiêu đề';
+    if (excerptEl) excerptEl.textContent = (note.content || '').replace(/<[^>]+>/g, '').substring(0, 120);
+    if (dateEl)    dateEl.textContent    = note.updated_at || 'Vừa cập nhật';
 }
 
 function _buildSharedCard(share) {

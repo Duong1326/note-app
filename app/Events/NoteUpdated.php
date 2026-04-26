@@ -49,9 +49,14 @@ class NoteUpdated implements ShouldBroadcastNow
 
     public function broadcastWith(): array
     {
+        // Strip HTML tags and truncate for an excerpt preview
+        $rawContent = strip_tags($this->note->content ?? '');
+
         return [
             'note_id'    => $this->note->id,
             'note_title' => $this->note->title ?: 'Ghi chú không có tiêu đề',
+            'note_content' => $this->note->content ?? '',
+            'note_excerpt' => mb_substr($rawContent, 0, 120),
             'updated_by' => [
                 'id'         => $this->updatedBy->id,
                 'name'       => $this->updatedBy->name,
