@@ -49,7 +49,7 @@
                         @foreach($sidebarLabels as $label)
                             <div class="fn-sidebar-label-item" data-label-id="{{ $label->id }}">
                                 <div class="fn-sidebar-label-view">
-                                    <div class="fn-sidebar-label-info">
+                                    <div class="fn-sidebar-label-info" onclick="filterNotesByLabel({{ $label->id }}, '{{ addslashes($label->name) }}')" style="cursor:pointer;">
                                         <span class="material-symbols-outlined">sell</span>
                                         <span class="fn-sidebar-label-name">{{ $label->name }}</span>
                                     </div>

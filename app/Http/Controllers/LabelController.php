@@ -13,19 +13,17 @@ use Illuminate\Validation\ValidationException;
 
 class LabelController extends Controller
 {
-    public function __construct(private LabelService $labelService)
-    {
-    }
+    public function __construct(private LabelService $labelService) {}
 
     public function store(StoreLabelRequest $request): JsonResponse|RedirectResponse
     {
         try {
             $label = $this->labelService->create($request->user(), $request->validated('name'));
 
-            if ($request->wantsJson()) {
+            if ($request->expectsJson()) {
                 return response()->json([
                     'message' => 'Tạo nhãn thành công',
-                    'data' => $label
+                    'data'    => $label,
                 ], 201);
             }
 
@@ -33,7 +31,7 @@ class LabelController extends Controller
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
-            if ($request->wantsJson()) {
+            if ($request->expectsJson()) {
                 return response()->json(['message' => $e->getMessage()], 500);
             }
             return redirect()->back()->with('error', $e->getMessage());
@@ -46,18 +44,18 @@ class LabelController extends Controller
             $this->authorizeLabel($label, $request);
             $label = $this->labelService->rename($label, $request->validated('name'));
 
-            if ($request->wantsJson()) {
+            if ($request->expectsJson()) {
                 return response()->json([
                     'message' => 'Cập nhật nhãn thành công',
-                    'data' => $label
-                ], 200);
+                    'data'    => $label,
+                ]);
             }
 
             return redirect()->back()->with('success', 'Cập nhật nhãn thành công!');
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
-            if ($request->wantsJson()) {
+            if ($request->expectsJson()) {
                 return response()->json(['message' => $e->getMessage()], 500);
             }
             return redirect()->back()->with('error', $e->getMessage());
@@ -70,15 +68,13 @@ class LabelController extends Controller
             $this->authorizeLabel($label, $request);
             $this->labelService->delete($label);
 
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'message' => 'Xóa nhãn thành công',
-                ], 200);
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Xóa nhãn thành công']);
             }
 
             return redirect()->back()->with('success', 'Xóa nhãn thành công!');
         } catch (\Exception $e) {
-            if ($request->wantsJson()) {
+            if ($request->expectsJson()) {
                 return response()->json(['message' => $e->getMessage()], 500);
             }
             return redirect()->back()->with('error', $e->getMessage());
@@ -90,8 +86,6 @@ class LabelController extends Controller
      */
     private function authorizeLabel(Label $label, Request $request): void
     {
-        if ($label->user_id !== $request->user()->id) {
-            abort(403, 'Bạn không có quyền thao tác trên nhãn này.');
-        }
+        abort_if($label->user_id !== $request->user()->id, 403, 'Bạn không có quyền thao tác trên nhãn này.');
     }
 }

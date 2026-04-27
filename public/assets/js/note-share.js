@@ -1,27 +1,14 @@
 /**
- * note-share.js
- * Handles the note sharing feature:
- *  – Email chip input
- *  – Add/update/revoke share recipients via AJAX
- *  – Render recipient list
- *
- * Depends on:
- *  – app.js  → window.showToast(msg, type)
- *  – app.js  → getCsrfToken()
- *  – note-create.css / note-lock.css → .fn-modal-overlay.show
+ * note-share.js – Share modal UI logic (add recipients, manage permissions).
+ * Depends on: app.js (getCsrfToken, escapeHtml, showToast), apiFetch (notes.js)
  */
 
-/* ── State ─────────────────────────────────────────────────── */
-let _shareNoteId = null;   // ID of the note currently being shared
-let _emailChips = [];     // Array of { email, valid } objects
-let _existingShares = [];     // Fetched share records from server
+// ── State ──────────────────────────────────────────
+let _shareNoteId = null;
+let _emailChips = [];
+let _existingShares = [];
 
-/* ── Modal open / close ─────────────────────────────────────── */
-
-/**
- * Called from the dashboard dropdown: opens the share modal
- * and loads existing recipients for the given note.
- */
+// ── Modal open / close ─────────────────────────────
 function openShareModal(noteId) {
     _shareNoteId = noteId;
     _emailChips = [];
@@ -35,7 +22,7 @@ function openShareModal(noteId) {
     document.getElementById('shareRecipientList').innerHTML = '';
     document.getElementById('permRead').checked = true;
 
-    // Show modal (use .show to match existing CSS system)
+    // Show modal
     document.getElementById('shareNoteModal').classList.add('show');
     setTimeout(() => document.getElementById('shareEmailInput').focus(), 100);
 
@@ -50,8 +37,9 @@ function closeShareModal() {
     _existingShares = [];
 }
 
-// Close on overlay click
+// ── Event bindings ──────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    // Close on overlay click
     document.getElementById('shareNoteModal')?.addEventListener('click', function (e) {
         if (e.target === this) closeShareModal();
     });
@@ -61,8 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape' && _shareNoteId !== null) closeShareModal();
     });
 
-    // Email chip input eventsrai
-    document.getElementById('shareEmailInput')?.addEventListener('keydown', function (e) {
+    // Email chip input events
+    const emailInput = document.getElementById('shareEmailInput');
+    emailInput?.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ',') {
             e.preventDefault();
             addChip(this.value.trim());
@@ -72,13 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('shareEmailInput')?.addEventListener('blur', function () {
+    emailInput?.addEventListener('blur', function () {
         if (this.value.trim()) addChip(this.value.trim());
     });
 });
 
-/* ── Chip input ─────────────────────────────────────────────── */
-
+// ── Chip input ──────────────────────────────────────
 function focusEmailInput() {
     document.getElementById('shareEmailInput').focus();
 }
@@ -117,23 +105,17 @@ function renderChips() {
         const el = document.createElement('span');
         el.className = 'fn-email-chip' + (chip.valid ? '' : ' invalid');
         el.innerHTML =
-            _escapeHtml(chip.email) +
+            escapeHtml(chip.email) +
             `<button type="button" class="fn-email-chip-remove" onclick="removeChip(${i})" tabindex="-1">` +
             `<span class="material-symbols-outlined">close</span></button>`;
         container.insertBefore(el, input);
     });
 }
 
-/* ── Fetch existing recipients ──────────────────────────────── */
-
+// ── Fetch existing recipients ────────────────────────
 async function fetchShareRecipients(noteId) {
     try {
-        const res = await fetch(`/notes/${noteId}/shares`, {
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
+        const res = await apiFetch(`/notes/${noteId}/shares`);
         const data = await res.json();
 
         if (data.success && data.shares.length > 0) {
@@ -146,8 +128,7 @@ async function fetchShareRecipients(noteId) {
     }
 }
 
-/* ── Submit: add new recipients ─────────────────────────────── */
-
+// ── Submit: add new recipients ───────────────────────
 async function submitShareNote(event) {
     event.preventDefault();
 
@@ -174,20 +155,24 @@ async function submitShareNote(event) {
     _hideShareError();
 
     try {
-        const res = await fetch(`/notes/${_shareNoteId}/shares`, {
+        const res = await apiFetch(`/notes/${_shareNoteId}/shares`, 'POST', null, {
+            'Content-Type': 'application/json',
+        });
+
+        // Re-send with JSON body (apiFetch doesn't handle JSON body natively)
+        const jsonRes = await fetch(`/notes/${_shareNoteId}/shares`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': getCsrfToken(),
-                'X-Requested-With': 'XMLHttpRequest',
             },
             body: JSON.stringify({ emails, permission }),
         });
 
-        const data = await res.json();
+        const data = await jsonRes.json();
 
-        if (!res.ok) {
+        if (!jsonRes.ok) {
             _showShareError(_extractFirstError(data));
             return;
         }
@@ -227,8 +212,7 @@ async function submitShareNote(event) {
     }
 }
 
-/* ── Render recipient list ──────────────────────────────────── */
-
+// ── Render recipient list ────────────────────────────
 function renderRecipients() {
     const list = document.getElementById('shareRecipientList');
     list.innerHTML = '';
@@ -236,7 +220,7 @@ function renderRecipients() {
     _existingShares.forEach(share => {
         const initials = (share.name || '?').slice(0, 2).toUpperCase();
         const avatarHtml = share.avatar_url
-            ? `<img src="${_escapeHtml(share.avatar_url)}" alt="${_escapeHtml(share.name)}">`
+            ? `<img src="${escapeHtml(share.avatar_url)}" alt="${escapeHtml(share.name)}">`
             : initials;
 
         const row = document.createElement('div');
@@ -245,8 +229,8 @@ function renderRecipients() {
         row.innerHTML = `
             <div class="fn-share-avatar">${avatarHtml}</div>
             <div class="fn-share-recipient-info">
-                <div class="fn-share-recipient-name">${_escapeHtml(share.name)}</div>
-                <div class="fn-share-recipient-email">${_escapeHtml(share.email)}</div>
+                <div class="fn-share-recipient-name">${escapeHtml(share.name)}</div>
+                <div class="fn-share-recipient-email">${escapeHtml(share.email)}</div>
             </div>
             <select class="fn-share-perm-select" onchange="updateSharePermission(${share.id}, this.value)">
                 <option value="read"  ${share.permission === 'read' ? 'selected' : ''}>Chỉ đọc</option>
@@ -262,8 +246,7 @@ function renderRecipients() {
     });
 }
 
-/* ── Update share permission ────────────────────────────────── */
-
+// ── Update share permission ──────────────────────────
 async function updateSharePermission(shareId, permission) {
     try {
         const res = await fetch(`/notes/${_shareNoteId}/shares/${shareId}`, {
@@ -272,7 +255,6 @@ async function updateSharePermission(shareId, permission) {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': getCsrfToken(),
-                'X-Requested-With': 'XMLHttpRequest',
             },
             body: JSON.stringify({ permission }),
         });
@@ -291,20 +273,12 @@ async function updateSharePermission(shareId, permission) {
     }
 }
 
-/* ── Revoke share ───────────────────────────────────────────── */
-
+// ── Revoke share ─────────────────────────────────────
 async function revokeShare(shareId) {
     if (!confirm('Thu hồi quyền truy cập của người dùng này?')) return;
 
     try {
-        const res = await fetch(`/notes/${_shareNoteId}/shares/${shareId}`, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': getCsrfToken(),
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
+        const res = await apiFetch(`/notes/${_shareNoteId}/shares/${shareId}`, 'DELETE');
         const data = await res.json();
 
         if (data.success) {
@@ -326,8 +300,7 @@ async function revokeShare(shareId) {
     }
 }
 
-/* ── Update share badge on note card DOM ────────────────────── */
-
+// ── Update share badge on note card DOM ──────────────
 function updateShareBadgeOnCard(noteId, hasShares) {
     const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
     if (!col) return;
@@ -348,13 +321,7 @@ function updateShareBadgeOnCard(noteId, hasShares) {
     }
 }
 
-/* ── Private utility helpers ────────────────────────────────── */
-
-function _escapeHtml(str) {
-    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-    return String(str ?? '').replace(/[&<>"']/g, m => map[m]);
-}
-
+// ── Private utility helpers ──────────────────────────
 function _showShareError(msg) {
     const el = document.getElementById('shareEmailError');
     if (!el) return;

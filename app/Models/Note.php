@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Note extends Model
 {
@@ -126,5 +125,40 @@ class Note extends Model
     public function isPasswordProtected(): bool
     {
         return $this->is_locked && !empty($this->password_hash);
+    }
+
+    /**
+     * Standard JSON representation for note cards (used by API responses).
+     * Centralises the mapping that was previously duplicated across controllers.
+     */
+    public function toCardArray(): array
+    {
+        return [
+            'id'          => $this->id,
+            'title'       => $this->title,
+            'content'     => $this->content,
+            'is_pinned'   => $this->is_pinned,
+            'is_locked'   => $this->is_locked,
+            'updated_at'  => $this->updated_at?->diffForHumans(),
+            'labels'      => $this->labels->map(fn ($l) => ['id' => $l->id, 'name' => $l->name])->values(),
+            'attachments' => $this->attachments->map(fn ($a) => [
+                'id'            => $a->id,
+                'url'           => $a->secure_url,
+                'thumbnail_url' => $a->thumbnailUrl(400),
+            ])->values(),
+        ];
+    }
+
+    /**
+     * Extended card array that includes owner info (for shared note views).
+     */
+    public function toSharedCardArray(): array
+    {
+        return array_merge($this->toCardArray(), [
+            'owner' => [
+                'name'       => $this->user->name ?? '',
+                'avatar_url' => $this->user?->avatarUrl(),
+            ],
+        ]);
     }
 }

@@ -295,3 +295,99 @@
         display: inline-flex;
     }
 }
+
+/* ── Label Filter Active State ───────────────── */
+.fn-sidebar-label-item.fn-label-active {
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: 0.375rem;
+}
+
+.fn-sidebar-label-item.fn-label-active .fn-sidebar-label-info {
+    color: var(--fn-primary);
+    font-weight: 600;
+}
+
+.fn-sidebar-label-item.fn-label-active .fn-sidebar-label-info .material-symbols-outlined {
+    opacity: 1;
+    color: var(--fn-primary);
+}
+
+/* ── Label Filter Chip Bar ───────────────────── */
+.fn-label-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    margin-bottom: 0.5rem;
+    animation: fn-chip-in 0.2s ease;
+}
+
+@keyframes fn-chip-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.fn-filter-label-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--fn-primary);
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem 0.25rem 0.6rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.fn-filter-chip-clear {
+    border: none;
+    background: transparent;
+    color: var(--fn-primary);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    margin-left: 2px;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+}
+
+.fn-filter-chip-clear:hover {
+    opacity: 1;
+}
+
+.fn-filter-hint {
+    font-size: 0.75rem;
+    color: var(--fn-on-surface-variant);
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* Allow the chip bar to wrap when there are many labels */
+.fn-label-filter-bar {
+    flex-wrap: wrap;
+}
+
+/* "Clear all" button */
+.fn-filter-clear-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: none;
+    background: transparent;
+    color: var(--fn-on-surface-variant);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    opacity: 0.75;
+    transition: background 0.15s, opacity 0.15s;
+}
+
+.fn-filter-clear-all:hover {
+    background: rgba(0, 0, 0, 0.06);
+    opacity: 1;
+}

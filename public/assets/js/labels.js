@@ -157,7 +157,7 @@ function appendLabelItem(label) {
     const html = `
         <div class="fn-sidebar-label-item" data-label-id="${label.id}">
             <div class="fn-sidebar-label-view">
-                <div class="fn-sidebar-label-info">
+                <div class="fn-sidebar-label-info" onclick="filterNotesByLabel(${label.id}, '${escapeAttr(label.name)}')" style="cursor:pointer;">
                     <span class="material-symbols-outlined">sell</span>
                     <span class="fn-sidebar-label-name">${escapeHtml(label.name)}</span>
                 </div>
@@ -288,4 +288,141 @@ async function createLabelFromModal() {
     } catch {
         showToast('Lỗi kết nối', 'error');
     }
+}
+
+// ═══════════════════════════════════════════════════
+// Label Filter (multi-select)
+// ═══════════════════════════════════════════════════
+
+/** Set of currently active label ids */
+const _activeLabelIds = new Set();
+
+/** Map of id → name for chip rendering */
+const _activeLabelNames = new Map();
+
+/**
+ * Toggle a label in/out of the active filter set, then re-fetch notes.
+ * Call with no arguments (or labelId=0) to clear all filters.
+ */
+async function filterNotesByLabel(labelId, labelName) {
+    labelId = parseInt(labelId);
+
+    if (!labelId) {
+        // Clear all
+        _activeLabelIds.clear();
+        _activeLabelNames.clear();
+    } else if (_activeLabelIds.has(labelId)) {
+        // Deselect
+        _activeLabelIds.delete(labelId);
+        _activeLabelNames.delete(labelId);
+    } else {
+        // Select
+        _activeLabelIds.add(labelId);
+        _activeLabelNames.set(labelId, labelName || '');
+    }
+
+    // ── Update sidebar active state ──
+    document.querySelectorAll('.fn-sidebar-label-item').forEach(item => {
+        const id = parseInt(item.dataset.labelId);
+        item.classList.toggle('fn-label-active', _activeLabelIds.has(id));
+    });
+
+    // ── Re-render chip bar ──
+    _renderFilterChips();
+
+    // ── Fetch filtered notes from server ──
+    await _fetchFilteredNotes();
+}
+
+/** Remove one chip and re-fetch */
+async function removeLabelFilter(labelId) {
+    labelId = parseInt(labelId);
+    _activeLabelIds.delete(labelId);
+    _activeLabelNames.delete(labelId);
+
+    const item = document.querySelector(`.fn-sidebar-label-item[data-label-id="${labelId}"]`);
+    item?.classList.remove('fn-label-active');
+
+    _renderFilterChips();
+    await _fetchFilteredNotes();
+}
+
+/** Build URL and fetch notes, then render */
+async function _fetchFilteredNotes() {
+    const url = new URL(window.FN_FILTER_LABEL_URL, location.origin);
+    _activeLabelIds.forEach(id => url.searchParams.append('label_ids[]', id));
+
+    try {
+        const res  = await apiFetch(url.toString());
+        const data = await res.json();
+        _renderFilteredNotes(data.notes ?? []);
+    } catch {
+        showToast('Lỗi khi lọc ghi chú', 'error');
+    }
+}
+
+/** Render the row of active-filter chips (or remove bar if none) */
+function _renderFilterChips() {
+    let bar = document.getElementById('fn-label-filter-bar');
+
+    if (_activeLabelIds.size === 0) {
+        bar?.remove();
+        return;
+    }
+
+    if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'fn-label-filter-bar';
+        bar.className = 'fn-label-filter-bar';
+        const header = document.querySelector('.fn-welcome ~ .row .d-flex.align-items-center.justify-content-between');
+        header?.insertAdjacentElement('afterend', bar);
+    }
+
+    const chips = [..._activeLabelIds].map(id => {
+        const name = _activeLabelNames.get(id) || id;
+        return `<span class="fn-filter-label-chip">
+            <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px">sell</span>
+            ${escapeHtml(name)}
+            <button class="fn-filter-chip-clear" onclick="removeLabelFilter(${id})" title="Bỏ nhãn này">
+                <span class="material-symbols-outlined" style="font-size:14px">close</span>
+            </button>
+        </span>`;
+    }).join('');
+
+    bar.innerHTML = `
+        ${chips}
+        <button class="fn-filter-clear-all" onclick="filterNotesByLabel(0)" title="Xóa tất cả bộ lọc">
+            <span class="material-symbols-outlined" style="font-size:15px;vertical-align:-2px">filter_list_off</span>
+            Xóa tất cả
+        </button>`;
+}
+
+/** Replace the notes container content with the filtered results */
+function _renderFilteredNotes(notes) {
+    let container = document.getElementById('notesContainer');
+
+    if (notes.length === 0) {
+        if (container) {
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="text-center py-5 text-muted fn-empty-state">
+                        <span class="material-symbols-outlined d-block mb-3">label_off</span>
+                        <p class="small opacity-75">Không có ghi chú nào với các nhãn đã chọn.</p>
+                    </div>
+                </div>`;
+        }
+        return;
+    }
+
+    if (!container) {
+        const emptyState = document.querySelector('.fn-empty-state');
+        const wrapper = emptyState?.closest('.col-12');
+        emptyState?.remove();
+        container = document.createElement('div');
+        container.className = 'row g-3';
+        container.id = 'notesContainer';
+        wrapper?.appendChild(container);
+    }
+
+    container.innerHTML = notes.map(note => buildNoteCardHtml(note)).join('');
 }

@@ -337,8 +337,12 @@
         window.FN_LABEL_STORE_URL = '{{ route("labels.store") }}';
         window.FN_SHARED_CARDS_URL = '{{ route("notes.shared.cards") }}';
         window.FN_SHARED_VIEW_BASE = '/notes';
+        window.FN_FILTER_LABEL_URL = '{{ route("dashboard.filter.label") }}';
     </script>
     <script src="{{ asset('assets/js/note-lock.js') }}"></script>
+    <script src="{{ asset('assets/js/note-cards.js') }}"></script>
+    <script src="{{ asset('assets/js/note-attachments.js') }}"></script>
+    <script src="{{ asset('assets/js/note-modal.js') }}"></script>
     <script src="{{ asset('assets/js/notes.js') }}"></script>
     <script src="{{ asset('assets/js/labels.js') }}"></script>
     <script src="{{ asset('assets/js/note-share.js') }}"></script>

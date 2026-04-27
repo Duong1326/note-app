@@ -9,7 +9,6 @@ use App\Models\Note;
 use App\Services\NoteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class NoteLockController extends Controller
 {

@@ -58,6 +58,23 @@ function escapeAttr(str) {
         .replace(/>/g, '&gt;');
 }
 
+// ── API Fetch Helper ──────────────────────────────
+async function apiFetch(url, method = 'GET', body = null, extraHeaders = {}) {
+    const headers = {
+        'X-CSRF-TOKEN': getCsrfToken(),
+        'Accept': 'application/json',
+        ...extraHeaders,
+    };
+    if (body && !(body instanceof FormData)) {
+        headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    }
+    return fetch(url, {
+        method,
+        headers,
+        body: body instanceof FormData ? body : (body?.toString() ?? undefined),
+    });
+}
+
 // ── BFCache Handler ───────────────────────────────
 // Fix stale data when navigating back via the browser's Back button (bfcache)
 window.addEventListener('pageshow', (event) => {

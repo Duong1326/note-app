@@ -1,14 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\AuthControler;
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\NoteLockController;
-use App\Http\Controllers\NoteControler;
+use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NoteShareController;
 use App\Http\Controllers\ProfileController;
 
@@ -22,12 +22,12 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', function () {
         return view('auth.register');
     })->name('register');
-    Route::post('/register', [AuthControler::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register']);
 
     Route::get('/login', function () {
         return view('auth.login');
     })->name('login');
-    Route::post('/login', [AuthControler::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login']);
 
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOtp'])->name('password.email');
@@ -41,24 +41,25 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 });
 
-Route::get('/verify-otp', [AuthControler::class, 'showVerifyOtp'])->name('verify.otp');
-Route::post('/verify-otp', [AuthControler::class, 'verifyOtp'])->name('verify.otp.submit');
-Route::post('/resend-otp', [AuthControler::class, 'resendOtp'])
+Route::get('/verify-otp', [AuthController::class, 'showVerifyOtp'])->name('verify.otp');
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp.submit');
+Route::post('/resend-otp', [AuthController::class, 'resendOtp'])
     ->middleware('throttle:3,1')->name('verify.otp.resend');
 
 Route::middleware(['auth', \App\Http\Middleware\PreventBackHistory::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/filter-label', [DashboardController::class, 'filterByLabel'])->name('dashboard.filter.label');
 
-    Route::post('/logout', [AuthControler::class, 'logout'])->name('logout');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::resource('notes', NoteControler::class)->only(['store']);
+    Route::resource('notes', NoteController::class)->only(['store']);
 
     // Mutation routes that require a valid unlock token for locked notes
     Route::middleware('note.token')->group(function () {
-        Route::put('/notes/{note}',    [NoteControler::class, 'update'])->name('notes.update');
-        Route::delete('/notes/{note}', [NoteControler::class, 'destroy'])->name('notes.destroy');
-        Route::post('/notes/{note}/pin',   [NoteControler::class, 'pin'])->name('notes.pin');
-        Route::post('/notes/{note}/unpin', [NoteControler::class, 'unpin'])->name('notes.unpin');
+        Route::put('/notes/{note}',    [NoteController::class, 'update'])->name('notes.update');
+        Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
+        Route::post('/notes/{note}/pin',   [NoteController::class, 'pin'])->name('notes.pin');
+        Route::post('/notes/{note}/unpin', [NoteController::class, 'unpin'])->name('notes.unpin');
 
         // Attachment (Cloudinary image upload)
         Route::post('/notes/{note}/attachments', [AttachmentController::class, 'store'])->name('attachments.store');
