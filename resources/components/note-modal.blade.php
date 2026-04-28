@@ -43,7 +43,6 @@
                             <label class="fn-checkbox-label" for="modal_label_{{ $label->id }}">
                                 <input type="checkbox" name="label_ids[]" id="modal_label_{{ $label->id }}"
                                     value="{{ $label->id }}" class="fn-checkbox-input" />
-                                <span class="fn-checkbox-text">{{ $label->name }}</span>
                             </label>
                         @endforeach
                     </div>

@@ -216,6 +216,7 @@
         window.__userId = {{ Auth::id() }};
         window.__pusherKey = '{{ config("broadcasting.connections.pusher.key") }}';
         window.__pusherCluster = '{{ config("broadcasting.connections.pusher.options.cluster") }}';
+        window.__appUrl = '{{ rtrim(config("app.url"), "/") }}';
         window.__appDebug = {{ config('app.debug') ? 'true' : 'false' }};
     </script>
 

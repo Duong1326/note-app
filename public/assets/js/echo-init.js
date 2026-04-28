@@ -10,27 +10,46 @@ function initEcho() {
     }
 
     if (!window.__userId || !window.__pusherKey) {
-        console.warn('[Echo] Missing userId or pusherKey. Skipping initialization.');
+        console.warn('[Echo] Missing userId or pusherKey. Skipping initialization.', {
+            userId: window.__userId,
+            pusherKey: window.__pusherKey ? '***' : undefined,
+        });
         return;
     }
 
     // Enable Pusher logging in dev
     Pusher.logToConsole = window.__appDebug || false;
 
+    // Build absolute auth endpoint so it works behind Render's HTTPS proxy
+    const authUrl = (window.__appUrl || window.location.origin) + '/broadcasting/auth';
+
     window.EchoInstance = new Echo({
         broadcaster: 'pusher',
         key: window.__pusherKey,
         cluster: window.__pusherCluster || 'ap1',
         forceTLS: true,
-        authEndpoint: '/broadcasting/auth',
+        authEndpoint: authUrl,
         auth: {
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                'X-Requested-With': 'XMLHttpRequest',
             }
         }
     });
 
-    console.log('[Echo] Connected to Pusher successfully.');
+    console.log('[Echo] Initialised. Auth endpoint:', authUrl);
+
+    // Monitor connection state for debugging
+    window.EchoInstance.connector.pusher.connection.bind('connected', () => {
+        console.log('[Echo] Connected to Pusher.');
+    });
+    window.EchoInstance.connector.pusher.connection.bind('error', (err) => {
+        console.error('[Echo] Pusher connection error:', err);
+    });
+    window.EchoInstance.connector.pusher.connection.bind('failed', () => {
+        console.error('[Echo] Pusher connection failed — all transports unavailable.');
+    });
+
     _subscribeToUserChannel();
 }
 
@@ -87,7 +106,7 @@ function _handleNoteDeleted(data) {
             sharedCol.remove();
             // Hide section header if no shared notes remain
             const container = document.getElementById('sharedNotesContainer');
-            const section   = document.getElementById('sharedSection');
+            const section = document.getElementById('sharedSection');
             if (section && container && container.children.length === 0) {
                 section.style.display = 'none';
             }
