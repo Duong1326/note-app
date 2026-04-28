@@ -99,8 +99,8 @@
 
                 {{-- Action Buttons --}}
                 <div class="d-flex justify-content-end gap-3 mt-2">
-                    <a href="#" id="btnCancelProfile" onclick="window.location.href='{{ route('dashboard') }}?refresh=' + new Date().getTime(); return false;" class="fn-btn-ghost">Quay lại Dashboard</a>
-                    <button type="submit" id="btnSaveProfile" form="profileForm" class="fn-btn-primary">Lưu thay đổi</button>
+                    <button type="submit" id="btnSaveProfile" form="profileForm" class="fn-btn-primary">Lưu thay
+                        đổi</button>
                 </div>
 
             </div>

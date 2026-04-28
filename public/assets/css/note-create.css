@@ -10,10 +10,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow-y: auto;
     background: rgba(19, 27, 46, 0.25);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    padding: 1rem;
+    padding: 1.5rem 1rem;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -28,14 +29,28 @@
 .fn-modal-card {
     width: 100%;
     max-width: 680px;
+    /* cao tối đa 88vh để còn chỗ cho padding của overlay */
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
     background: var(--fn-surface-container-lowest);
     border-radius: 1.25rem;
     box-shadow:
         0 24px 80px rgba(0, 0, 0, 0.12),
         0 0 0 1px rgba(195, 198, 215, 0.1);
     overflow: hidden;
+    /* đảm bảo không vượt container */
+    flex-shrink: 0;
     transform: translateY(24px) scale(0.96);
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fn-modal-card>form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .fn-modal-overlay.show .fn-modal-card {
@@ -49,6 +64,7 @@
     justify-content: space-between;
     padding: 1.25rem 2rem;
     border-bottom: 1px solid rgba(195, 198, 215, 0.15);
+    flex-shrink: 0;
 }
 
 .fn-modal-icon {
@@ -96,6 +112,119 @@
 /* ── Modal Body ──────────────────────────────── */
 .fn-modal-body {
     padding: 1.75rem 2rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 74, 198, 0.2) transparent;
+}
+
+.fn-modal-body::-webkit-scrollbar {
+    width: 5px;
+}
+
+.fn-modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.fn-modal-body::-webkit-scrollbar-thumb {
+    background: rgba(0, 74, 198, 0.2);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+
+.fn-modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 74, 198, 0.45);
+}
+
+/* ── Modal Thumbnail Preview ─────────────────── */
+.fn-modal-thumb-preview {
+    position: relative;
+    width: calc(100% + 4rem);         /* bleed into modal-body padding */
+    margin: -1.75rem -2rem 1.25rem;   /* negative margins cancel body padding */
+    overflow: hidden;
+    border-radius: 0;
+    max-height: 220px;
+    transition: max-height 0.35s ease, opacity 0.3s ease;
+}
+
+.fn-modal-thumb-preview.d-none {
+    max-height: 0;
+    opacity: 0;
+}
+
+.fn-modal-thumb-preview img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+    transition: transform 0.4s ease;
+}
+
+.fn-modal-thumb-preview:hover img {
+    transform: scale(1.03);
+}
+
+/* Gradient overlay at the bottom for text readability */
+.fn-modal-thumb-preview::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(to top, var(--fn-surface-container-lowest, #fff) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+/* Remove thumbnail button */
+.fn-modal-thumb-remove {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: all 0.25s ease;
+    z-index: 2;
+    backdrop-filter: blur(4px);
+}
+
+.fn-modal-thumb-preview:hover .fn-modal-thumb-remove {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.fn-modal-thumb-remove:hover {
+    background: #e53935;
+}
+
+.fn-modal-thumb-remove .material-symbols-outlined {
+    font-size: 18px;
+}
+
+/* Responsive: smaller thumbnail on mobile */
+@media (max-width: 575.98px) {
+    .fn-modal-thumb-preview {
+        width: calc(100% + 2.5rem);
+        margin: -1.75rem -1.25rem 1rem;
+        max-height: 160px;
+    }
+
+    .fn-modal-thumb-preview img {
+        height: 160px;
+    }
 }
 
 .fn-modal-title-input {
@@ -116,6 +245,11 @@
     opacity: 0.25;
 }
 
+/* ── Editor Wrapper (for slash menu positioning) ── */
+.fn-editor-wrapper {
+    position: relative;
+}
+
 .fn-modal-content-input {
     width: 100%;
     font-family: 'Inter', sans-serif;
@@ -125,18 +259,232 @@
     border: none;
     padding: 0;
     outline: none;
-    resize: none;
     line-height: 1.75;
     min-height: 200px;
+    word-break: break-word;
+    white-space: pre-wrap;
 }
 
-.fn-modal-content-input::placeholder {
+/* Placeholder for contenteditable */
+.fn-modal-content-input:empty::before {
+    content: attr(data-placeholder);
     color: var(--fn-on-surface-variant);
     opacity: 0.25;
+    pointer-events: none;
 }
 
 .fn-modal-content-input:focus {
     color: var(--fn-on-surface);
+}
+
+/* ── Inline Image Block ─────────────────────────── */
+.fn-content-image-block {
+    position: relative;
+    margin: 0.75rem auto;
+    max-width: 60%;
+    user-select: none;
+}
+
+.fn-content-image {
+    width: 100%;
+    display: block;
+    cursor: zoom-in;
+    border-radius: 0.5rem;
+}
+
+.fn-content-image-remove {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+.fn-content-image-block:hover .fn-content-image-remove {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.fn-content-image-remove:hover {
+    background: #e53935;
+}
+
+.fn-content-image-remove .material-symbols-outlined {
+    font-size: 16px;
+}
+
+/* ── Inline Divider Block ────────────────────────── */
+.fn-content-divider {
+    margin: 0.75rem 0;
+    user-select: none;
+}
+
+.fn-content-divider hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--fn-outline-variant, #ccc), transparent);
+}
+
+/* ── Inline Heading ──────────────────────────────── */
+.fn-content-heading {
+    font-weight: 700;
+    color: var(--fn-on-surface);
+    line-height: 1.4;
+    margin: 0.5rem 0 0.25rem;
+}
+
+.fn-content-h1 {
+    font-size: 1.5rem;
+}
+
+.fn-content-h2 {
+    font-size: 1.25rem;
+}
+
+.fn-content-h3 {
+    font-size: 1.05rem;
+}
+
+/* ── Inline List ─────────────────────────────────── */
+.fn-content-list {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+    color: var(--fn-on-surface);
+    font-size: 0.9375rem;
+    line-height: 1.75;
+}
+
+.fn-content-list li {
+    margin: 0.125rem 0;
+}
+
+/* ═══════════════════════════════════════════════════
+   Slash Command Menu
+   ═══════════════════════════════════════════════════ */
+.fn-slash-menu {
+    position: absolute;
+    z-index: 50;
+    width: 280px;
+    background: var(--fn-surface-container-lowest, #fff);
+    border: 1px solid rgba(195, 198, 215, 0.2);
+    border-radius: 0.75rem;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(195, 198, 215, 0.08);
+    overflow: hidden;
+    animation: fn-slash-in 0.15s ease-out;
+}
+
+@keyframes fn-slash-in {
+    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.fn-slash-header {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--fn-on-surface-variant, #666);
+    opacity: 0.6;
+}
+
+.fn-slash-list {
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.fn-slash-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.875rem;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.fn-slash-item:hover,
+.fn-slash-item.active {
+    background: rgba(0, 74, 198, 0.06);
+}
+
+.fn-slash-item-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 0.375rem;
+    background: rgba(0, 74, 198, 0.08);
+    color: var(--fn-primary, #004ac6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fn-slash-item-icon .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.fn-slash-item-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.fn-slash-item-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--fn-on-surface, #1a1a2e);
+}
+
+.fn-slash-item-desc {
+    font-size: 0.6875rem;
+    color: var(--fn-on-surface-variant, #666);
+    opacity: 0.7;
+}
+
+.fn-slash-item-shortcut {
+    font-size: 0.6875rem;
+    color: var(--fn-on-surface-variant, #999);
+    opacity: 0.5;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.fn-slash-footer {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.375rem 0.875rem;
+    border-top: 1px solid rgba(195, 198, 215, 0.12);
+    background: rgba(242, 243, 255, 0.3);
+}
+
+.fn-slash-hint {
+    font-size: 0.625rem;
+    color: var(--fn-on-surface-variant, #999);
+    opacity: 0.6;
+}
+
+.fn-slash-hint kbd {
+    display: inline-block;
+    padding: 0 0.25rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+    font-size: 0.6rem;
+    font-family: inherit;
+    background: rgba(0, 0, 0, 0.03);
 }
 
 /* ── Labels Section ─────────────────────────── */
@@ -151,7 +499,41 @@
     font-size: 0.8125rem;
     font-weight: 700;
     color: var(--fn-on-surface);
-    margin: 0;
+    margin: 0 0 0.625rem 0;
+}
+
+/* Scrollable label chip list */
+.fn-modal-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    max-height: 70px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+    margin-bottom: 0.625rem;
+
+    /* Custom scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 74, 198, 0.25) transparent;
+}
+
+.fn-modal-chips::-webkit-scrollbar {
+    width: 4px;
+}
+
+.fn-modal-chips::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 2px;
+}
+
+.fn-modal-chips::-webkit-scrollbar-thumb {
+    background: rgba(0, 74, 198, 0.25);
+    border-radius: 2px;
+    transition: background 0.2s ease;
+}
+
+.fn-modal-chips::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 74, 198, 0.5);
 }
 
 /* Custom checkbox for labels */
@@ -162,10 +544,24 @@
     cursor: pointer;
     user-select: none;
     margin: 0;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    transition: background 0.18s ease, color 0.18s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.fn-checkbox-input {
-    display: none;
+.fn-checkbox-label:hover {
+    background: rgba(0, 74, 198, 0.05);
+}
+
+.fn-checkbox-label:has(.fn-checkbox-input:checked) {
+    background: rgba(0, 74, 198, 0.1);
+}
+
+.fn-checkbox-label:has(.fn-checkbox-input:checked) .fn-checkbox-text {
+    color: var(--fn-primary);
+    font-weight: 600;
 }
 
 .fn-checkbox-box {
@@ -189,12 +585,12 @@
     font-weight: 900;
 }
 
-.fn-checkbox-input:checked + .fn-checkbox-box {
+.fn-checkbox-input:checked+.fn-checkbox-box {
     background: var(--fn-primary);
     border-color: var(--fn-primary);
 }
 
-.fn-checkbox-input:checked + .fn-checkbox-box .check-icon {
+.fn-checkbox-input:checked+.fn-checkbox-box .check-icon {
     opacity: 1;
     transform: scale(1);
 }
@@ -246,6 +642,7 @@
     padding: 1rem 2rem;
     border-top: 1px solid rgba(195, 198, 215, 0.12);
     background: rgba(242, 243, 255, 0.3);
+    flex-shrink: 0;
 }
 
 .fn-modal-tool-btn {
@@ -317,8 +714,54 @@
     transform: scale(0.97);
 }
 
+.fn-modal-btn-save:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Inline spinner for save button loading state */
+.fn-btn-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: fn-spin 0.6s linear infinite;
+    vertical-align: middle;
+}
+
 /* ── Modal Responsive ────────────────────────── */
+
+/* Tablet nhỏ và dưới: overlay cuộn thay vì modal card */
+@media (max-width: 767.98px) {
+    .fn-modal-overlay {
+        align-items: flex-start;
+        padding: 1rem 0.75rem;
+    }
+
+    .fn-modal-card {
+        max-height: none;
+        border-radius: 1rem;
+    }
+
+    .fn-modal-body {
+        overflow-y: visible;
+    }
+}
+
+/* Mobile nhỏ */
 @media (max-width: 575.98px) {
+    .fn-modal-overlay {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .fn-modal-card {
+        border-radius: 0.875rem;
+    }
+
     .fn-modal-header,
     .fn-modal-body,
     .fn-modal-footer {
@@ -341,6 +784,7 @@
         justify-content: center;
     }
 }
+
 
 /* ─────────────────────────────────────────────────────
    Attachment Section
@@ -466,7 +910,9 @@
 }
 
 @keyframes fn-spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ─────────────────────────────────────────────────────

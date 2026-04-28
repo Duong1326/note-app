@@ -94,7 +94,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Keyboard shortcuts
     document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') closeNewNoteModal();
+        // Slash menu takes priority when visible
+        if (_slashMenuVisible && handleSlashMenuKeydown(e)) return;
+
+        if (e.key === 'Escape') {
+            if (_slashMenuVisible) { hideSlashMenu(); return; }
+            closeNewNoteModal();
+        }
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             const modal = document.getElementById('newNoteModal');
             if (modal?.classList.contains('show')) {
@@ -103,6 +109,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Content editor: slash command trigger + filter
+    const contentEditor = document.getElementById('modalNoteContent');
+    if (contentEditor) {
+        contentEditor.addEventListener('input', () => {
+            if (_slashMenuVisible) {
+                // Menu already open → filter as user types
+                handleSlashMenuInput();
+            } else {
+                // Check if "/" was just typed → open menu
+                const sel = window.getSelection();
+                if (!sel.rangeCount) return;
+                const node = sel.focusNode;
+                if (node && node.nodeType === Node.TEXT_NODE) {
+                    const text = node.textContent;
+                    const pos = sel.focusOffset;
+                    if (pos > 0 && text[pos - 1] === '/') {
+                        showSlashMenu();
+                    }
+                }
+            }
+        });
+
+        // Hide slash menu when clicking outside
+        document.addEventListener('mousedown', e => {
+            if (_slashMenuVisible && !e.target.closest('.fn-slash-menu') && !e.target.closest('#modalNoteContent')) {
+                hideSlashMenu();
+            }
+        });
+    }
 
     // File input change — validate size and queue for upload
     const fileInput = document.getElementById('attachmentFileInput');
@@ -127,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .filter(f => f.type.startsWith('image/') && f.size <= 10 * 1024 * 1024);
         _pendingFiles = [..._pendingFiles, ...files];
         renderPendingPreviews();
-        showAttachmentSection();
     });
 
     // Click-to-edit: clicking anywhere on a note card opens the edit modal

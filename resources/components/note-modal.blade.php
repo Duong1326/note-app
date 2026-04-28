@@ -20,6 +20,15 @@
             @csrf
             <div class="fn-modal-body">
 
+                {{-- Thumbnail Preview (shown above title when image exists) --}}
+                <div class="fn-modal-thumb-preview d-none" id="modalThumbPreview">
+                    <img src="" alt="Note thumbnail" id="modalThumbImage" onclick="openLightbox(this.src)">
+                    <button type="button" class="fn-modal-thumb-remove" id="modalThumbRemoveBtn" title="Xóa ảnh bìa"
+                        onclick="removeModalThumbnail()">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
                 {{-- Title --}}
                 <div class="fn-modal-field">
                     <input type="text" name="title" id="modalNoteTitle" class="fn-modal-title-input"
@@ -34,9 +43,6 @@
                             <label class="fn-checkbox-label" for="modal_label_{{ $label->id }}">
                                 <input type="checkbox" name="label_ids[]" id="modal_label_{{ $label->id }}"
                                     value="{{ $label->id }}" class="fn-checkbox-input" />
-                                <span class="fn-checkbox-box">
-                                    <span class="material-symbols-outlined check-icon">check</span>
-                                </span>
                                 <span class="fn-checkbox-text">{{ $label->name }}</span>
                             </label>
                         @endforeach
@@ -56,10 +62,21 @@
                     </div>
                 </div>
 
-                {{-- Content --}}
-                <div class="fn-modal-field">
-                    <textarea name="content" id="modalNoteContent" class="fn-modal-content-input"
-                        placeholder="Bắt đầu viết ý tưởng của bạn tại đây..." rows="8"></textarea>
+                {{-- Content (contenteditable for inline images) --}}
+                <div class="fn-modal-field fn-editor-wrapper">
+                    <div id="modalNoteContent" class="fn-modal-content-input" contenteditable="true"
+                        data-placeholder="Nhấn &lsquo;/&rsquo; để chèn khối • Bắt đầu viết ý tưởng..."></div>
+
+                    {{-- Slash Command Menu --}}
+                    <div class="fn-slash-menu d-none" id="slashCommandMenu">
+                        <div class="fn-slash-header">Khối cơ bản</div>
+                        <div class="fn-slash-list"></div>
+                        <div class="fn-slash-footer">
+                            <span class="fn-slash-hint"><kbd>↑↓</kbd> chọn</span>
+                            <span class="fn-slash-hint"><kbd>↵</kbd> xác nhận</span>
+                            <span class="fn-slash-hint"><kbd>esc</kbd> đóng</span>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Image Attachments --}}
@@ -107,14 +124,6 @@
         </form>
 
     </div>
-</div>
-
-{{-- Lightbox Overlay --}}
-<div class="fn-lightbox-overlay d-none" id="imageLightbox" onclick="closeLightbox(event)">
-    <button type="button" class="fn-lightbox-close" onclick="closeLightbox(event)">
-        <span class="material-symbols-outlined">close</span>
-    </button>
-    <img src="" id="lightboxImage" class="fn-lightbox-img" alt="Enlarged" onclick="event.stopPropagation()">
 </div>
 
 @push('styles')

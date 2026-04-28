@@ -162,7 +162,7 @@
                                     @endif
 
                                     {{-- Excerpt --}}
-                                    <p class="fn-note-excerpt">{{ Str::limit(strip_tags($note->content), 120) }}</p>
+                                    <p class="fn-note-excerpt">{{ Str::limit(strip_tags(preg_replace('/<div[^>]*class="fn-content-image-block"[^>]*>[\s\S]*?<\/div>|<div[^>]*class="fn-content-divider"[^>]*>[\s\S]*?<\/div>/i', '', $note->content ?? '')), 120) }}</p>
 
                                     {{-- Meta --}}
                                     <div class="fn-note-meta">
@@ -260,7 +260,7 @@
                         @endif
 
                         {{-- Excerpt --}}
-                        <p class="fn-note-excerpt">{{ Str::limit(strip_tags($note->content), 120) }}</p>
+                        <p class="fn-note-excerpt">{{ Str::limit(strip_tags(preg_replace('/<div[^>]*class="fn-content-image-block"[^>]*>[\s\S]*?<\/div>|<div[^>]*class="fn-content-divider"[^>]*>[\s\S]*?<\/div>/i', '', $note->content ?? '')), 120) }}</p>
 
                         {{-- Meta --}}
                         <div class="fn-note-meta">
@@ -342,6 +342,7 @@
     <script src="{{ asset('assets/js/note-lock.js') }}"></script>
     <script src="{{ asset('assets/js/note-cards.js') }}"></script>
     <script src="{{ asset('assets/js/note-attachments.js') }}"></script>
+    <script src="{{ asset('assets/js/note-slash-menu.js') }}"></script>
     <script src="{{ asset('assets/js/note-modal.js') }}"></script>
     <script src="{{ asset('assets/js/notes.js') }}"></script>
     <script src="{{ asset('assets/js/labels.js') }}"></script>

@@ -35,8 +35,17 @@ class CloudinaryService
                 'folder'         => 'notes/' . $noteId,
                 'resource_type'  => 'image',
                 'transformation' => [
-                    ['quality' => 'auto', 'fetch_format' => 'auto'],
+                    [
+                        'width'        => 2048,
+                        'crop'         => 'limit',          // Giới hạn max width, không phóng to ảnh nhỏ
+                        'quality'      => 'auto',
+                        'fetch_format' => 'auto',
+                    ],
                 ],
+                'eager'          => [
+                    ['width' => 400, 'height' => 400, 'crop' => 'fill', 'quality' => 'auto', 'fetch_format' => 'auto'],
+                ],
+                'eager_async'    => true,                   // Tạo thumbnail async, không chặn upload
             ]);
 
             return [

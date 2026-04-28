@@ -10,6 +10,7 @@ use App\Events\NoteUpdated;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AttachmentController extends Controller
 {
@@ -41,9 +42,16 @@ class AttachmentController extends Controller
 
             $thumbnailUrl = $this->cloudinary->thumbnailUrl($attachment->secure_url, 400);
 
-            // Broadcast real-time update so shared users see the new image
-            $note->loadMissing('shares');
-            NoteUpdated::dispatch($note->fresh(['attachments', 'shares']), $request->user());
+            // Broadcast real-time update AFTER response is sent (non-blocking)
+            $user = $request->user();
+            app()->terminating(function () use ($note, $user) {
+                try {
+                    $note->load(['attachments', 'shares']);
+                    NoteUpdated::dispatch($note, $user);
+                } catch (Exception $e) {
+                    Log::warning('Broadcast after attachment upload failed: ' . $e->getMessage());
+                }
+            });
 
             return response()->json([
                 'success'    => true,

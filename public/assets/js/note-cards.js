@@ -3,6 +3,22 @@
  * Depends on: app.js (escapeHtml, escapeAttr)
  */
 
+/**
+ * Extract clean text excerpt from HTML content.
+ * Strips image blocks, dividers, and other non-text elements before removing tags.
+ */
+function contentToExcerpt(html, maxLen = 120) {
+    if (!html) return '';
+    // Remove image blocks, dividers (they contain button text like "close")
+    let clean = html
+        .replace(/<div[^>]*class="fn-content-image-block"[^>]*>[\s\S]*?<\/div>/gi, '')
+        .replace(/<div[^>]*class="fn-content-divider"[^>]*>[\s\S]*?<\/div>/gi, '')
+        .replace(/<[^>]*>/g, '')   // strip remaining tags
+        .replace(/\s+/g, ' ')      // collapse whitespace
+        .trim();
+    return clean.substring(0, maxLen);
+}
+
 // ═══════════════════════════════════════════════════
 // Card Removal Animation
 // ═══════════════════════════════════════════════════
@@ -62,7 +78,7 @@ function patchNoteCard(noteId, note) {
     if (!col) return;
 
     col.querySelector('.fn-note-title').textContent = note.title;
-    col.querySelector('.fn-note-excerpt').textContent = (note.content ?? '').replace(/<[^>]*>/g, '').substring(0, 120);
+    col.querySelector('.fn-note-excerpt').textContent = contentToExcerpt(note.content);
     col.querySelector('.fn-note-date').textContent = note.updated_at ?? 'Vừa xong';
 
     updateCardLabels(col, note.labels);
@@ -145,7 +161,7 @@ function buildNoteCardHtml(note) {
                     <span class="material-symbols-outlined fn-icon-sm">lock</span> Khoá bằng mật khẩu
                 </a>
            </li>`;
-    const excerpt = (note.content ?? '').replace(/<[^>]*>/g, '').substring(0, 120);
+    const excerpt = contentToExcerpt(note.content);
 
     return `
         <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-note-adding note-col" data-note-id="${note.id}"${note.is_pinned ? ' data-pinned="1"' : ''}${note.is_locked ? ' data-locked="1"' : ''}>

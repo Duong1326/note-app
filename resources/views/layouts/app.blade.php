@@ -34,10 +34,10 @@
 
     {{-- Sidebar Navigation --}}
     <aside class="fn-sidebar" id="sidebar">
-        <div class="fn-sidebar-brand">
+        <a href="{{ route('dashboard') }}" class="fn-sidebar-brand" style="text-decoration:none;color:inherit;">
             <h1>Fluid Notes</h1>
             <p>Workspace</p>
-        </div>
+        </a>
 
         @auth
             <div class="fn-sidebar-labels">
