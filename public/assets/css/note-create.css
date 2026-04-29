@@ -1,385 +1,6 @@
-/* ── Back Link ──────────────────────────────────── */
-.fn-back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--fn-on-surface-variant);
-    padding: 0.5rem 1rem;
-    border-radius: 9999px;
-    transition: all var(--fn-transition-normal);
-    background: transparent;
-}
-
-.fn-back-link:hover {
-    color: var(--fn-primary);
-    background: var(--fn-surface-container-high);
-    transform: translateX(-4px);
-}
-
-.fn-back-link .material-symbols-outlined {
-    font-size: 20px;
-    transition: transform var(--fn-transition-fast);
-}
-
-.fn-back-link:hover .material-symbols-outlined {
-    transform: translateX(-2px);
-}
-
-/* ── Note Create Card ──────────────────────────── */
-.fn-note-create-card {
-    background: var(--fn-surface-container-lowest);
-    border-radius: 1.25rem;
-    box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.04),
-        0 8px 32px rgba(0, 74, 198, 0.04);
-    overflow: hidden;
-    border: 1px solid rgba(195, 198, 215, 0.15);
-    max-width: 820px;
-    margin: 0 auto;
-    animation: cardSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes cardSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(24px) scale(0.98);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* ── Card Header ─────────────────────────────── */
-.fn-note-create-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid rgba(195, 198, 215, 0.2);
-}
-
-.fn-note-create-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 74, 198, 0.08);
-    color: var(--fn-primary);
-    transition: all var(--fn-transition-normal);
-}
-
-.fn-note-create-icon .material-symbols-outlined {
-    font-size: 22px;
-}
-
-.fn-note-create-title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--fn-on-surface);
-    margin: 0;
-}
-
-.fn-note-create-close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    color: var(--fn-on-surface-variant);
-    transition: all var(--fn-transition-fast);
-    text-decoration: none;
-}
-
-.fn-note-create-close:hover {
-    background: var(--fn-surface-container-high);
-    color: var(--fn-on-surface);
-    transform: rotate(90deg);
-}
-
-/* ── Form Body ───────────────────────────────── */
-.fn-note-create-body {
-    padding: 2rem;
-}
-
-/* ── Field Groups ────────────────────────────── */
-.fn-field-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--fn-on-surface-variant);
-    margin-bottom: 0.75rem;
-}
-
-.fn-field-label .material-symbols-outlined {
-    font-size: 18px;
-}
-
-/* ── Title Input ─────────────────────────────── */
-.fn-note-title-input {
-    width: 100%;
-    font-family: 'Inter', sans-serif;
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--fn-on-surface);
-    background: transparent;
-    border: none;
-    padding: 0;
-    outline: none;
-    transition: all var(--fn-transition-fast);
-    letter-spacing: -0.01em;
-    line-height: 1.3;
-}
-
-.fn-note-title-input::placeholder {
-    color: var(--fn-on-surface-variant);
-    opacity: 0.25;
-}
-
-.fn-note-title-input:focus {
-    outline: none;
-    box-shadow: none;
-}
-
-.fn-note-title-input.is-invalid {
-    border-bottom: 2px solid var(--fn-error);
-    padding-bottom: 0.25rem;
-}
-
-/* ── Content Textarea ────────────────────────── */
-.fn-note-content-input {
-    width: 100%;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9375rem;
-    color: var(--fn-on-surface-variant);
-    background: transparent;
-    border: none;
-    padding: 0;
-    outline: none;
-    resize: none;
-    line-height: 1.75;
-    min-height: 280px;
-    transition: color var(--fn-transition-fast);
-}
-
-.fn-note-content-input::placeholder {
-    color: var(--fn-on-surface-variant);
-    opacity: 0.25;
-}
-
-.fn-note-content-input:focus {
-    color: var(--fn-on-surface);
-    outline: none;
-    box-shadow: none;
-}
-
-.fn-note-content-input.is-invalid {
-    border-left: 3px solid var(--fn-error);
-    padding-left: 0.75rem;
-}
-
-/* ── Label Chips ─────────────────────────────── */
-.fn-labels-section {
-    padding: 1.25rem 0;
-    border-top: 1px solid rgba(195, 198, 215, 0.15);
-    border-bottom: 1px solid rgba(195, 198, 215, 0.15);
-}
-
-.fn-label-chip {
-    display: inline-flex;
-    cursor: pointer;
-    margin: 0;
-}
-
-.fn-label-chip input[type="checkbox"] {
-    display: none;
-}
-
-.fn-label-chip-text {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.375rem 0.875rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 9999px;
-    border: 1.5px solid var(--fn-outline-variant);
-    color: var(--fn-on-surface-variant);
-    background: transparent;
-    transition: all var(--fn-transition-fast);
-    user-select: none;
-}
-
-.fn-label-chip-text:hover {
-    border-color: var(--fn-primary);
-    color: var(--fn-primary);
-    background: rgba(0, 74, 198, 0.04);
-}
-
-.fn-label-chip input[type="checkbox"]:checked+.fn-label-chip-text {
-    background: var(--fn-primary-fixed);
-    color: var(--fn-on-primary-fixed);
-    border-color: var(--fn-primary-fixed-dim);
-    box-shadow: 0 1px 4px rgba(0, 74, 198, 0.12);
-}
-
-/* ── Form Footer ─────────────────────────────── */
-.fn-note-create-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 2rem;
-    border-top: 1px solid rgba(195, 198, 215, 0.15);
-    background: rgba(242, 243, 255, 0.3);
-}
-
-/* ── Toolbar Buttons ─────────────────────────── */
-.fn-toolbar-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 0.75rem;
-    border: none;
-    background: transparent;
-    color: var(--fn-on-surface-variant);
-    opacity: 0.5;
-    cursor: pointer;
-    transition: all var(--fn-transition-fast);
-}
-
-.fn-toolbar-btn:hover {
-    opacity: 1;
-    color: var(--fn-primary);
-    background: rgba(0, 74, 198, 0.06);
-    transform: translateY(-1px);
-}
-
-.fn-toolbar-btn:active {
-    transform: scale(0.92);
-}
-
-.fn-toolbar-btn .material-symbols-outlined {
-    font-size: 20px;
-}
-
-/* ── Action Buttons ──────────────────────────── */
-.fn-btn-discard {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.625rem 1.5rem;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--fn-on-surface-variant);
-    background: transparent;
-    border: none;
-    border-radius: 0.75rem;
-    cursor: pointer;
-    transition: all var(--fn-transition-fast);
-    text-decoration: none;
-}
-
-.fn-btn-discard:hover {
-    background: var(--fn-surface-container-high);
-    color: var(--fn-on-surface);
-}
-
-.fn-btn-save-note {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.75rem;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--fn-on-primary);
-    background: linear-gradient(135deg, var(--fn-primary), var(--fn-primary-container));
-    border: none;
-    border-radius: 0.75rem;
-    cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0, 74, 198, 0.2);
-    transition: all var(--fn-transition-normal);
-}
-
-.fn-btn-save-note:hover {
-    box-shadow: 0 8px 24px rgba(0, 74, 198, 0.3);
-    transform: translateY(-2px);
-}
-
-.fn-btn-save-note:active {
-    transform: scale(0.96) translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 74, 198, 0.2);
-}
-
-.fn-btn-save-note .material-symbols-outlined {
-    font-size: 18px;
-}
-
-/* ── Responsive ──────────────────────────────── */
-@media (max-width: 767.98px) {
-    .fn-note-create-card {
-        border-radius: 1rem;
-    }
-
-    .fn-note-create-header {
-        padding: 1.25rem 1.25rem;
-    }
-
-    .fn-note-create-body {
-        padding: 1.5rem 1.25rem;
-    }
-
-    .fn-note-title-input {
-        font-size: 1.375rem;
-    }
-
-    .fn-note-create-footer {
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1.25rem;
-    }
-
-    .fn-note-toolbar {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .fn-note-actions {
-        width: 100%;
-        justify-content: stretch;
-    }
-
-    .fn-btn-discard {
-        flex: 1;
-        justify-content: center;
-    }
-
-    .fn-btn-save-note {
-        flex: 1;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 575.98px) {
-    .fn-note-title-input {
-        font-size: 1.25rem;
-    }
-
-    .fn-note-content-input {
-        min-height: 200px;
-    }
-}
+/* ================================================
+   Fluid Notes – Note Modal & Attachment Styles
+   ================================================ */
 
 /* ── Modal Overlay ───────────────────────────── */
 .fn-modal-overlay {
@@ -389,10 +10,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow-y: auto;
     background: rgba(19, 27, 46, 0.25);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    padding: 1rem;
+    padding: 1.5rem 1rem;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -407,14 +29,28 @@
 .fn-modal-card {
     width: 100%;
     max-width: 680px;
+    /* cao tối đa 88vh để còn chỗ cho padding của overlay */
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
     background: var(--fn-surface-container-lowest);
     border-radius: 1.25rem;
     box-shadow:
         0 24px 80px rgba(0, 0, 0, 0.12),
         0 0 0 1px rgba(195, 198, 215, 0.1);
     overflow: hidden;
+    /* đảm bảo không vượt container */
+    flex-shrink: 0;
     transform: translateY(24px) scale(0.96);
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fn-modal-card>form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .fn-modal-overlay.show .fn-modal-card {
@@ -428,6 +64,7 @@
     justify-content: space-between;
     padding: 1.25rem 2rem;
     border-bottom: 1px solid rgba(195, 198, 215, 0.15);
+    flex-shrink: 0;
 }
 
 .fn-modal-icon {
@@ -475,6 +112,119 @@
 /* ── Modal Body ──────────────────────────────── */
 .fn-modal-body {
     padding: 1.75rem 2rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 74, 198, 0.2) transparent;
+}
+
+.fn-modal-body::-webkit-scrollbar {
+    width: 5px;
+}
+
+.fn-modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.fn-modal-body::-webkit-scrollbar-thumb {
+    background: rgba(0, 74, 198, 0.2);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+
+.fn-modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 74, 198, 0.45);
+}
+
+/* ── Modal Thumbnail Preview ─────────────────── */
+.fn-modal-thumb-preview {
+    position: relative;
+    width: calc(100% + 4rem);         /* bleed into modal-body padding */
+    margin: -1.75rem -2rem 1.25rem;   /* negative margins cancel body padding */
+    overflow: hidden;
+    border-radius: 0;
+    max-height: 220px;
+    transition: max-height 0.35s ease, opacity 0.3s ease;
+}
+
+.fn-modal-thumb-preview.d-none {
+    max-height: 0;
+    opacity: 0;
+}
+
+.fn-modal-thumb-preview img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+    transition: transform 0.4s ease;
+}
+
+.fn-modal-thumb-preview:hover img {
+    transform: scale(1.03);
+}
+
+/* Gradient overlay at the bottom for text readability */
+.fn-modal-thumb-preview::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(to top, var(--fn-surface-container-lowest, #fff) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+/* Remove thumbnail button */
+.fn-modal-thumb-remove {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: all 0.25s ease;
+    z-index: 2;
+    backdrop-filter: blur(4px);
+}
+
+.fn-modal-thumb-preview:hover .fn-modal-thumb-remove {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.fn-modal-thumb-remove:hover {
+    background: #e53935;
+}
+
+.fn-modal-thumb-remove .material-symbols-outlined {
+    font-size: 18px;
+}
+
+/* Responsive: smaller thumbnail on mobile */
+@media (max-width: 575.98px) {
+    .fn-modal-thumb-preview {
+        width: calc(100% + 2.5rem);
+        margin: -1.75rem -1.25rem 1rem;
+        max-height: 160px;
+    }
+
+    .fn-modal-thumb-preview img {
+        height: 160px;
+    }
 }
 
 .fn-modal-title-input {
@@ -495,6 +245,11 @@
     opacity: 0.25;
 }
 
+/* ── Editor Wrapper (for slash menu positioning) ── */
+.fn-editor-wrapper {
+    position: relative;
+}
+
 .fn-modal-content-input {
     width: 100%;
     font-family: 'Inter', sans-serif;
@@ -504,21 +259,235 @@
     border: none;
     padding: 0;
     outline: none;
-    resize: none;
     line-height: 1.75;
     min-height: 200px;
+    word-break: break-word;
+    white-space: pre-wrap;
 }
 
-.fn-modal-content-input::placeholder {
+/* Placeholder for contenteditable */
+.fn-modal-content-input:empty::before {
+    content: attr(data-placeholder);
     color: var(--fn-on-surface-variant);
     opacity: 0.25;
+    pointer-events: none;
 }
 
 .fn-modal-content-input:focus {
     color: var(--fn-on-surface);
 }
 
-/* ── Labels ──────────────────────────────────── */
+/* ── Inline Image Block ─────────────────────────── */
+.fn-content-image-block {
+    position: relative;
+    margin: 0.75rem auto;
+    max-width: 60%;
+    user-select: none;
+}
+
+.fn-content-image {
+    width: 100%;
+    display: block;
+    cursor: zoom-in;
+    border-radius: 0.5rem;
+}
+
+.fn-content-image-remove {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+.fn-content-image-block:hover .fn-content-image-remove {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.fn-content-image-remove:hover {
+    background: #e53935;
+}
+
+.fn-content-image-remove .material-symbols-outlined {
+    font-size: 16px;
+}
+
+/* ── Inline Divider Block ────────────────────────── */
+.fn-content-divider {
+    margin: 0.75rem 0;
+    user-select: none;
+}
+
+.fn-content-divider hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--fn-outline-variant, #ccc), transparent);
+}
+
+/* ── Inline Heading ──────────────────────────────── */
+.fn-content-heading {
+    font-weight: 700;
+    color: var(--fn-on-surface);
+    line-height: 1.4;
+    margin: 0.5rem 0 0.25rem;
+}
+
+.fn-content-h1 {
+    font-size: 1.5rem;
+}
+
+.fn-content-h2 {
+    font-size: 1.25rem;
+}
+
+.fn-content-h3 {
+    font-size: 1.05rem;
+}
+
+/* ── Inline List ─────────────────────────────────── */
+.fn-content-list {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+    color: var(--fn-on-surface);
+    font-size: 0.9375rem;
+    line-height: 1.75;
+}
+
+.fn-content-list li {
+    margin: 0.125rem 0;
+}
+
+/* ═══════════════════════════════════════════════════
+   Slash Command Menu
+   ═══════════════════════════════════════════════════ */
+.fn-slash-menu {
+    position: absolute;
+    z-index: 50;
+    width: 280px;
+    background: var(--fn-surface-container-lowest, #fff);
+    border: 1px solid rgba(195, 198, 215, 0.2);
+    border-radius: 0.75rem;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(195, 198, 215, 0.08);
+    overflow: hidden;
+    animation: fn-slash-in 0.15s ease-out;
+}
+
+@keyframes fn-slash-in {
+    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.fn-slash-header {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--fn-on-surface-variant, #666);
+    opacity: 0.6;
+}
+
+.fn-slash-list {
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.fn-slash-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.875rem;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.fn-slash-item:hover,
+.fn-slash-item.active {
+    background: rgba(0, 74, 198, 0.06);
+}
+
+.fn-slash-item-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 0.375rem;
+    background: rgba(0, 74, 198, 0.08);
+    color: var(--fn-primary, #004ac6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fn-slash-item-icon .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.fn-slash-item-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.fn-slash-item-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--fn-on-surface, #1a1a2e);
+}
+
+.fn-slash-item-desc {
+    font-size: 0.6875rem;
+    color: var(--fn-on-surface-variant, #666);
+    opacity: 0.7;
+}
+
+.fn-slash-item-shortcut {
+    font-size: 0.6875rem;
+    color: var(--fn-on-surface-variant, #999);
+    opacity: 0.5;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.fn-slash-footer {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.375rem 0.875rem;
+    border-top: 1px solid rgba(195, 198, 215, 0.12);
+    background: rgba(242, 243, 255, 0.3);
+}
+
+.fn-slash-hint {
+    font-size: 0.625rem;
+    color: var(--fn-on-surface-variant, #999);
+    opacity: 0.6;
+}
+
+.fn-slash-hint kbd {
+    display: inline-block;
+    padding: 0 0.25rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+    font-size: 0.6rem;
+    font-family: inherit;
+    background: rgba(0, 0, 0, 0.03);
+}
+
+/* ── Labels Section ─────────────────────────── */
 .fn-modal-labels-container {
     background: #f9fafa;
     border-radius: 0.625rem;
@@ -530,9 +499,44 @@
     font-size: 0.8125rem;
     font-weight: 700;
     color: var(--fn-on-surface);
-    margin: 0;
+    margin: 0 0 0.625rem 0;
 }
 
+/* Scrollable label chip list */
+.fn-modal-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    max-height: 70px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+    margin-bottom: 0.625rem;
+
+    /* Custom scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 74, 198, 0.25) transparent;
+}
+
+.fn-modal-chips::-webkit-scrollbar {
+    width: 4px;
+}
+
+.fn-modal-chips::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 2px;
+}
+
+.fn-modal-chips::-webkit-scrollbar-thumb {
+    background: rgba(0, 74, 198, 0.25);
+    border-radius: 2px;
+    transition: background 0.2s ease;
+}
+
+.fn-modal-chips::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 74, 198, 0.5);
+}
+
+/* Custom checkbox for labels */
 .fn-checkbox-label {
     display: inline-flex;
     align-items: center;
@@ -540,10 +544,24 @@
     cursor: pointer;
     user-select: none;
     margin: 0;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    transition: background 0.18s ease, color 0.18s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.fn-checkbox-input {
-    display: none;
+.fn-checkbox-label:hover {
+    background: rgba(0, 74, 198, 0.05);
+}
+
+.fn-checkbox-label:has(.fn-checkbox-input:checked) {
+    background: rgba(0, 74, 198, 0.1);
+}
+
+.fn-checkbox-label:has(.fn-checkbox-input:checked) .fn-checkbox-text {
+    color: var(--fn-primary);
+    font-weight: 600;
 }
 
 .fn-checkbox-box {
@@ -567,12 +585,12 @@
     font-weight: 900;
 }
 
-.fn-checkbox-input:checked + .fn-checkbox-box {
+.fn-checkbox-input:checked+.fn-checkbox-box {
     background: var(--fn-primary);
     border-color: var(--fn-primary);
 }
 
-.fn-checkbox-input:checked + .fn-checkbox-box .check-icon {
+.fn-checkbox-input:checked+.fn-checkbox-box .check-icon {
     opacity: 1;
     transform: scale(1);
 }
@@ -583,7 +601,7 @@
     color: var(--fn-on-surface-variant);
 }
 
-/* Add Label Inline Wrapper */
+/* Inline add-label button + input */
 .fn-modal-add-label-btn {
     display: inline-flex;
     align-items: center;
@@ -624,6 +642,7 @@
     padding: 1rem 2rem;
     border-top: 1px solid rgba(195, 198, 215, 0.12);
     background: rgba(242, 243, 255, 0.3);
+    flex-shrink: 0;
 }
 
 .fn-modal-tool-btn {
@@ -695,12 +714,53 @@
     transform: scale(0.97);
 }
 
-.fn-modal-btn-save .material-symbols-outlined {
-    font-size: 16px;
+.fn-modal-btn-save:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Inline spinner for save button loading state */
+.fn-btn-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: fn-spin 0.6s linear infinite;
+    vertical-align: middle;
 }
 
 /* ── Modal Responsive ────────────────────────── */
+
+/* Tablet nhỏ và dưới: overlay cuộn thay vì modal card */
+@media (max-width: 767.98px) {
+    .fn-modal-overlay {
+        align-items: flex-start;
+        padding: 1rem 0.75rem;
+    }
+
+    .fn-modal-card {
+        max-height: none;
+        border-radius: 1rem;
+    }
+
+    .fn-modal-body {
+        overflow-y: visible;
+    }
+}
+
+/* Mobile nhỏ */
 @media (max-width: 575.98px) {
+    .fn-modal-overlay {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .fn-modal-card {
+        border-radius: 0.875rem;
+    }
 
     .fn-modal-header,
     .fn-modal-body,
@@ -723,4 +783,203 @@
         width: 100%;
         justify-content: center;
     }
+}
+
+
+/* ─────────────────────────────────────────────────────
+   Attachment Section
+   ─────────────────────────────────────────────────── */
+
+/* Attachment section wrapper (toggled via d-none/d-flex from JS) */
+.fn-attachment-section {
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Grid of thumbnail previews (existing + pending) */
+.fn-attachment-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Individual thumbnail tile */
+.fn-attachment-thumb {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 2px solid var(--fn-outline-variant, #e0e0e0);
+    flex-shrink: 0;
+}
+
+.fn-attachment-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+}
+
+/* Remove button overlaid on thumbnail */
+.fn-attachment-thumb-remove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    line-height: 1;
+    padding: 0;
+    transition: background 0.2s;
+}
+
+.fn-attachment-thumb-remove:hover {
+    background: #e53935;
+}
+
+/* Drop zone for file selection / drag-and-drop */
+.fn-attachment-dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 1rem;
+    border: 2px dashed var(--fn-outline-variant, #ccc);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    color: var(--fn-on-surface-variant, #666);
+    transition: border-color 0.2s ease, background 0.2s ease;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.fn-attachment-dropzone:hover,
+.fn-attachment-dropzone.drag-over {
+    border-color: var(--fn-primary, #004ac6);
+    background: rgba(0, 74, 198, 0.03);
+}
+
+.fn-attachment-dropzone .material-symbols-outlined {
+    font-size: 28px;
+}
+
+.fn-attachment-hint {
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+/* Active state for the attach-image toolbar toggle button */
+.fn-attach-toggle-btn.active {
+    background: var(--fn-primary-fixed, #dbe1ff);
+    color: var(--fn-primary, #004ac6);
+    opacity: 1;
+}
+
+/* ── Upload spinner overlay on thumbnail ─────── */
+.fn-attachment-thumb.uploading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.fn-attachment-thumb.uploading::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--fn-primary, #004ac6);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: fn-spin 0.7s linear infinite;
+    z-index: 1;
+}
+
+@keyframes fn-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ─────────────────────────────────────────────────────
+   Note Card Thumbnail (dashboard grid / list)
+   ─────────────────────────────────────────────────── */
+.fn-note-thumb {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 0.5rem 0.5rem 0 0;
+    display: block;
+}
+
+/* ─────────────────────────────────────────────────────
+   Image Lightbox
+   ─────────────────────────────────────────────────── */
+.fn-lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    cursor: zoom-out;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.fn-lightbox-overlay:not(.d-none) {
+    opacity: 1;
+}
+
+.fn-lightbox-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    cursor: default;
+}
+
+.fn-lightbox-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    z-index: 1201;
+}
+
+.fn-lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.fn-lightbox-close .material-symbols-outlined {
+    font-size: 28px;
 }

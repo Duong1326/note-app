@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Xác thực OTP | {{ config('app.name', 'Note App') }}</title>
+    <title>Xác thực OTP | {{ config('app.name', 'Fluid Notes') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
@@ -20,11 +20,10 @@
                 <div class="panel-left-content">
                     <div>
                         <a href="{{ route('home') }}" class="brand-link">
-                            <span class="brand-icon">N</span>
-                            {{ config('app.name', 'Note App') }}
+                            {{ config('app.name', 'Fluid Notes') }}
                         </a>
                         <div class="hero-section mt-5">
-                            <p class="hero-label">Verification</p>
+                            <p class="hero-label">Xác minh</p>
                             <h1 class="hero-title">Xác minh danh tính để đặt lại mật khẩu.</h1>
                             <p class="hero-desc">Nhập mã xác thực đã gửi đến email của bạn để tiếp tục đặt lại mật khẩu.
                             </p>
@@ -41,8 +40,7 @@
                 <div class="form-wrapper">
                     <div class="mobile-brand">
                         <a href="{{ route('home') }}">
-                            <span class="mobile-brand-icon">N</span>
-                            {{ config('app.name', 'Note App') }}
+                            {{ config('app.name', 'Fluid Notes') }}
                         </a>
                     </div>
 

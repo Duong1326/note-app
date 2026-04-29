@@ -18,8 +18,11 @@
     {{-- Bootstrap 5 --}}
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
 
-    {{-- App Styles --}}
-    <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
+    {{-- App Styles (split for maintainability) --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/app-base.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/header.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/notifications.css') }}">
 
     @stack('styles')
 </head>
@@ -29,38 +32,40 @@
     {{-- Sidebar Overlay (mobile) --}}
     <div class="fn-sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-    {{-- ═══ Sidebar Navigation ═══ --}}
+    {{-- Sidebar Navigation --}}
     <aside class="fn-sidebar" id="sidebar">
-        <div class="fn-sidebar-brand">
+        <a href="{{ route('dashboard') }}" class="fn-sidebar-brand" style="text-decoration:none;color:inherit;">
             <h1>Fluid Notes</h1>
             <p>Workspace</p>
-        </div>
+        </a>
 
         @auth
             <div class="fn-sidebar-labels">
                 <div class="fn-sidebar-labels-header">
-                    <h3>LABELS</h3>
+                    <h3>NHÃN</h3>
                 </div>
                 <div class="fn-sidebar-labels-list" id="sidebarLabelsList">
                     @if(isset($sidebarLabels))
                         @foreach($sidebarLabels as $label)
                             <div class="fn-sidebar-label-item" data-label-id="{{ $label->id }}">
                                 <div class="fn-sidebar-label-view">
-                                    <div class="fn-sidebar-label-info">
+                                    <div class="fn-sidebar-label-info" onclick="filterNotesByLabel({{ $label->id }}, '{{ addslashes($label->name) }}')" style="cursor:pointer;">
                                         <span class="material-symbols-outlined">sell</span>
                                         <span class="fn-sidebar-label-name">{{ $label->name }}</span>
                                     </div>
                                     <div class="fn-sidebar-label-actions">
-                                        <button onclick="startRenameLabel({{ $label->id }})" title="Đổi tên"><span
-                                                class="material-symbols-outlined">edit</span></button>
-                                        <button onclick="deleteLabel({{ $label->id }})" title="Xóa"><span
-                                                class="material-symbols-outlined">delete</span></button>
+                                        <button onclick="startRenameLabel({{ $label->id }})" title="Đổi tên">
+                                            <span class="material-symbols-outlined">edit</span>
+                                        </button>
+                                        <button onclick="deleteLabel({{ $label->id }})" title="Xóa">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="fn-sidebar-label-edit d-none">
                                     <input type="text" class="fn-sidebar-label-input" value="{{ $label->name }}"
-                                        onkeydown="if(event.key==='Enter')saveRenameLabel({{ $label->id }});if(event.key==='Escape')cancelRenameLabel({{ $label->id }});"
-                                        onblur="cancelRenameLabel({{ $label->id }})">
+                                        onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveRenameLabel({{ $label->id }}); } else if(event.key==='Escape') { event.preventDefault(); cancelRenameLabel({{ $label->id }}); }"
+                                        onblur="setTimeout(() => saveRenameLabel({{ $label->id }}), 150)">
                                 </div>
                             </div>
                         @endforeach
@@ -70,13 +75,13 @@
                     <button type="button" class="fn-sidebar-label-add-btn" id="sidebarAddBtn"
                         onclick="toggleAddLabelForm()">
                         <span class="material-symbols-outlined">add</span>
-                        Add new
+                        Thêm mới
                     </button>
                     <div class="fn-sidebar-label-add-form d-none" id="sidebarLabelAddForm">
                         <input type="text" id="newSidebarLabelInput" class="fn-sidebar-label-input"
-                            placeholder="Label name..."
-                            onkeydown="if(event.key==='Enter')createLabel();if(event.key==='Escape')toggleAddLabelForm();"
-                            onblur="toggleAddLabelForm()">
+                            placeholder="Tên nhãn..."
+                            onkeydown="if(event.key==='Enter'){ event.preventDefault(); createLabel(); } else if(event.key==='Escape') { event.preventDefault(); toggleAddLabelForm(true); }"
+                            onblur="setTimeout(() => onSidebarLabelBlur(), 150)">
                     </div>
                 </div>
             </div>
@@ -85,21 +90,21 @@
         <div class="fn-sidebar-footer">
             <a href="#" class="fn-nav-item">
                 <span class="material-symbols-outlined">help</span>
-                <span>Help</span>
+                <span>Trợ giúp</span>
             </a>
             <form method="POST" action="{{ route('logout') }}" id="logout-form">
                 @csrf
                 <a href="#" class="fn-nav-item"
                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <span class="material-symbols-outlined">logout</span>
-                    <span>Logout</span>
+                    <span>Đăng xuất</span>
                 </a>
             </form>
         </div>
 
     </aside>
 
-    {{-- ═══ Main Content ═══ --}}
+    {{-- Main Content --}}
     <main class="fn-main">
         {{-- Top Navigation Bar --}}
         <header class="fn-header">
@@ -107,17 +112,14 @@
                 <button class="fn-menu-toggle" onclick="toggleSidebar()">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
-                <form action="{{ route('dashboard') }}" method="GET" class="fn-search-box m-0 p-0"
-                    style="background:transparent;">
+                <form action="{{ route('dashboard') }}" method="GET" class="fn-search-box m-0 p-0">
                     <div class="fn-search-box">
                         <span class="material-symbols-outlined">search</span>
-                        <input type="text" name="q" class="fn-search-input" placeholder="Search your notes..."
-                            id="globalSearch" value="{{ request('q') }}" style="padding-right: 2.5rem;">
+                        <input type="text" name="q" class="fn-search-input" placeholder="Tìm kiếm ghi chú..."
+                            id="globalSearch" value="{{ request('q') }}">
                         @if(request('q'))
-                            <a href="{{ route('dashboard') }}" class="text-muted text-decoration-none"
-                                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); z-index: 10; display: flex;">
-                                <span class="material-symbols-outlined"
-                                    style="position: static; transform: none; left: auto; font-size: 18px;">close</span>
+                            <a href="{{ route('dashboard') }}" class="fn-search-clear" title="Xóa tìm kiếm">
+                                <span class="material-symbols-outlined fn-icon-sm">close</span>
                             </a>
                         @endif
                     </div>
@@ -125,47 +127,61 @@
             </div>
 
             <div class="fn-header-actions">
-                <button class="fn-icon-btn" title="Dark mode">
+                <button class="fn-icon-btn" title="Chế độ tối">
                     <span class="material-symbols-outlined">dark_mode</span>
                 </button>
-                <button class="fn-icon-btn" title="Notifications">
-                    <span class="material-symbols-outlined">notifications</span>
-                    <span class="fn-notification-dot"></span>
-                </button>
+                <div class="fn-notification-wrapper" id="notificationWrapper">
+                    <button class="fn-icon-btn" title="Thông báo" onclick="toggleNotificationDropdown()">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span class="fn-notification-dot" id="notificationDot"></span>
+                    </button>
+                    {{-- Notification Dropdown Panel --}}
+                    <div class="fn-notification-dropdown" id="notificationDropdown">
+                        <div class="fn-notification-header">
+                            <h3>Thông báo <span class="fn-badge" id="notificationBadge" style="display:none;">0</span></h3>
+                            <button class="fn-notification-clear-btn" onclick="markAllAsRead()">Đánh dấu đã đọc</button>
+                        </div>
+                        <div class="fn-notification-list" id="notificationList">
+                            <div class="fn-notification-empty">
+                                <span class="material-symbols-outlined">notifications_off</span>
+                                <p>Không có thông báo nào</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="fn-header-divider"></div>
                 <button class="fn-user-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="fn-user-avatar d-flex align-items-center justify-content-center"
-                        style="background: var(--fn-primary-container); color: var(--fn-on-primary); font-weight: 700; font-size: 0.8rem;">
-                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                    </div>
+                    @if(Auth::user()->avatarUrl())
+                        <img src="{{ Auth::user()->avatarUrl() }}" alt="Avatar" class="fn-user-avatar">
+                    @else
+                        <div class="fn-user-avatar fn-user-avatar-initial">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </div>
+                    @endif
                     <span class="fn-user-name d-none d-sm-inline">{{ Auth::user()->name }}</span>
-                    <span class="material-symbols-outlined"
-                        style="font-size: 18px; color: var(--fn-on-surface-variant);">expand_more</span>
+                    <span class="material-symbols-outlined fn-icon-sm fn-user-chevron">expand_more</span>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius: 0.75rem;">
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 fn-dropdown-menu">
                     <li>
-                        <a class="dropdown-item py-2 px-3" href="#">
-                            <span class="material-symbols-outlined me-2"
-                                style="font-size: 18px; vertical-align: middle;">person</span>
-                            Profile
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('profile') }}">
+                            <span class="material-symbols-outlined fn-icon-sm">person</span>
+                            Hồ sơ
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item py-2 px-3" href="#">
-                            <span class="material-symbols-outlined me-2"
-                                style="font-size: 18px; vertical-align: middle;">settings</span>
-                            Settings
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#">
+                            <span class="material-symbols-outlined fn-icon-sm">settings</span>
+                            Cài đặt
                         </a>
                     </li>
                     <li>
                         <hr class="dropdown-divider">
                     </li>
                     <li>
-                        <a class="dropdown-item py-2 px-3 text-danger" href="#"
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" href="#"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <span class="material-symbols-outlined me-2"
-                                style="font-size: 18px; vertical-align: middle;">logout</span>
-                            Logout
+                            <span class="material-symbols-outlined fn-icon-sm">logout</span>
+                            Đăng xuất
                         </a>
                     </li>
                 </ul>
@@ -177,7 +193,7 @@
     </main>
 
     {{-- FAB (Mobile) --}}
-    <button class="fn-fab" onclick="window.location.href='#'">
+    <button class="fn-fab" onclick="openNewNoteModal()">
         <span class="material-symbols-outlined">add</span>
     </button>
 
@@ -189,6 +205,24 @@
 
     {{-- Toast Container --}}
     <div class="fn-toast-container" id="toastContainer"></div>
+
+    @auth
+    {{-- Pusher & Laravel Echo (CDN) --}}
+    <script src="https://js.pusher.com/8.4/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.19.0/dist/echo.iife.js"></script>
+
+    {{-- Pass config to JS --}}
+    <script>
+        window.__userId = {{ Auth::id() }};
+        window.__pusherKey = '{{ config("broadcasting.connections.pusher.key") }}';
+        window.__pusherCluster = '{{ config("broadcasting.connections.pusher.options.cluster") }}';
+        window.__appUrl = '{{ rtrim(config("app.url"), "/") }}';
+        window.__appDebug = {{ config('app.debug') ? 'true' : 'false' }};
+    </script>
+
+    {{-- Echo initialization & notification listeners --}}
+    <script src="{{ asset('assets/js/echo-init.js') }}"></script>
+    @endauth
 
     @stack('scripts')
 </body>

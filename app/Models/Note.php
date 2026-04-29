@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Builder;
 
 class Note extends Model
@@ -20,13 +19,19 @@ class Note extends Model
         'content',
         'is_pinned',
         'pinned_at',
+        'password_hash',
         'is_locked',
     ];
 
+    /**
+     * Never expose the raw password hash in JSON / API responses.
+     */
+    protected $hidden = ['password_hash'];
+
     protected $casts = [
         'is_pinned' => 'boolean',
-        'is_locked' => 'boolean',
         'pinned_at' => 'datetime',
+        'is_locked' => 'boolean',
     ];
 
     // ──────────────────────────────────────────────
@@ -54,13 +59,13 @@ class Note extends Model
     /** Share records for this note */
     public function shares(): HasMany
     {
-        return $this->hasMany(Share::class, 'note_id');
+        return $this->hasMany(NoteShare::class, 'note_id');
     }
 
-    /** Password protection record */
-    public function notePassword(): HasOne
+    /** Get the share record for a specific user */
+    public function shareFor(int $userId): ?NoteShare
     {
-        return $this->hasOne(NotePassword::class, 'note_id');
+        return $this->shares()->where('shared_with_user_id', $userId)->first();
     }
 
     // ──────────────────────────────────────────────
@@ -71,6 +76,14 @@ class Note extends Model
     public function scopeOwnedBy(Builder $query, int $userId): Builder
     {
         return $query->where('user_id', $userId);
+    }
+
+    /** Notes shared with $userId (via note_shares) */
+    public function scopeSharedWith(Builder $query, int $userId): Builder
+    {
+        return $query->whereHas('shares', function (Builder $q) use ($userId) {
+            $q->where('shared_with_user_id', $userId);
+        });
     }
 
     /**
@@ -109,27 +122,43 @@ class Note extends Model
         return (bool) $this->is_pinned;
     }
 
-    public function isLocked(): bool
+    public function isPasswordProtected(): bool
     {
-        return (bool) $this->is_locked;
-    }
-
-    public function isShared(): bool
-    {
-        return $this->shares()->exists();
+        return $this->is_locked && !empty($this->password_hash);
     }
 
     /**
-     * Verify a plain-text password against the note's password hash.
+     * Standard JSON representation for note cards (used by API responses).
+     * Centralises the mapping that was previously duplicated across controllers.
      */
-    public function verifyLockPassword(string $plain): bool
+    public function toCardArray(): array
     {
-        $notePassword = $this->notePassword;
+        return [
+            'id'          => $this->id,
+            'title'       => $this->title,
+            'content'     => $this->content,
+            'is_pinned'   => $this->is_pinned,
+            'is_locked'   => $this->is_locked,
+            'updated_at'  => $this->updated_at?->diffForHumans(),
+            'labels'      => $this->labels->map(fn ($l) => ['id' => $l->id, 'name' => $l->name])->values(),
+            'attachments' => $this->attachments->map(fn ($a) => [
+                'id'            => $a->id,
+                'url'           => $a->secure_url,
+                'thumbnail_url' => $a->thumbnailUrl(400),
+            ])->values(),
+        ];
+    }
 
-        if (!$notePassword) {
-            return false;
-        }
-
-        return $notePassword->verify($plain);
+    /**
+     * Extended card array that includes owner info (for shared note views).
+     */
+    public function toSharedCardArray(): array
+    {
+        return array_merge($this->toCardArray(), [
+            'owner' => [
+                'name'       => $this->user->name ?? '',
+                'avatar_url' => $this->user?->avatarUrl(),
+            ],
+        ]);
     }
 }

@@ -13,7 +13,10 @@ class Attachment extends Model
 
     protected $fillable = [
         'note_id',
-        'file_path',
+        'cloudinary_public_id',
+        'secure_url',
+        'mime_type',
+        'size',
     ];
 
     // ──────────────────────────────────────────────
@@ -29,10 +32,21 @@ class Attachment extends Model
     // Helpers
     // ──────────────────────────────────────────────
 
-    /** Returns the publicly accessible URL for this attachment */
+    /** URL gốc của ảnh trên Cloudinary */
     public function url(): string
     {
-        return \Storage::disk('public')->url($this->file_path);
+        return $this->secure_url;
+    }
+
+    /** URL thumbnail với kích thước tuỳ chỉnh */
+    public function thumbnailUrl(int $width = 400): string
+    {
+        return preg_replace(
+            '#/upload/#',
+            "/upload/c_fill,w_{$width},h_{$width},q_auto/",
+            $this->secure_url,
+            1
+        );
     }
 
     /**

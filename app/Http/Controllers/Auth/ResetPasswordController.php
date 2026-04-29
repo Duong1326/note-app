@@ -48,7 +48,7 @@ class ResetPasswordController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Xóa session
+        // Clear session
         session()->forget('password_reset');
 
         return redirect()->route('login')

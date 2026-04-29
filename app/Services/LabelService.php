@@ -36,7 +36,7 @@ class LabelService
                 'name' => $name,
             ]);
         } catch (ValidationException $e) {
-            throw $e; // Giữ nguyên lỗi validation để Controller/Laravel tự xử lý
+            throw $e; // Re-throw validation errors for the controller to handle
         } catch (Exception $e) {
             Log::error('Lỗi khi tạo nhãn mới: ' . $e->getMessage());
             throw new Exception('Có lỗi xảy ra khi hệ thống tạo nhãn: ' . $e->getMessage());
@@ -79,5 +79,4 @@ class LabelService
             throw new Exception('Có lỗi xảy ra khi xóa nhãn: ' . $e->getMessage());
         }
     }
-
 }

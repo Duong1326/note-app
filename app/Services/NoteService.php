@@ -5,53 +5,23 @@ namespace App\Services;
 use App\Models\Note;
 use App\Models\User;
 use Exception;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
 class NoteService
 {
-    private const PER_PAGE = 20;
-
-    public function listForUser(User $user, array $filters = []): LengthAwarePaginator
-    {
-        try {
-            $query = Note::ownedBy($user->id)
-                ->with(['labels', 'attachments', 'notePassword'])
-                ->defaultOrder();
-
-            if (!empty($filters['q'])) {
-                $keyword = $filters['q'];
-                if (DB::getDriverName() === 'mysql') {
-                    $query->whereRaw(
-                        'MATCH(title, content) AGAINST (? IN NATURAL LANGUAGE MODE)',
-                        [$keyword]
-                    );
-                } else {
-                    $query->search($keyword);
-                }
-            }
-
-            if (!empty($filters['label_ids'])) {
-                $query->withLabels($filters['label_ids']);
-            }
-
-            return $query->paginate(self::PER_PAGE);
-
-        } catch (Exception $e) {
-            Log::error('Lỗi khi tải danh sách Ghi chú: ' . $e->getMessage());
-            throw new Exception('Không thể tải danh sách ghi chú của bạn lúc này. Vui lòng thử lại sau.');
-        }
-    }
-
+    /**
+     * Create a new note for the given user.
+     */
     public function create(User $user, array $data): Note
     {
         try {
             $note = DB::transaction(function () use ($user, $data) {
                 $note = $user->notes()->create([
-                    'title' => $data['title'],
-                    'content' => $data['content'] ?? null,
+                    'title'     => $data['title'],
+                    'content'   => $data['content'] ?? null,
                     'is_pinned' => $data['is_pinned'] ?? false,
                 ]);
 
@@ -59,60 +29,29 @@ class NoteService
                     $note->labels()->sync($data['label_ids']);
                 }
 
-                if (!empty($data['password'])) {
-                    $note->notePassword()->create([
-                        'password_hash' => bcrypt($data['password']),
-                    ]);
-                }
-
                 return $note;
             });
 
-            return $note->load(['labels', 'attachments', 'notePassword']);
-
+            return $note->load(['labels', 'attachments']);
         } catch (Exception $e) {
             Log::error('Lỗi khi tạo Ghi chú: ' . $e->getMessage());
             throw new Exception('Không thể tạo ghi chú lúc này. Vui lòng thử lại sau.');
         }
     }
 
-    public function delete(Note $note): void
+    /**
+     * Update an existing note. Checks ownership or edit-share permission.
+     */
+    public function update(Note $note, array $data, int $updatedByUserId): Note
     {
         try {
-            $note->delete();
-        } catch (Exception $e) {
-            Log::error('Lỗi khi xóa Ghi chú: ' . $e->getMessage());
-            throw new Exception('Không thể xóa ghi chú lúc này. Vui lòng thử lại sau.');
-        }
-    }
+            $isOwner = $note->user_id === $updatedByUserId;
+            $hasEditPermission = !$isOwner && $note->shares()
+                ->where('shared_with_user_id', $updatedByUserId)
+                ->where('permission', 'edit')
+                ->exists();
 
-    public function listSharedWithUser(User $user): LengthAwarePaginator
-    {
-        try {
-            $query = Note::query()
-                ->whereHas('shares', function (Builder $q) use ($user) {
-                    $q->where('shared_with_user_id', $user->id);
-                })
-                ->with(['user', 'labels'])
-                ->defaultOrder()
-                ->paginate(self::PER_PAGE);
-
-            return $query;
-
-        } catch (Exception $e) {
-            Log::error('Lỗi khi tải danh sách Ghi chú được chia sẻ: ' . $e->getMessage());
-            throw new Exception('Không thể tải danh sách ghi chú được chia sẻ lúc này. Vui lòng thử lại sau.');
-        }
-    }
-
-    public function update(
-        Note $note,
-        array $data,
-        int $updatedByUserId
-    ): Note {
-        try {
-            // Kiểm tra quyền: chỉ chủ sở hữu mới được cập nhật
-            if ($note->user_id !== $updatedByUserId) {
+            if (!$isOwner && !$hasEditPermission) {
                 throw new Exception('Bạn không có quyền chỉnh sửa ghi chú này.');
             }
 
@@ -126,28 +65,37 @@ class NoteService
                 if (array_key_exists('is_pinned', $data)) {
                     $note->is_pinned = $data['is_pinned'];
                 }
-                
+
                 $note->save();
 
                 if (array_key_exists('label_ids', $data)) {
                     $note->labels()->sync($data['label_ids'] ?? []);
                 }
 
-                if (!empty($data['password'])) {
-                    $note->notePassword()->updateOrCreate(
-                        ['note_id' => $note->id],
-                        ['password_hash' => bcrypt($data['password'])]
-                    );
-                }
-
                 return $note;
             });
 
-            return $updated->load(['labels', 'attachments', 'notePassword']);
-
+            return $updated->load(['labels', 'attachments']);
         } catch (Exception $e) {
+            // Re-throw permission/authorization errors with original message
+            if (str_contains($e->getMessage(), 'quyền') || str_contains($e->getMessage(), 'permission')) {
+                throw $e;
+            }
             Log::error('Lỗi khi cập nhật Ghi chú: ' . $e->getMessage());
             throw new Exception('Không thể cập nhật ghi chú lúc này. Vui lòng thử lại sau.');
+        }
+    }
+
+    /**
+     * Delete a note.
+     */
+    public function delete(Note $note): void
+    {
+        try {
+            $note->delete();
+        } catch (Exception $e) {
+            Log::error('Lỗi khi xóa Ghi chú: ' . $e->getMessage());
+            throw new Exception('Không thể xóa ghi chú lúc này. Vui lòng thử lại sau.');
         }
     }
 
@@ -169,5 +117,34 @@ class NoteService
         ]);
 
         return $note;
+    }
+
+    // ──────────────────────────────────────────────
+    // Password Lock
+    // ──────────────────────────────────────────────
+
+    public function setPassword(Note $note, string $password): void
+    {
+        $note->update([
+            'password_hash' => Hash::make($password),
+            'is_locked'     => true,
+        ]);
+    }
+
+    public function removePassword(Note $note): void
+    {
+        $note->update([
+            'password_hash' => null,
+            'is_locked'     => false,
+        ]);
+    }
+
+    public function verifyPassword(Note $note, string $password): bool
+    {
+        if (!$note->isPasswordProtected()) {
+            return true;
+        }
+
+        return Hash::check($password, $note->password_hash);
     }
 }

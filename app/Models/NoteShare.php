@@ -5,16 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Share extends Model
+class NoteShare extends Model
 {
-    const PERMISSION_READ = 'read';
-    const PERMISSION_EDIT = 'edit';
-
     protected $fillable = [
         'note_id',
         'owner_id',
         'shared_with_user_id',
         'permission',
+    ];
+
+    protected $casts = [
+        'permission' => 'string',
     ];
 
     // ──────────────────────────────────────────────
@@ -26,14 +27,12 @@ class Share extends Model
         return $this->belongsTo(Note::class, 'note_id');
     }
 
-    /** The user who shared the note */
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
     }
 
-    /** The user who received access to the note */
-    public function recipient(): BelongsTo
+    public function sharedWith(): BelongsTo
     {
         return $this->belongsTo(User::class, 'shared_with_user_id');
     }
@@ -42,13 +41,13 @@ class Share extends Model
     // Helpers
     // ──────────────────────────────────────────────
 
-    public function isReadOnly(): bool
-    {
-        return $this->permission === self::PERMISSION_READ;
-    }
-
     public function canEdit(): bool
     {
-        return $this->permission === self::PERMISSION_EDIT;
+        return $this->permission === 'edit';
+    }
+
+    public function canRead(): bool
+    {
+        return in_array($this->permission, ['read', 'edit']);
     }
 }

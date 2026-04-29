@@ -8,7 +8,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 
-class AuthControler extends Controller
+class AuthController extends Controller
 {
     public function __construct(private AuthService $authService)
     {
@@ -23,7 +23,7 @@ class AuthControler extends Controller
 
     public function showVerifyOtp()
     {
-        // Chỉ cho phép truy cập nếu có phiên đăng ký
+        // Only allow access if there is an active registration session
         if (!session('registration')) {
             return redirect()->route('register')
                 ->with('error', 'Vui lòng đăng ký trước.');

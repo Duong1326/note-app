@@ -32,7 +32,7 @@ class AuthService
             ],
         ]);
 
-        // Gửi email OTP qua queue (không block request)
+        // Send OTP email via queue (non-blocking)
         Mail::to($data['email'])->queue(
             new VerificationCodeMail($otp, $data['name'])
         );
@@ -69,6 +69,7 @@ class AuthService
                 'email_verified_at' => now(),
             ]);
         } catch (QueryException $e) {
+            // Handle unique constraint violation (race condition)
             if ((string) $e->getCode() === '23000') {
                 throw ValidationException::withMessages([
                     'email' => ['Email đã được sử dụng.'],

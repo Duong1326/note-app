@@ -24,9 +24,6 @@ return new class extends Migration
             $table->boolean('is_pinned')->default(false);
             $table->timestamp('pinned_at')->nullable();
 
-            // Password lock flag (password stored in note_passwords table)
-            $table->boolean('is_locked')->default(false);
-
             $table->timestamps(); // created_at, updated_at
         });
     }
