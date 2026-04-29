@@ -62,6 +62,8 @@ class DashboardController extends Controller
                 ->get(),
             'labels' => $user->labels()->orderBy('name')->get(),
             'searchQuery' => $request->q,
+            'nextCursor' => $nextCursor,
+            'hasMoreNotes' => $hasMoreNotes,
         ]);
     }
 
@@ -109,8 +111,8 @@ class DashboardController extends Controller
 
         return response()->json([
             'notes' => $notes->map(fn($note) => $note->toCardArray()),
-            'has_more' => $hasMore,
-            'next_cursor' => $nextCursor,
+            'hasMoreNotes' => $hasMore,
+            'nextCursor' => $nextCursor,
         ]);
     }
 
