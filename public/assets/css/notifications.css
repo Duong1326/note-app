@@ -155,19 +155,19 @@
 }
 
 .fn-notification-avatar.share {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: #6366f1;
 }
 
 .fn-notification-avatar.update {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: #10b981;
 }
 
 .fn-notification-avatar.revoke {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: #ef4444;
 }
 
 .fn-notification-avatar.permission {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
+    background: #f59e0b;
 }
 
 .fn-notification-avatar img {

@@ -81,7 +81,7 @@
                                                     data-content="{{ $note->content }}"
                                                     data-labels="{{ $note->labels->pluck('id')->toJson() }}"
                                                     data-attachments="{{ $note->attachments->map(fn($a) => ['id' => $a->id, 'url' => $a->secure_url, 'thumbnail_url' => $a->thumbnailUrl(400)])->toJson() }}"
-                                                    onclick="openEditNoteModal(this)">
+                                                    onclick="requireUnlock('{{ $note->id }}', (tok) => openEditNoteModal(this, tok))">
                                                     <span class="material-symbols-outlined fn-icon-sm">edit</span>
                                                     Chỉnh sửa
                                                 </a>
@@ -237,9 +237,10 @@
                 <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-animate-in fn-shared-note-col"
                      data-note-id="{{ $note->id }}"
                      data-share-id="{{ $share->id }}"
-                     data-permission="{{ $share->permission }}">
+                     data-permission="{{ $share->permission }}"
+                     data-locked="{{ $note->is_locked ? '1' : '0' }}">
                     <div class="fn-note-card fn-shared-card"
-                         onclick="openSharedNoteModal({{ $note->id }}, '{{ $share->permission }}')"
+                         onclick="openSharedNoteOrUnlock({{ $note->id }}, '{{ $share->permission }}', {{ $note->is_locked ? 'true' : 'false' }})"
                          style="cursor:pointer;">
 
                         {{-- Thumbnail --}}
@@ -322,8 +323,10 @@
             {{-- Body --}}
             <div class="fn-modal-body">
                 <input type="text" class="sn-title fn-modal-title-input" placeholder="Tiêu đề...">
-                <textarea class="sn-content fn-modal-content-input" placeholder="Nội dung ghi chú..." rows="10"
-                          style="margin-top:1rem;"></textarea>
+                <div class="sn-content fn-modal-content-input"
+                     contenteditable="false"
+                     data-placeholder="Nội dung ghi chú..."
+                     style="margin-top:1rem; min-height:160px;"></div>
             </div>
 
             {{-- Footer --}}
@@ -338,6 +341,17 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    {{-- ═══ Slash Command Menu (body-level, shared by all editors) ═══ --}}
+    <div class="fn-slash-menu d-none" id="slashCommandMenu">
+        <div class="fn-slash-header">Khối cơ bản</div>
+        <div class="fn-slash-list"></div>
+        <div class="fn-slash-footer">
+            <span class="fn-slash-hint"><kbd>↑↓</kbd> chọn</span>
+            <span class="fn-slash-hint"><kbd>↵</kbd> xác nhận</span>
+            <span class="fn-slash-hint"><kbd>esc</kbd> đóng</span>
         </div>
     </div>
 

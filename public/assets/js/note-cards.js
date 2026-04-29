@@ -172,14 +172,14 @@ function buildNoteCardHtml(note) {
                         data-bs-toggle="dropdown" aria-expanded="false">more_vert</span>
                     <ul class="dropdown-menu dropdown-menu-end fn-dropdown-menu shadow-sm border-0 rounded-3">
                         <li>
-                            <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                             <a class="dropdown-item d-flex align-items-center gap-2 py-2"
                                href="javascript:void(0)"
                                data-id="${note.id}"
                                data-title="${escapeAttr(note.title)}"
                                data-content="${escapeAttr(note.content ?? '')}"
                                data-labels='${labelIds}'
                                data-attachments='${escapeAttr(attachmentsJson)}'
-                               onclick="openEditNoteModal(this)">
+                               onclick="requireUnlock(${note.id}, (tok) => openEditNoteModal(this, tok))">
                                 <span class="material-symbols-outlined fn-icon-sm">edit</span>
                                 Chỉnh sửa
                             </a>

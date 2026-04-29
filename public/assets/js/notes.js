@@ -31,15 +31,13 @@ function setNotesView(view) {
 // ═══════════════════════════════════════════════════
 
 async function deleteNoteAjax(noteId) {
-    requireUnlock(noteId, async () => {
+    requireUnlock(noteId, async (token) => {
         if (!confirm('Bạn có chắc chắn muốn xóa ghi chú này?')) return;
         const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
         try {
-            const token = getLockToken(noteId);
             const headers = token ? { 'X-Note-Token': token } : {};
             const res = await apiFetch(`/notes/${noteId}`, 'DELETE', null, headers);
             if (!res.ok) throw new Error('Delete failed');
-            clearLockToken(noteId); // one-time: action done
             if (col) removeNoteCard(col);
         } catch (err) {
             if (col) { col.style.opacity = ''; col.style.transform = ''; col.style.pointerEvents = ''; }
@@ -49,15 +47,13 @@ async function deleteNoteAjax(noteId) {
 }
 
 async function togglePinAjax(noteId, currentlyPinned) {
-    requireUnlock(noteId, async () => {
+    requireUnlock(noteId, async (token) => {
         const url = currentlyPinned ? `/notes/${noteId}/unpin` : `/notes/${noteId}/pin`;
         try {
-            const token = getLockToken(noteId);
             const headers = token ? { 'X-Note-Token': token } : {};
             const res = await apiFetch(url, 'POST', null, headers);
             if (!res.ok) throw new Error('Failed to toggle pin state');
             const { is_pinned: isPinned } = await res.json();
-            clearLockToken(noteId); // one-time: action done
             const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
             if (col) {
                 patchPinCard(col, noteId, isPinned);
@@ -178,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const editBtn = card.querySelector('.dropdown-item[onclick*="openEditNoteModal"]');
         if (!editBtn || !noteId) return;
 
-        requireUnlock(noteId, () => openEditNoteModal(editBtn));
+        requireUnlock(noteId, (token) => openEditNoteModal(editBtn, token));
     });
 });
 

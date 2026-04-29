@@ -16,12 +16,13 @@ class VerificationCodeMail extends Mailable implements ShouldQueue
     public function __construct(
         public string $code,
         public string $userName,
-    ) {}
+    ) {
+    }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Mã xác thực tài khoản LiveNote',
+            subject: 'Mã xác thực tài khoản Fluid Notes',
         );
     }
 

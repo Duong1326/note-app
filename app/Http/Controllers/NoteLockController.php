@@ -20,7 +20,9 @@ class NoteLockController extends Controller
      */
     public function verify(VerifyLockRequest $request, Note $note): JsonResponse
     {
-        $this->authorizeNoteOwner($request, $note);
+        // Both the owner AND shared users with 'edit' permission may verify the password.
+        // (Shared read-only users cannot write, so they never need a token.)
+        $this->authorizeNoteAccess($request, $note);
 
         if (!$note->isPasswordProtected()) {
             return response()->json(['success' => true, 'token' => null]);
@@ -133,6 +135,26 @@ class NoteLockController extends Controller
     private function authorizeNoteOwner(Request $request, Note $note): void
     {
         abort_if($request->user()->id !== $note->user_id, 403, 'Bạn không có quyền thực hiện thao tác này.');
+    }
+
+    /**
+     * Allow both the note owner and shared users with 'edit' permission.
+     * Used for verify() so shared editors can unlock the note.
+     */
+    private function authorizeNoteAccess(Request $request, Note $note): void
+    {
+        $userId = $request->user()->id;
+
+        if ($userId === $note->user_id) {
+            return; // owner — always allowed
+        }
+
+        $hasEditShare = $note->shares()
+            ->where('shared_with_user_id', $userId)
+            ->where('permission', 'edit')
+            ->exists();
+
+        abort_if(!$hasEditShare, 403, 'Bạn không có quyền thực hiện thao tác này.');
     }
 
     /**

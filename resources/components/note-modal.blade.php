@@ -43,6 +43,7 @@
                             <label class="fn-checkbox-label" for="modal_label_{{ $label->id }}">
                                 <input type="checkbox" name="label_ids[]" id="modal_label_{{ $label->id }}"
                                     value="{{ $label->id }}" class="fn-checkbox-input" />
+                                <span class="fn-checkbox-text">{{ $label->name }}</span>
                             </label>
                         @endforeach
                     </div>
@@ -65,17 +66,6 @@
                 <div class="fn-modal-field fn-editor-wrapper">
                     <div id="modalNoteContent" class="fn-modal-content-input" contenteditable="true"
                         data-placeholder="Nhấn &lsquo;/&rsquo; để chèn khối • Bắt đầu viết ý tưởng..."></div>
-
-                    {{-- Slash Command Menu --}}
-                    <div class="fn-slash-menu d-none" id="slashCommandMenu">
-                        <div class="fn-slash-header">Khối cơ bản</div>
-                        <div class="fn-slash-list"></div>
-                        <div class="fn-slash-footer">
-                            <span class="fn-slash-hint"><kbd>↑↓</kbd> chọn</span>
-                            <span class="fn-slash-hint"><kbd>↵</kbd> xác nhận</span>
-                            <span class="fn-slash-hint"><kbd>esc</kbd> đóng</span>
-                        </div>
-                    </div>
                 </div>
 
                 {{-- Image Attachments --}}

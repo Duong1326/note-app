@@ -89,6 +89,13 @@ async function removeModalThumbnail() {
 let _editingNoteId = null;
 
 /**
+ * One-time unlock token for editing a locked note.
+ * Set when the user successfully unlocks a note to open the edit modal.
+ * Sent as X-Note-Token on form submit, then cleared when the modal closes.
+ */
+let _editLockToken = null;
+
+/**
  * Snapshot of the note state when the edit modal was opened.
  * Used to detect if the user actually made any changes before saving.
  */
@@ -124,8 +131,13 @@ function openNewNoteModal() {
     setTimeout(() => document.getElementById('modalNoteTitle')?.focus(), 350);
 }
 
-function openEditNoteModal(btn) {
+/**
+ * Open the edit modal. `token` is passed from requireUnlock callback
+ * when the note is locked — it authorizes the PUT /notes/{id} request.
+ */
+function openEditNoteModal(btn, token = null) {
     _editingNoteId = btn.dataset.id;
+    _editLockToken = token;  // may be null for unlocked notes
     _pendingFiles = [];
     _existingAttachments = JSON.parse(btn.dataset.attachments || '[]');
 
@@ -148,18 +160,12 @@ function openEditNoteModal(btn) {
     const pp = document.getElementById('pendingPreviews');
     if (pp) pp.innerHTML = '';
 
-    // Hide attachment section when images exist (thumbnail is shown above title)
-    // Show it only when there are no images so user can add one
+    // Always hide attachment section when opening edit modal
+    // (thumbnail is shown above title; user can re-open via toolbar button)
     const section = document.getElementById('attachmentSection');
-    if (_existingAttachments.length > 0) {
-        section?.classList.add('d-none');
-        section?.classList.remove('d-flex');
-        document.getElementById('btnToggleAttachment')?.classList.remove('active');
-    } else {
-        section?.classList.add('d-none');
-        section?.classList.remove('d-flex');
-        document.getElementById('btnToggleAttachment')?.classList.remove('active');
-    }
+    section?.classList.add('d-none');
+    section?.classList.remove('d-flex');
+    document.getElementById('btnToggleAttachment')?.classList.remove('active');
 
     // Show modal thumbnail preview
     updateModalThumbnail();
@@ -173,10 +179,8 @@ function closeNewNoteModal() {
     document.body.style.overflow = '';
     document.getElementById('createNoteForm')?.reset();
 
-    // One-time unlock: clear token so next access requires re-authentication
-    if (_editingNoteId) clearLockToken(_editingNoteId);
-
     _editingNoteId = null;
+    _editLockToken = null;  // discard any unused token
     _pendingFiles = [];
     _existingAttachments = [];
     _originalSnapshot = null;
@@ -210,7 +214,6 @@ function _showModal() {
 
 async function submitNoteForm() {
     const title = document.getElementById('modalNoteTitle').value.trim();
-    const content = getEditorContent();
 
     if (!title) {
         showToast('Vui lòng nhập tiêu đề ghi chú', 'error');
@@ -218,20 +221,22 @@ async function submitNoteForm() {
         return;
     }
 
-    const labelIds = [...document.querySelectorAll('input[name="label_ids[]"]:checked')].map(cb => cb.value);
+    const labelIds  = [...document.querySelectorAll('input[name="label_ids[]"]:checked')].map(cb => cb.value);
     const isEditing = _editingNoteId !== null;
+
+    // Read content BEFORE upload for change detection only
+    const contentBeforeUpload = getEditorContent();
 
     // ── Kiểm tra thay đổi (chỉ áp dụng khi đang edit) ──
     if (isEditing && _originalSnapshot) {
         const currentLabelIds = labelIds.map(String).sort().join(',');
         const hasChanges =
             title !== _originalSnapshot.title ||
-            content !== _originalSnapshot.content ||
+            contentBeforeUpload !== _originalSnapshot.content ||
             currentLabelIds !== _originalSnapshot.labelIds ||
-            _pendingFiles.length > 0;                        // có ảnh mới
+            _pendingFiles.length > 0;
 
         if (!hasChanges) {
-            // Không có gì thay đổi → đóng modal, không gọi API
             closeNewNoteModal();
             return;
         }
@@ -245,112 +250,118 @@ async function submitNoteForm() {
         saveBtn.innerHTML = '<span class="fn-btn-spinner"></span> Đang lưu…';
     }
 
-    const url = isEditing ? `/notes/${_editingNoteId}` : window.FN_STORE_URL;
-    const method = isEditing ? 'PUT' : 'POST';
-
-    const body = new URLSearchParams({ title, content });
-    labelIds.forEach(id => body.append('label_ids[]', id));
-
     try {
-        const token = isEditing ? getLockToken(_editingNoteId) : null;
-        const headers = token ? { 'X-Note-Token': token } : {};
-        const res = await apiFetch(url, method, body, headers);
-        const data = await res.json();
-
-        if (!res.ok) {
-            const firstError = data.errors
-                ? Object.values(data.errors).flat()[0]
-                : (data.message || 'Có lỗi xảy ra');
-            showToast(firstError, 'error');
-            // Restore save button
-            if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = saveBtnOriginalHtml; }
-            return;
-        }
-
-        const noteId = data.note.id;
-        const filesToUpload = [..._pendingFiles];
-        const existingAtts = [..._existingAttachments];
-        const inlineFiles = [..._inlineContentFiles]; // snapshot before modal close
-        const savedContentHtml = getEditorContent();  // snapshot HTML before modal close
-
-        // ── Close modal immediately (optimistic UI) ──
-        // Create temporary blob thumbnails for instant visual feedback
-        const tempThumbs = filesToUpload.map(f => ({
-            id: null,
-            url: URL.createObjectURL(f),
-            thumbnail_url: URL.createObjectURL(f),
-        }));
+        let noteId;
+        const lockToken = _editLockToken;
 
         if (isEditing) {
+            // ── EDIT: upload inline images first (noteId is known) ──
+            await uploadInlineContentImages(_editingNoteId, lockToken);
+
+            const content = getEditorContent();  // now has real Cloudinary URLs
+            const body = new URLSearchParams({ title, content });
+            labelIds.forEach(id => body.append('label_ids[]', id));
+
+            const headers = lockToken ? { 'X-Note-Token': lockToken } : {};
+            const res = await apiFetch(`/notes/${_editingNoteId}`, 'PUT', body, headers);
+            const data = await res.json();
+
+            if (!res.ok) {
+                const firstError = data.errors
+                    ? Object.values(data.errors).flat()[0]
+                    : (data.message || 'Có lỗi xảy ra');
+                showToast(firstError, 'error');
+                if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = saveBtnOriginalHtml; }
+                return;
+            }
+
+            noteId = data.note.id;
+
+            // Optimistic card update
+            const filesToUpload = [..._pendingFiles];
+            const existingAtts  = [..._existingAttachments];
+            const uploadToken   = lockToken;
+
+            const tempThumbs = filesToUpload.map(f => ({
+                id: null, url: URL.createObjectURL(f), thumbnail_url: URL.createObjectURL(f),
+            }));
             data.note.attachments = [...existingAtts, ...tempThumbs];
             patchNoteCard(_editingNoteId, data.note);
             const col = document.querySelector(`.note-col[data-note-id="${_editingNoteId}"]`);
             moveCardToTopOfUnpinned(col);
-        } else {
-            data.note.attachments = [...(data.note.attachments ?? []), ...tempThumbs];
-            prependNoteCard(data.note);
-        }
 
-        closeNewNoteModal();
+            closeNewNoteModal();
 
-        // ── Upload pending thumbnail files in background (parallel) ──
-        if (filesToUpload.length > 0) {
-            const uploadResults = await uploadPendingFilesParallel(noteId, filesToUpload);
-
-            // Update the card with new attachments once uploads finish
-            const allAttachments = [...existingAtts, ...uploadResults];
-            data.note.attachments = allAttachments;
-            const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
-            if (col) {
-                updateCardThumbnail(col, allAttachments);
-                const editBtn = col.querySelector('.dropdown-item[onclick*="openEditNoteModal"]');
-                if (editBtn) {
-                    editBtn.dataset.attachments = JSON.stringify(allAttachments);
+            // Upload thumbnail attachments in background
+            if (filesToUpload.length > 0) {
+                const uploadResults = await uploadPendingFilesParallel(noteId, filesToUpload, uploadToken);
+                const allAttachments = [...existingAtts, ...uploadResults];
+                const cardCol = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
+                if (cardCol) {
+                    updateCardThumbnail(cardCol, allAttachments);
+                    const editBtn = cardCol.querySelector('.dropdown-item[onclick*="openEditNoteModal"]');
+                    if (editBtn) editBtn.dataset.attachments = JSON.stringify(allAttachments);
                 }
             }
-        }
 
-        // ── Upload inline content images in background ──
-        if (inlineFiles.length > 0) {
-            let updatedHtml = savedContentHtml;
+        } else {
+            // ── NEW NOTE: POST first (inline images need noteId) ──
+            const bodyFirst = new URLSearchParams({ title, content: contentBeforeUpload });
+            labelIds.forEach(id => bodyFirst.append('label_ids[]', id));
 
-            // Upload each inline image and replace blob URL in the HTML string
-            const uploads = inlineFiles.map(async (item) => {
-                try {
-                    const compressed = typeof compressImage === 'function'
-                        ? await compressImage(item.file) : item.file;
-                    const formData = new FormData();
-                    formData.append('image', compressed);
-                    formData.append('_token', getCsrfToken());
-                    const res = await apiFetch(`/notes/${noteId}/attachments`, 'POST', formData);
-                    const resData = await res.json();
-                    if (resData.success) {
-                        // Replace blob URL with real Cloudinary URL in the HTML string
-                        updatedHtml = updatedHtml.replace(item.blobUrl, resData.attachment.url);
-                        URL.revokeObjectURL(item.blobUrl);
-                    }
-                } catch { /* handled silently */ }
-            });
-            await Promise.all(uploads);
+            const resFirst = await apiFetch(window.FN_STORE_URL, 'POST', bodyFirst);
+            const dataFirst = await resFirst.json();
 
-            // Save updated content with real URLs
-            const contentBody = new URLSearchParams({ title, content: updatedHtml });
-            labelIds.forEach(id => contentBody.append('label_ids[]', id));
-            const editToken = getLockToken(noteId);
-            const editHeaders = editToken ? { 'X-Note-Token': editToken } : {};
-            await apiFetch(`/notes/${noteId}`, 'PUT', contentBody, editHeaders).catch(() => {});
+            if (!resFirst.ok) {
+                const firstError = dataFirst.errors
+                    ? Object.values(dataFirst.errors).flat()[0]
+                    : (dataFirst.message || 'Có lỗi xảy ra');
+                showToast(firstError, 'error');
+                if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = saveBtnOriginalHtml; }
+                return;
+            }
 
-            // Update card content data
-            const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
-            if (col) {
-                const editBtn = col.querySelector('.dropdown-item[onclick*="openEditNoteModal"]');
-                if (editBtn) editBtn.dataset.content = updatedHtml;
+            noteId = dataFirst.note.id;
+
+            // Upload inline images now that we have noteId
+            await uploadInlineContentImages(noteId, null);
+            const finalContent = getEditorContent();  // real URLs now
+
+            // Update content with real URLs if any inline images were present
+            const hasInlineImages = finalContent !== contentBeforeUpload;
+            if (hasInlineImages) {
+                const bodyUpdate = new URLSearchParams({ title, content: finalContent });
+                labelIds.forEach(id => bodyUpdate.append('label_ids[]', id));
+                await apiFetch(`/notes/${noteId}`, 'PUT', bodyUpdate).catch(() => {});
+            }
+
+            // Optimistic card
+            const filesToUpload = [..._pendingFiles];
+            const tempThumbs = filesToUpload.map(f => ({
+                id: null, url: URL.createObjectURL(f), thumbnail_url: URL.createObjectURL(f),
+            }));
+            dataFirst.note.content    = finalContent;
+            dataFirst.note.attachments = [...(dataFirst.note.attachments ?? []), ...tempThumbs];
+            prependNoteCard(dataFirst.note);
+
+            closeNewNoteModal();
+
+            // Upload thumbnail attachments in background
+            if (filesToUpload.length > 0) {
+                const uploadResults = await uploadPendingFilesParallel(noteId, filesToUpload, null);
+                const allAttachments = [...uploadResults];
+                const cardCol = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
+                if (cardCol) {
+                    updateCardThumbnail(cardCol, allAttachments);
+                    const editBtn = cardCol.querySelector('.dropdown-item[onclick*="openEditNoteModal"]');
+                    if (editBtn) editBtn.dataset.attachments = JSON.stringify(allAttachments);
+                }
             }
         }
 
     } catch {
         showToast('Lỗi kết nối, vui lòng thử lại', 'error');
-        // Restore save button if modal is still open
         if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = saveBtnOriginalHtml; }
     }
 }
+

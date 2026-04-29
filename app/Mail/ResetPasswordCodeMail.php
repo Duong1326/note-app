@@ -22,7 +22,7 @@ class ResetPasswordCodeMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Mã xác thực đặt lại mật khẩu LiveNote',
+            subject: 'Mã xác thực đặt lại mật khẩu Fluid Notes',
         );
     }
 

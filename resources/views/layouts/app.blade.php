@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
 
 <head>
     <meta charset="utf-8">
@@ -15,8 +15,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet">
 
+<<<<<<< Updated upstream
     {{-- Vite: Bootstrap CSS + App layout CSS (sidebar, header, notifications, base) --}}
     @vite(['resources/css/app.css'])
+=======
+    {{-- Bootstrap 5 --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+
+    {{-- App Styles (split for maintainability) --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/app-base.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/header.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/notifications.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/dark-mode.css') }}">
+
+    {{-- Flash-free theme restore: runs before first paint --}}
+    <script>
+        (function () {
+            var t = localStorage.getItem('fn-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
+            // Mark icon name on html so the button can read it after render
+            document.documentElement.dataset.themeIcon = t === 'dark' ? 'light_mode' : 'dark_mode';
+        })();
+    </script>
+>>>>>>> Stashed changes
 
     @stack('styles')
 </head>
@@ -43,7 +65,9 @@
                         @foreach($sidebarLabels as $label)
                             <div class="fn-sidebar-label-item" data-label-id="{{ $label->id }}">
                                 <div class="fn-sidebar-label-view">
-                                    <div class="fn-sidebar-label-info" onclick="filterNotesByLabel({{ $label->id }}, '{{ addslashes($label->name) }}')" style="cursor:pointer;">
+                                    <div class="fn-sidebar-label-info"
+                                        onclick="filterNotesByLabel({{ $label->id }}, '{{ addslashes($label->name) }}')"
+                                        style="cursor:pointer;">
                                         <span class="material-symbols-outlined">sell</span>
                                         <span class="fn-sidebar-label-name">{{ $label->name }}</span>
                                     </div>
@@ -82,10 +106,6 @@
         @endauth
 
         <div class="fn-sidebar-footer">
-            <a href="#" class="fn-nav-item">
-                <span class="material-symbols-outlined">help</span>
-                <span>Trợ giúp</span>
-            </a>
             <form method="POST" action="{{ route('logout') }}" id="logout-form">
                 @csrf
                 <a href="#" class="fn-nav-item"
@@ -121,8 +141,9 @@
             </div>
 
             <div class="fn-header-actions">
-                <button class="fn-icon-btn" title="Chế độ tối">
-                    <span class="material-symbols-outlined">dark_mode</span>
+                <button class="fn-icon-btn" id="darkModeToggle" title="Chuyển chế độ sáng/tối"
+                    onclick="toggleDarkMode()">
+                    <span class="material-symbols-outlined" id="darkModeIcon">dark_mode</span>
                 </button>
                 <div class="fn-notification-wrapper" id="notificationWrapper">
                     <button class="fn-icon-btn" title="Thông báo" onclick="toggleNotificationDropdown()">
@@ -132,7 +153,8 @@
                     {{-- Notification Dropdown Panel --}}
                     <div class="fn-notification-dropdown" id="notificationDropdown">
                         <div class="fn-notification-header">
-                            <h3>Thông báo <span class="fn-badge" id="notificationBadge" style="display:none;">0</span></h3>
+                            <h3>Thông báo <span class="fn-badge" id="notificationBadge" style="display:none;">0</span>
+                            </h3>
                             <button class="fn-notification-clear-btn" onclick="markAllAsRead()">Đánh dấu đã đọc</button>
                         </div>
                         <div class="fn-notification-list" id="notificationList">
@@ -162,12 +184,7 @@
                             Hồ sơ
                         </a>
                     </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#">
-                            <span class="material-symbols-outlined fn-icon-sm">settings</span>
-                            Cài đặt
-                        </a>
-                    </li>
+
                     <li>
                         <hr class="dropdown-divider">
                     </li>
@@ -198,10 +215,11 @@
     <div class="fn-toast-container" id="toastContainer"></div>
 
     @auth
-    {{-- Pusher & Laravel Echo (CDN) --}}
-    <script src="https://js.pusher.com/8.4/pusher.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.19.0/dist/echo.iife.js"></script>
+        {{-- Pusher & Laravel Echo (CDN) --}}
+        <script src="https://js.pusher.com/8.4/pusher.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.19.0/dist/echo.iife.js"></script>
 
+<<<<<<< Updated upstream
     {{-- Pass config to JS --}}
     <script>
         window.__userId = {{ Auth::id() }};
@@ -211,6 +229,19 @@
         window.__appDebug = {{ config('app.debug') ? 'true' : 'false' }};
     </script>
     {{-- echo-init is now bundled in virtual:core-scripts (loaded above) --}}
+=======
+        {{-- Pass config to JS --}}
+        <script>
+            window.__userId = {{ Auth::id() }};
+            window.__pusherKey = '{{ config("broadcasting.connections.pusher.key") }}';
+            window.__pusherCluster = '{{ config("broadcasting.connections.pusher.options.cluster") }}';
+            window.__appUrl = '{{ rtrim(config("app.url"), "/") }}';
+            window.__appDebug = {{ config('app.debug') ? 'true' : 'false' }};
+        </script>
+
+        {{-- Echo initialization & notification listeners --}}
+        <script src="{{ asset('assets/js/echo-init.js') }}"></script>
+>>>>>>> Stashed changes
     @endauth
 
     @stack('scripts')

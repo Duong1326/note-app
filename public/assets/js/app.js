@@ -82,3 +82,39 @@ window.addEventListener('pageshow', (event) => {
         window.location.reload();
     }
 });
+
+// ── Material Symbols Font Loading ─────────────────
+// Reveals icons only after font is ready — prevents FOUT
+if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+        document.body.classList.add('fonts-loaded');
+    });
+} else {
+    // Fallback for older browsers
+    document.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('fonts-loaded');
+    });
+}
+
+// ── Dark Mode ─────────────────────────────────────
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('fn-theme', theme);
+
+    const icon = document.getElementById('darkModeIcon');
+    if (icon) {
+        icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
+    }
+}
+
+function toggleDarkMode() {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+// Sync icon on page load — runs after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('fn-theme') || 'light';
+    const icon  = document.getElementById('darkModeIcon');
+    if (icon) icon.textContent = saved === 'dark' ? 'light_mode' : 'dark_mode';
+});

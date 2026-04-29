@@ -9,7 +9,6 @@ use App\Services\LabelService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class LabelController extends Controller
 {
@@ -28,8 +27,6 @@ class LabelController extends Controller
             }
 
             return redirect()->back()->with('success', 'Tạo nhãn thành công!');
-        } catch (ValidationException $e) {
-            throw $e;
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => $e->getMessage()], 500);
@@ -52,8 +49,6 @@ class LabelController extends Controller
             }
 
             return redirect()->back()->with('success', 'Cập nhật nhãn thành công!');
-        } catch (ValidationException $e) {
-            throw $e;
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => $e->getMessage()], 500);

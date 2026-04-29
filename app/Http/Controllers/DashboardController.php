@@ -16,7 +16,17 @@ class DashboardController extends Controller
 
     public function index(Request $request): View
     {
-        $user     = $request->user();
+        $user = $request->user();
+        $notesQuery = $user->notes();
+
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $notesQuery->where(function ($query) use ($q) {
+                $query->where('title', 'like', "%{$q}%")
+                    ->orWhere('content', 'like', "%{$q}%");
+            });
+        }
+
         $isSearch = $request->filled('q');
 
         $notesQuery = $user->notes()->with(['labels', 'attachments', 'shares']);
@@ -29,9 +39,9 @@ class DashboardController extends Controller
         } else {
             $notesQuery->defaultOrder();
             // Fetch one extra record to know if there's a next page
-            $fetched      = $notesQuery->take(self::PER_PAGE + 1)->get();
+            $fetched = $notesQuery->take(self::PER_PAGE + 1)->get();
             $hasMoreNotes = $fetched->count() > self::PER_PAGE;
-            $recentNotes  = $fetched->take(self::PER_PAGE);
+            $recentNotes = $fetched->take(self::PER_PAGE);
         }
 
         // Store the cursor for the next "load more" call
@@ -41,15 +51,17 @@ class DashboardController extends Controller
             : null;
 
         return view('dashboard', [
-            'recentNotes'  => $recentNotes,
-            'hasMoreNotes' => $hasMoreNotes,
-            'nextCursor'   => $nextCursor,
-            'sharedNotes'  => $user->sharedNotes()
+            'recentNotes' => $notesQuery->clone()
+                ->with(['labels', 'attachments', 'shares'])
+                ->defaultOrder()
+                ->take($isSearch ? 50 : 6)
+                ->get(),
+            'sharedNotes' => $user->sharedNotes()
                 ->with(['note.labels', 'note.attachments', 'note.user:id,name,avatar_url'])
                 ->latest()
                 ->get(),
-            'labels'       => $user->labels()->orderBy('name')->get(),
-            'searchQuery'  => $request->q,
+            'labels' => $user->labels()->orderBy('name')->get(),
+            'searchQuery' => $request->q,
         ]);
     }
 
@@ -62,7 +74,7 @@ class DashboardController extends Controller
      */
     public function loadMore(Request $request): JsonResponse
     {
-        $user   = $request->user();
+        $user = $request->user();
         $cursor = $request->input('cursor');
 
         $query = $user->notes()
@@ -78,26 +90,26 @@ class DashboardController extends Controller
                 // (same updated_at but lower id counts as older)
                 $query->where(function ($q) use ($cursorDate, $cursorId) {
                     $q->where('updated_at', '<', $cursorDate)
-                      ->orWhere(function ($q2) use ($cursorDate, $cursorId) {
-                          $q2->where('updated_at', '=', $cursorDate)
-                             ->where('id', '<', (int) $cursorId);
-                      });
+                        ->orWhere(function ($q2) use ($cursorDate, $cursorId) {
+                            $q2->where('updated_at', '=', $cursorDate)
+                                ->where('id', '<', (int) $cursorId);
+                        });
                 });
             }
         }
 
-        $fetched      = $query->take(self::PER_PAGE + 1)->get();
-        $hasMore      = $fetched->count() > self::PER_PAGE;
-        $notes        = $fetched->take(self::PER_PAGE);
+        $fetched = $query->take(self::PER_PAGE + 1)->get();
+        $hasMore = $fetched->count() > self::PER_PAGE;
+        $notes = $fetched->take(self::PER_PAGE);
 
-        $lastNote  = $notes->last();
+        $lastNote = $notes->last();
         $nextCursor = ($hasMore && $lastNote)
             ? base64_encode($lastNote->updated_at->toIso8601String() . '|' . $lastNote->id)
             : null;
 
         return response()->json([
-            'notes'      => $notes->map(fn ($note) => $note->toCardArray()),
-            'has_more'   => $hasMore,
+            'notes' => $notes->map(fn($note) => $note->toCardArray()),
+            'has_more' => $hasMore,
             'next_cursor' => $nextCursor,
         ]);
     }
@@ -108,7 +120,7 @@ class DashboardController extends Controller
      */
     public function filterByLabel(Request $request): JsonResponse
     {
-        $user     = $request->user();
+        $user = $request->user();
         $labelIds = array_filter(array_map('intval', (array) $request->input('label_ids', [])));
 
         $query = $user->notes()
@@ -117,10 +129,10 @@ class DashboardController extends Controller
 
         // AND logic: note must have every selected label
         foreach ($labelIds as $labelId) {
-            $query->whereHas('labels', fn ($q) => $q->where('labels.id', $labelId));
+            $query->whereHas('labels', fn($q) => $q->where('labels.id', $labelId));
         }
 
-        $notes = $query->get()->map(fn ($note) => $note->toCardArray());
+        $notes = $query->get()->map(fn($note) => $note->toCardArray());
 
         return response()->json(['notes' => $notes]);
     }

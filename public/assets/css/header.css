@@ -1,8 +1,3 @@
-/* ================================================
-   Fluid Notes – Header / Top Bar
-   Search, actions, user menu
-   ================================================ */
-
 .fn-header {
     position: sticky;
     top: 0;
@@ -25,7 +20,7 @@
     max-width: 420px;
 }
 
-.fn-search-box .material-symbols-outlined {
+.fn-search-box>.material-symbols-outlined {
     position: absolute;
     left: 1rem;
     top: 50%;
@@ -98,15 +93,7 @@
     transform: scale(0.95);
 }
 
-.fn-notification-dot {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 8px;
-    height: 8px;
-    background: var(--fn-tertiary);
-    border-radius: 50%;
-}
+/* .fn-notification-dot is defined in notifications.css */
 
 .fn-header-divider {
     width: 1px;

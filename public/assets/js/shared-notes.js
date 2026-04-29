@@ -1,10 +1,26 @@
 /**
  * shared-notes.js – Shared notes section UI logic.
  * Depends on: app.js (escapeHtml, escapeAttr, showToast, getCsrfToken)
+ *             note-lock.js (requireUnlock, isNoteLocked)
  */
 
-// ── Open modal — fetch + populate ─────────────────────
-async function openSharedNoteModal(noteId, permission) {
+// ── Lock-aware entry point ───────────────────────────────────────
+function openSharedNoteOrUnlock(noteId, permission, isLocked) {
+    if (isLocked && permission === 'edit') {
+        // Open the password dialog and pass the token to openSharedNoteModal on success
+        openUnlockModal(noteId, (token) => openSharedNoteModal(noteId, permission, token));
+    } else {
+        openSharedNoteModal(noteId, permission, null);
+    }
+}
+
+// ── Open modal — fetch + populate ───────────────────────────────
+/**
+ * @param {number}      noteId
+ * @param {string}      permission  - 'edit' | 'read'
+ * @param {string|null} lockToken   - one-time unlock token; null for read-only or unlocked notes
+ */
+async function openSharedNoteModal(noteId, permission, lockToken = null) {
     const modal = document.getElementById('sharedNoteModal');
     if (!modal) {
         console.error('[SharedNote] #sharedNoteModal not found in DOM');
@@ -13,7 +29,7 @@ async function openSharedNoteModal(noteId, permission) {
 
     // Show modal immediately with loading state
     modal.querySelector('.sn-title').value = 'Đang tải...';
-    modal.querySelector('.sn-content').value = '';
+    modal.querySelector('.sn-content').innerHTML = '';
     modal.querySelector('.sn-owner-badge').textContent = '';
     modal.querySelector('.sn-perm-badge').textContent = '';
     modal.querySelector('.sn-save-btn').style.display = 'none';
@@ -29,62 +45,113 @@ async function openSharedNoteModal(noteId, permission) {
         if (!res.ok || !data.success) throw new Error(data.message || `Lỗi ${res.status}`);
 
         const note = data.note;
-        const perm = data.permission;          // comes from server (not card attr)
+        const perm = data.permission;  // comes from server (not card attr)
         const canEdit = perm === 'edit';
 
         // ── Fill fields ──────────────────────────────────
-        const titleEl   = modal.querySelector('.sn-title');
+        const titleEl = modal.querySelector('.sn-title');
         const contentEl = modal.querySelector('.sn-content');
-        const ownerEl   = modal.querySelector('.sn-owner-badge');
-        const permEl    = modal.querySelector('.sn-perm-badge');
-        const saveBtn   = modal.querySelector('.sn-save-btn');
+        const ownerEl = modal.querySelector('.sn-owner-badge');
+        const permEl = modal.querySelector('.sn-perm-badge');
+        const saveBtn = modal.querySelector('.sn-save-btn');
 
-        titleEl.value    = note.title || '';
-        contentEl.value  = note.content || '';
-        titleEl.readOnly   = !canEdit;
-        contentEl.readOnly = !canEdit;
-        titleEl.style.opacity   = canEdit ? '1' : '0.7';
+        titleEl.value = note.title || '';
+        titleEl.readOnly = !canEdit;
+        titleEl.style.opacity = canEdit ? '1' : '0.7';
+
+        // Render HTML rich-text content (images, headings, dividers)
+        contentEl.innerHTML = note.content || '';
+        contentEl.contentEditable = canEdit ? 'true' : 'false';
         contentEl.style.opacity = canEdit ? '1' : '0.7';
+        contentEl.style.cursor = canEdit ? 'text' : 'default';
+        contentEl.style.pointerEvents = canEdit ? '' : 'none';
 
         ownerEl.textContent = note.owner?.name ? `Bởi ${note.owner.name}` : '';
-        permEl.textContent  = canEdit ? 'Chỉnh sửa' : 'Chỉ đọc';
-        permEl.className    = `fn-perm-badge sn-perm-badge ${perm} ms-1`;
+        permEl.textContent = canEdit ? 'Chỉnh sửa' : 'Chỉ đọc';
+        permEl.className = `fn-perm-badge sn-perm-badge ${perm} ms-1`;
 
         saveBtn.style.display = canEdit ? 'inline-flex' : 'none';
 
         // Store for save()
         modal.dataset.noteId = noteId;
         modal.dataset.permission = perm;
+        modal.dataset.lockToken = lockToken || '';  // passed to saveSharedNote()
+
+        // ── Slash menu support for editable shared notes ──
+        if (canEdit) {
+            // Remove any stale listener before re-attaching (modal can be opened multiple times)
+            contentEl.removeEventListener('input', contentEl._snSlashHandler);
+            contentEl._snSlashHandler = () => {
+                if (_slashMenuVisible) {
+                    handleSlashMenuInput();
+                } else {
+                    const sel = window.getSelection();
+                    if (!sel.rangeCount) return;
+                    const node = sel.focusNode;
+                    if (node && node.nodeType === Node.TEXT_NODE) {
+                        const text = node.textContent;
+                        const pos = sel.focusOffset;
+                        if (pos > 0 && text[pos - 1] === '/') {
+                            showSlashMenu(contentEl);
+                        }
+                    }
+                }
+            };
+            contentEl.addEventListener('input', contentEl._snSlashHandler);
+        }
 
     } catch (err) {
         console.error('[SharedNote] Load error:', err);
         modal.querySelector('.sn-title').value = '⚠ Không thể tải ghi chú';
-        modal.querySelector('.sn-content').value = err.message;
+        modal.querySelector('.sn-content').textContent = err.message;
         showToast('Lỗi: ' + err.message, 'error');
     }
 }
 
-// ── Close modal ──────────────────────────────────────
+// ── Close modal ──────────────────────────────────────────────────
 function closeSharedNoteModal() {
     const modal = document.getElementById('sharedNoteModal');
     if (!modal) return;
     modal.classList.remove('show');
+    // Reset content to avoid flash of old HTML on next open
+    const contentEl = modal.querySelector('.sn-content');
+    if (contentEl) {
+        contentEl.innerHTML = '';
+        contentEl.contentEditable = 'false';
+        // Remove stale slash-menu input listener
+        if (contentEl._snSlashHandler) {
+            contentEl.removeEventListener('input', contentEl._snSlashHandler);
+            contentEl._snSlashHandler = null;
+        }
+    }
     modal.dataset.noteId = '';
+    modal.dataset.lockToken = '';  // discard one-time token
+    // Reset shared editor reference so main note modal gets its own editor back
+    if (typeof _activeEditor !== 'undefined' && _activeEditor === contentEl) {
+        _activeEditor = null;
+    }
 }
 
-// ── Keyboard ESC ─────────────────────────────────────
+// ── Keyboard ESC + slash menu navigation ─────────────────────────
 document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeSharedNoteModal();
+    // Let slash menu handle its own keys first (when triggered from sn-content)
+    const isInSharedModal = document.getElementById('sharedNoteModal')?.classList.contains('show');
+    if (isInSharedModal && _slashMenuVisible && handleSlashMenuKeydown(e)) return;
+
+    if (e.key === 'Escape') {
+        if (_slashMenuVisible) { hideSlashMenu(); return; }
+        closeSharedNoteModal();
+    }
 });
 
-// ── Save (edit permission only) ──────────────────────
+// ── Save (edit permission only) ──────────────────────────────────
 async function saveSharedNote() {
     const modal = document.getElementById('sharedNoteModal');
     if (!modal) return;
 
-    const noteId  = modal.dataset.noteId;
-    const title   = modal.querySelector('.sn-title')?.value.trim();
-    const content = modal.querySelector('.sn-content')?.value.trim();
+    const noteId = modal.dataset.noteId;
+    const lockToken = modal.dataset.lockToken || null;
+    const title = modal.querySelector('.sn-title')?.value.trim();
     const saveBtn = modal.querySelector('.sn-save-btn');
 
     if (!title) {
@@ -92,16 +159,32 @@ async function saveSharedNote() {
         return;
     }
 
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Đang lưu...'; }
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="fn-btn-spinner"></span> Đang lưu...';
+    }
 
     try {
+        // Upload any pending inline images (data URLs → Cloudinary URLs) BEFORE reading content
+        // This prevents sending huge base64 strings and saves real URLs in the database
+        const contentEl = modal.querySelector('.sn-content');
+        if (typeof uploadInlineContentImages === 'function') {
+            await uploadInlineContentImages(noteId, lockToken);
+        }
+
+        // Read content AFTER upload so Cloudinary URLs are in the DOM
+        const content = contentEl?.innerHTML.trim();
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken(),
+            ...(lockToken ? { 'X-Note-Token': lockToken } : {}),
+        };
+
         const res = await fetch(`/notes/${noteId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': getCsrfToken(),
-            },
+            headers,
             body: JSON.stringify({ title, content }),
         });
 
@@ -111,13 +194,13 @@ async function saveSharedNote() {
 
         if (!res.ok || !data.success) throw new Error(data.message || `Lỗi ${res.status}`);
 
-        // Update card preview in DOM
+        // Update card preview in DOM (strip HTML tags for excerpt)
         const col = document.querySelector(`.fn-shared-note-col[data-note-id="${noteId}"]`);
         if (col) {
             const t = col.querySelector('.fn-note-title');
             const e = col.querySelector('.fn-note-excerpt');
             if (t) t.textContent = data.note.title;
-            if (e) e.textContent = (data.note.content || '').replace(/<[^>]+>/g, '').substring(0, 120);
+            if (e) e.textContent = contentToExcerpt(data.note.content);
         }
 
         showToast('Đã lưu ghi chú!', 'success');
@@ -127,11 +210,14 @@ async function saveSharedNote() {
         console.error('[SharedNote] Save error:', err);
         showToast('Lỗi: ' + err.message, 'error');
     } finally {
-        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Lưu'; }
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">save</span> Lưu';
+        }
     }
 }
 
-// ── Real-time: refresh shared section after Echo event ─
+// ── Real-time: refresh shared section after Echo event ───────────
 async function refreshSharedNotesSection() {
     if (!window.FN_SHARED_CARDS_URL) return;
     try {
@@ -145,8 +231,8 @@ async function refreshSharedNotesSection() {
 }
 
 function _renderSharedCards(sharedNotes) {
-    const container  = document.getElementById('sharedNotesContainer');
-    const section    = document.getElementById('sharedSection');
+    const container = document.getElementById('sharedNotesContainer');
+    const section = document.getElementById('sharedSection');
     const countBadge = document.getElementById('sharedCount');
 
     if (!container) return;
@@ -184,19 +270,29 @@ function _patchSharedCard(noteId, note) {
     );
     if (!col) return;
 
-    const titleEl   = col.querySelector('.fn-note-title');
+    const titleEl = col.querySelector('.fn-note-title');
     const excerptEl = col.querySelector('.fn-note-excerpt');
-    const dateEl    = col.querySelector('.fn-note-date');
+    const dateEl = col.querySelector('.fn-note-date');
 
     if (titleEl) titleEl.textContent = note.title || 'Không có tiêu đề';
-    if (excerptEl) excerptEl.textContent = (note.content || '').replace(/<[^>]+>/g, '').substring(0, 120);
+    if (excerptEl) excerptEl.textContent = contentToExcerpt(note.content);
     if (dateEl) dateEl.textContent = note.updated_at || 'Vừa cập nhật';
+
+    // Update lock state on card
+    col.dataset.locked = note.is_locked ? '1' : '0';
+    const card = col.querySelector('.fn-note-card');
+    if (card) {
+        const perm = col.dataset.permission;
+        const locked = note.is_locked;
+        card.setAttribute('onclick', `openSharedNoteOrUnlock(${noteId}, '${perm}', ${locked})`);
+    }
 }
 
 function _buildSharedCard(share) {
-    const note      = share.note;
-    const perm      = share.permission;
+    const note = share.note;
+    const perm = share.permission;
     const permLabel = perm === 'edit' ? 'Chỉnh sửa' : 'Chỉ đọc';
+    const isLocked = Boolean(note.is_locked);
 
     const avatarHtml = note.owner.avatar_url
         ? `<img src="${escapeHtml(note.owner.avatar_url)}" alt="">`
@@ -206,17 +302,18 @@ function _buildSharedCard(share) {
         .map(l => `<span class="badge rounded-pill fn-label-badge">${escapeHtml(l.name)}</span>`)
         .join('');
 
-    const excerpt = (note.content || '').replace(/<[^>]+>/g, '').substring(0, 120);
+    const excerpt = contentToExcerpt(note.content);
 
     const col = document.createElement('div');
     col.className = 'col-12 col-md-6 col-lg-4 col-xl-3 fn-shared-note-col';
-    col.dataset.noteId    = note.id;
-    col.dataset.shareId   = share.share_id;
+    col.dataset.noteId = note.id;
+    col.dataset.shareId = share.share_id;
     col.dataset.permission = perm;
+    col.dataset.locked = isLocked ? '1' : '0';
 
     col.innerHTML = `
         <div class="fn-note-card fn-shared-card" style="cursor:pointer"
-             onclick="openSharedNoteModal(${note.id}, '${perm}')">
+             onclick="openSharedNoteOrUnlock(${note.id}, '${perm}', ${isLocked})">
             <div class="fn-shared-owner">
                 <div class="fn-shared-owner-avatar">${avatarHtml}</div>
                 <span class="fn-shared-owner-name">${escapeHtml(note.owner.name)}</span>

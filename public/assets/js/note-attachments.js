@@ -2,6 +2,15 @@
  * note-attachments.js – Image attachment upload, preview, and lightbox logic.
  * Depends on: app.js (apiFetch, getCsrfToken, escapeHtml, escapeAttr, showToast)
  *             note-cards.js (updateCardThumbnail)
+ *
+ * Public API:
+ *   toggleAttachmentSection()     – toggle the attachment panel
+ *   showAttachmentSection()       – force-show the attachment panel
+ *   renderPendingPreviews()       – render local previews for queued files
+ *   removePendingFile(idx)        – remove a pending file by index
+ *   renderExistingAttachments()   – render saved attachments in edit mode
+ *   uploadPendingFilesParallel()  – upload queued files after note is saved
+ *   compressImage(file)           – compress an image before upload
  */
 
 // ═══════════════════════════════════════════════════
@@ -155,40 +164,6 @@ async function removeExistingAttachment(noteId, attachmentId, btn) {
     }
 }
 
-/** Upload all pending files after the note has been saved */
-async function uploadPendingFiles(noteId) {
-    const container = document.getElementById('pendingPreviews');
-    const thumbs = container ? [...container.querySelectorAll('.fn-attachment-thumb')] : [];
-    const results = [];
-
-    for (let i = 0; i < _pendingFiles.length; i++) {
-        const file = _pendingFiles[i];
-        const thumb = thumbs[i];
-        if (thumb) thumb.classList.add('uploading');
-
-        const formData = new FormData();
-        formData.append('image', file);
-        formData.append('_token', getCsrfToken());
-
-        try {
-            const res = await apiFetch(`/notes/${noteId}/attachments`, 'POST', formData);
-            const data = await res.json();
-            if (data.success) {
-                results.push(data.attachment);
-                if (thumb) thumb.remove();
-            } else {
-                showToast(data.message || 'Tải ảnh thất bại', 'error');
-                if (thumb) thumb.classList.remove('uploading');
-            }
-        } catch {
-            showToast('Lỗi kết nối khi tải ảnh', 'error');
-            if (thumb) thumb.classList.remove('uploading');
-        }
-    }
-    _pendingFiles = [];
-    return results;
-}
-
 // ═══════════════════════════════════════════════════
 // Client-Side Image Compression
 // ═══════════════════════════════════════════════════
@@ -260,14 +235,15 @@ function compressImage(file, maxSize = 2048, quality = 0.8) {
  * Accepts an explicit file list so it doesn't depend on _pendingFiles state.
  * Compresses images client-side before uploading for faster transfer.
  */
-async function uploadPendingFilesParallel(noteId, files) {
+async function uploadPendingFilesParallel(noteId, files, lockToken = null) {
+    const headers = lockToken ? { 'X-Note-Token': lockToken } : {};
     const promises = files.map(async (file) => {
         try {
             const compressed = await compressImage(file);
             const formData = new FormData();
             formData.append('image', compressed);
             formData.append('_token', getCsrfToken());
-            const res = await apiFetch(`/notes/${noteId}/attachments`, 'POST', formData);
+            const res = await apiFetch(`/notes/${noteId}/attachments`, 'POST', formData, headers);
             const data = await res.json();
             if (data.success) return data.attachment;
             showToast(data.message || 'Tải ảnh thất bại', 'error');

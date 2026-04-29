@@ -8,7 +8,7 @@
         {{-- Header --}}
         <div class="fn-profile-header">
             <h1>Cài đặt hồ sơ</h1>
-            <p>Quản lý thông tin cá nhân và cài đặt bảo mật để tùy chỉnh trải nghiệm LiveNote của bạn.</p>
+            <p>Quản lý thông tin cá nhân và cài đặt bảo mật để tùy chỉnh trải nghiệm Fluid Note của bạn.</p>
         </div>
 
         {{-- Bento Grid --}}

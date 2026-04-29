@@ -24,9 +24,9 @@ class AttachmentController extends Controller
      */
     public function store(StoreAttachmentRequest $request, Note $note): JsonResponse
     {
-        // Authorization: only the note owner may upload
-        if ($note->user_id !== $request->user()->id) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        // Authorization: owner OR shared user with edit permission may upload
+        if (!$this->canEdit($request, $note)) {
+            return response()->json(['success' => false, 'message' => 'Bạn không có quyền tải ảnh lên ghi chú này.'], 403);
         }
 
         try {
@@ -72,9 +72,9 @@ class AttachmentController extends Controller
      */
     public function destroy(Request $request, Note $note, Attachment $attachment): JsonResponse
     {
-        // Authorization: only the note owner may delete
-        if ($note->user_id !== $request->user()->id) {
-            return response()->json(['success' => false, 'message' => 'Không có quyền thực hiện.'], 403);
+        // Authorization: owner OR shared user with edit permission may delete
+        if (!$this->canEdit($request, $note)) {
+            return response()->json(['success' => false, 'message' => 'Bạn không có quyền xóa ảnh của ghi chú này.'], 403);
         }
 
         // Ensure the attachment belongs to this note
@@ -90,5 +90,27 @@ class AttachmentController extends Controller
         } catch (Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    // ──────────────────────────────────────────────
+    // Private helpers
+    // ──────────────────────────────────────────────
+
+    /**
+     * Returns true if the authenticated user is the note owner
+     * OR has been granted the 'edit' share permission.
+     */
+    private function canEdit(\Illuminate\Http\Request $request, Note $note): bool
+    {
+        $userId = $request->user()->id;
+
+        if ($note->user_id === $userId) {
+            return true;
+        }
+
+        return $note->shares()
+            ->where('shared_with_user_id', $userId)
+            ->where('permission', 'edit')
+            ->exists();
     }
 }

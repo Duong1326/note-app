@@ -1,12 +1,5 @@
 /**
  * note-lock.js – Note password-lock UI logic.
- *
- * Security model:
- *   - After a correct password, the server issues a short-lived signed HMAC token.
- *   - Tokens live in a JS Map (RAM only – never localStorage).
- *   - Tokens are single-use: cleared after each action so every interaction
- *     requires re-authentication (one-time unlock).
- *   - On page refresh all tokens vanish automatically.
  */
 
 // ─────────────────────────────────────────────────────────────
@@ -61,12 +54,14 @@ function isNoteLocked(noteId) {
 
 /**
  * Gate for any mutation on a locked note.
- * Shows the unlock dialog when needed; calls `callback` only on success (or if unlocked).
+ * ALWAYS prompts for password when the note is locked — no session caching.
+ * Calls `callback(token)` with the fresh token after successful verification.
+ * The token is consumed immediately inside the callback (single-use).
  */
 function requireUnlock(noteId, callback) {
     noteId = _id(noteId);
-    if (!isNoteLocked(noteId) || getLockToken(noteId)) {
-        callback();
+    if (!isNoteLocked(noteId)) {
+        callback(null);
         return;
     }
     openUnlockModal(noteId, callback);
@@ -172,10 +167,20 @@ async function submitUnlock(event) {
             return;
         }
 
+        // Store token temporarily — will be consumed by the callback
         storeLockToken(_unlockTargetId, data.token);
         closeLockModal('unlockNoteModal');
-        showToast('Đã mở khoá ghi chú', 'success');
-        _unlockCallback?.();
+
+        const cb = _unlockCallback;
+        const targetId = _unlockTargetId;
+        _unlockCallback = null;
+        _unlockTargetId = null;
+
+        // Pass the one-time token directly to the callback
+        cb?.(data.token);
+
+        // Immediately revoke so it cannot be reused for another action
+        clearLockToken(targetId);
     } catch {
         showFieldError('unlockPasswordError', 'Lỗi kết nối. Vui lòng thử lại.');
     } finally {
@@ -436,6 +441,7 @@ Object.assign(window, {
     isNoteLocked,
 
     // Modal openers (used by inline onclick in Blade / buildNoteCardHtml)
+    openUnlockModal,          // used by shared-notes.js for shared locked notes
     openEnableLockModal,
     openChangeLockModal,
     openDisableLockModal,

@@ -23,7 +23,7 @@
     height: 44px;
     border-radius: 12px;
     flex-shrink: 0;
-    background: linear-gradient(135deg, #0f9b58, #34d399);
+    background: #0f9b58;
     box-shadow: 0 4px 12px rgba(15, 155, 88, 0.28);
 }
 
@@ -230,7 +230,7 @@
 
 /* ── Share action button ─────────────────────────────────────── */
 .btn-share-primary {
-    background: linear-gradient(135deg, #0f9b58, #34d399);
+    background: #0f9b58;
     color: #fff;
     border: none;
     box-shadow: 0 4px 12px rgba(15, 155, 88, 0.25);
@@ -260,7 +260,7 @@
     letter-spacing: 0.05em;
     padding: 0.125rem 0.5rem;
     border-radius: 9999px;
-    background: linear-gradient(135deg, #0f9b58, #34d399);
+    background: #0f9b58;
     color: #fff;
 }
 
@@ -344,3 +344,62 @@
     display: block;
     margin-bottom: 0.75rem;
 }
+
+/* ── Shared note modal — rich-text content area ─────────────── */
+.sn-content.fn-modal-content-input {
+    /* Remove textarea-specific resets */
+    resize: none;
+    /* Scrollable content */
+    overflow-y: auto;
+    max-height: 40vh;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 74, 198, 0.2) transparent;
+    /* Respect HTML block elements (images, headings, dividers) */
+    white-space: normal;
+}
+
+.sn-content.fn-modal-content-input::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sn-content.fn-modal-content-input::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sn-content.fn-modal-content-input::-webkit-scrollbar-thumb {
+    background: rgba(0, 74, 198, 0.2);
+    border-radius: 3px;
+}
+
+/* Placeholder for contenteditable */
+.sn-content.fn-modal-content-input:empty::before {
+    content: attr(data-placeholder);
+    color: var(--fn-on-surface-variant);
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* Read-only visual cue */
+.sn-content.fn-modal-content-input[contenteditable="false"] {
+    background: transparent;
+    cursor: default;
+    user-select: text;
+}
+
+/* Editable focus ring */
+.sn-content.fn-modal-content-input[contenteditable="true"]:focus {
+    outline: none;
+    color: var(--fn-on-surface);
+}
+
+/* Rich-text block rendering inside shared modal */
+.sn-content .fn-content-image-block { margin: 0.25rem 0; }
+.sn-content .fn-content-image       { max-height: 200px; border-radius: 0.5rem; display: block; max-width: 100%; }
+.sn-content .fn-content-divider hr  { border: none; height: 1px; background: var(--fn-outline-variant); margin: 0.5rem 0; }
+.sn-content .fn-content-heading     { font-weight: 700; color: var(--fn-on-surface); }
+.sn-content .fn-content-h1          { font-size: 1.4rem; }
+.sn-content .fn-content-h2          { font-size: 1.15rem; }
+.sn-content .fn-content-h3          { font-size: 1rem; }
+/* Hide remove buttons when in read-only shared view */
+.sn-content[contenteditable="false"] .fn-content-image-remove { display: none; }
+

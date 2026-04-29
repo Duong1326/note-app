@@ -327,7 +327,7 @@
 
 .fn-btn-primary {
     padding: 0.75rem 2rem;
-    background: linear-gradient(135deg, var(--fn-primary), var(--fn-primary-container));
+    background: var(--fn-primary-container);
     color: var(--fn-on-primary);
     border: none;
     border-radius: 0.75rem;

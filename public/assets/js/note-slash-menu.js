@@ -7,6 +7,9 @@
 // Inline content images (separate from thumbnail _pendingFiles)
 let _inlineContentFiles = [];
 
+/** The contenteditable element currently hosting the slash menu. */
+let _activeEditor = null;
+
 /** Strip Vietnamese diacritics for fuzzy matching (e.g. "hinh" matches "Hình") */
 function _removeDiacritics(str) {
     return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
@@ -122,9 +125,12 @@ function _buildMenuItems(filter) {
 // Show / Hide / Position
 // ═══════════════════════════════════════════════════
 
-function showSlashMenu() {
+function showSlashMenu(editorEl) {
     const menu = _getSlashMenu();
     if (!menu) return;
+
+    // Remember which editor triggered the menu
+    _activeEditor = editorEl || document.getElementById('modalNoteContent');
 
     _slashMenuVisible = true;
     _slashMenuIndex = 0;
@@ -153,24 +159,29 @@ function hideSlashMenu() {
 
 function _positionSlashMenu() {
     const menu = _getSlashMenu();
-    const editor = document.getElementById('modalNoteContent');
-    if (!menu || !editor) return;
+    if (!menu) return;
 
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
 
     const range = sel.getRangeAt(0);
     const rect = range.getBoundingClientRect();
-    const editorRect = editor.getBoundingClientRect();
 
-    // Position below the caret, relative to the editor
-    let top = rect.bottom - editorRect.top + 6;
-    let left = rect.left - editorRect.left;
+    // Menu is position:fixed — use viewport coordinates directly
+    const menuWidth = 280;
+    const menuHeight = 260; // approx max height
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-    // Keep within editor bounds
-    left = Math.max(0, Math.min(left, editorRect.width - 280));
+    let top  = rect.bottom + 6;
+    let left = rect.left;
 
-    menu.style.top = top + 'px';
+    // Keep within viewport
+    if (left + menuWidth > vw - 8) left = vw - menuWidth - 8;
+    if (left < 8) left = 8;
+    if (top + menuHeight > vh - 8) top = rect.top - menuHeight - 6; // flip above caret
+
+    menu.style.top  = top  + 'px';
     menu.style.left = left + 'px';
 }
 
@@ -229,7 +240,7 @@ function handleSlashMenuInput(e) {
     if (!_slashMenuVisible) return;
 
     // After input, check what's typed after the "/" trigger
-    const editor = document.getElementById('modalNoteContent');
+    const editor = _activeEditor || document.getElementById('modalNoteContent');
     const sel = window.getSelection();
     if (!sel.rangeCount || !editor) return;
 
@@ -301,7 +312,7 @@ function executeSlashCommand(cmdId) {
 }
 
 function _removeSlashText() {
-    const editor = document.getElementById('modalNoteContent');
+    const editor = _activeEditor || document.getElementById('modalNoteContent');
     if (!editor) return;
 
     const sel = window.getSelection();
@@ -336,7 +347,7 @@ function _removeSlashText() {
  * Called before executing a slash command to ensure caret is in the right place.
  */
 function _restoreEditorSelection() {
-    const editor = document.getElementById('modalNoteContent');
+    const editor = _activeEditor || document.getElementById('modalNoteContent');
     if (!editor) return;
     editor.focus();
 
@@ -353,12 +364,14 @@ function _restoreEditorSelection() {
 
 function _insertImageBlock() {
     // Save current caret position before file picker steals focus
-    const savedRange = _slashRange ? _slashRange.cloneRange() : null;
+    const sel = window.getSelection();
+    const savedRange = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+    const currentEditor = _activeEditor || document.getElementById('modalNoteContent');
 
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/jpeg,image/jpg,image/png,image/gif,image/webp';
-    input.onchange = async () => {
+    input.onchange = () => {
         const file = input.files[0];
         if (!file) return;
 
@@ -367,40 +380,46 @@ function _insertImageBlock() {
             return;
         }
 
-        const url = URL.createObjectURL(file);
+        // Use FileReader (data URL / base64) instead of createObjectURL (blob URL).
+        // Blob URLs are revoked by WebKit when the object is GC'd → "WebKitBlobResource error 1".
+        // Data URLs are embedded directly in HTML and never expire.
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const dataUrl = e.target.result;
 
-        // Create the inline image frame
-        const wrapper = document.createElement('div');
-        wrapper.className = 'fn-content-image-block';
-        wrapper.contentEditable = 'false';
+            // Create the inline image frame
+            const wrapper = document.createElement('div');
+            wrapper.className = 'fn-content-image-block';
+            wrapper.contentEditable = 'false';
 
-        wrapper.innerHTML = `
-            <img src="${url}" alt="Inline image" class="fn-content-image">
-            <button type="button" class="fn-content-image-remove" title="Xóa ảnh"
-                    onclick="removeInlineImage(this)">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        `;
+            wrapper.innerHTML = `
+                <img src="${dataUrl}" alt="Inline image" class="fn-content-image">
+                <button type="button" class="fn-content-image-remove" title="Xóa ảnh"
+                        onclick="removeInlineImage(this)">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            `;
 
-        // Store file reference for upload later (separate from thumbnail system)
-        wrapper.dataset.pendingFile = 'true';
-        wrapper._file = file;
-        _inlineContentFiles.push({ file, blobUrl: url, wrapper });
+            // Store file reference for upload later
+            wrapper.dataset.pendingFile = 'true';
+            wrapper._file = file;
+            _inlineContentFiles.push({ file, dataUrl, wrapper });
 
-        // Restore editor focus and caret position
-        const editor = document.getElementById('modalNoteContent');
-        if (editor) editor.focus();
-        if (savedRange) {
-            const sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(savedRange);
-        }
+            // Restore editor focus and caret position
+            if (currentEditor) currentEditor.focus();
+            if (savedRange) {
+                const s = window.getSelection();
+                s.removeAllRanges();
+                s.addRange(savedRange);
+            }
 
-        // Insert the image block and move cursor below it
-        _insertBlockAtCaret(wrapper);
+            // Insert the image block and move cursor below it
+            _insertBlockAtCaret(wrapper);
 
-        // Ensure editor stays focused after insertion
-        if (editor) editor.focus();
+            // Ensure editor stays focused after insertion
+            if (currentEditor) currentEditor.focus();
+        };
+        reader.readAsDataURL(file);
     };
     input.click();
 }
@@ -414,8 +433,8 @@ function removeInlineImage(btn) {
 
     block.remove();
 
-    // Focus back on editor
-    document.getElementById('modalNoteContent')?.focus();
+    // Focus back on whichever editor is active
+    (_activeEditor || document.getElementById('modalNoteContent'))?.focus();
 }
 
 // ═══════════════════════════════════════════════════
@@ -435,7 +454,7 @@ function _insertDividerBlock() {
 // ═══════════════════════════════════════════════════
 
 function _insertHeadingBlock(tag = 'h2') {
-    const editor = document.getElementById('modalNoteContent');
+    const editor = _activeEditor || document.getElementById('modalNoteContent');
     if (!editor) return;
 
     // Insert a heading element with the specified tag
@@ -464,7 +483,7 @@ function _insertHeadingBlock(tag = 'h2') {
 // ═══════════════════════════════════════════════════
 
 function _insertListBlock(tag = 'ul') {
-    const editor = document.getElementById('modalNoteContent');
+    const editor = _activeEditor || document.getElementById('modalNoteContent');
     if (!editor) return;
 
     const list = document.createElement(tag);
@@ -495,7 +514,7 @@ function _insertListBlock(tag = 'ul') {
 // ═══════════════════════════════════════════════════
 
 function _insertBlockAtCaret(element, skipCursorMove = false) {
-    const editor = document.getElementById('modalNoteContent');
+    const editor = _activeEditor || document.getElementById('modalNoteContent');
     if (!editor) return;
 
     const sel = window.getSelection();
@@ -520,27 +539,32 @@ function _insertBlockAtCaret(element, skipCursorMove = false) {
     if (!skipCursorMove) _moveCursorAfterBlock(element, sel);
 }
 
-/**
- * Move cursor after the inserted block element, adding a <br> for continued typing.
- */
 function _moveCursorAfterBlock(element, sel) {
-    // Add a new line after the block for continued typing
-    const br = document.createElement('br');
-    element.after(br);
+    // Since the element is a block (div), it already forces a line break.
+    // We only need an invisible text node after it to reliably place the cursor
+    // without creating an extra empty blank line.
+    const textNode = document.createTextNode('\u200B');
+    element.after(textNode);
 
-    // Move caret after the block
+    // Move caret into the zero-width space text node
     const newRange = document.createRange();
-    newRange.setStartAfter(br);
+    newRange.setStart(textNode, 1);
     newRange.collapse(true);
     sel.removeAllRanges();
     sel.addRange(newRange);
+
+    // Ensure the editor scrolls the cursor into view
+    const editor = _activeEditor || document.getElementById('modalNoteContent');
+    if (editor) {
+        editor.focus();
+    }
 }
 
 /**
  * Get clean HTML content from the editor.
  */
 function getEditorContent() {
-    const editor = document.getElementById('modalNoteContent');
+    const editor = _activeEditor || document.getElementById('modalNoteContent');
     if (!editor) return '';
     return editor.innerHTML;
 }
@@ -549,7 +573,7 @@ function getEditorContent() {
  * Set content in the editor (used when loading for edit mode).
  */
 function setEditorContent(html) {
-    const editor = document.getElementById('modalNoteContent');
+    const editor = _activeEditor || document.getElementById('modalNoteContent');
     if (!editor) return;
     editor.innerHTML = html || '';
 }
@@ -558,7 +582,7 @@ function setEditorContent(html) {
  * Clear the editor content.
  */
 function clearEditorContent() {
-    const editor = document.getElementById('modalNoteContent');
+    const editor = _activeEditor || document.getElementById('modalNoteContent');
     if (!editor) return;
     editor.innerHTML = '';
     _inlineContentFiles = [];
@@ -568,12 +592,16 @@ function clearEditorContent() {
  * Upload all inline content images to the server.
  * Replaces blob URLs in the content HTML with real Cloudinary URLs.
  * Call this BEFORE reading getEditorContent() for submission.
+ * @param {number|string} noteId
+ * @param {string|null}   lockToken  - X-Note-Token for locked notes
  */
-async function uploadInlineContentImages(noteId) {
+async function uploadInlineContentImages(noteId, lockToken = null) {
     if (_inlineContentFiles.length === 0) return;
 
-    const editor = document.getElementById('modalNoteContent');
+    const editor = _activeEditor || document.getElementById('modalNoteContent');
     if (!editor) return;
+
+    const extraHeaders = lockToken ? { 'X-Note-Token': lockToken } : {};
 
     const uploads = _inlineContentFiles.map(async (item) => {
         try {
@@ -585,16 +613,15 @@ async function uploadInlineContentImages(noteId) {
             formData.append('image', compressed);
             formData.append('_token', getCsrfToken());
 
-            const res = await apiFetch(`/notes/${noteId}/attachments`, 'POST', formData);
+            const res = await apiFetch(`/notes/${noteId}/attachments`, 'POST', formData, extraHeaders);
             const data = await res.json();
 
             if (data.success) {
-                // Replace the blob URL with the real Cloudinary URL in the DOM
+                // Replace the data URL with the real Cloudinary URL in the DOM
                 const img = item.wrapper.querySelector('.fn-content-image');
-                if (img) {
-                    img.src = data.attachment.url;
-                }
-                URL.revokeObjectURL(item.blobUrl);
+                if (img) img.src = data.attachment.url;
+                // Mark as uploaded (remove pending flag)
+                delete item.wrapper.dataset.pendingFile;
                 return data.attachment;
             }
             showToast(data.message || 'Tải ảnh nội dung thất bại', 'error');
