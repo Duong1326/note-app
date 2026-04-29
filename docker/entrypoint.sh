@@ -21,8 +21,14 @@ if [ -f "package.json" ]; then
         echo "Installing Node.js dependencies..."
         npm ci --prefer-offline 2>/dev/null || npm install
     fi
-    echo "Building frontend assets with Vite..."
-    npm run build
+    
+    # Optimize: Only run build if the manifest doesn't exist
+    if [ ! -f "public/build/manifest.json" ]; then
+        echo "Building frontend assets with Vite..."
+        npm run build
+    else
+        echo "Frontend assets already built. Skipping Vite build for faster startup..."
+    fi
 fi
 
 # Generate APP_KEY if not set
@@ -61,8 +67,12 @@ done
 echo "MySQL is ready!"
 
 # Run migrations (safe: only runs new migrations, skips already-applied ones)
-echo "Running migrations..."
-php artisan migrate --force && echo "Migrations applied successfully." || echo "WARNING: Migration step had issues (check logs)."
+if [ "${SKIP_MIGRATIONS:-false}" != "true" ]; then
+    echo "Running migrations..."
+    php artisan migrate --force && echo "Migrations applied successfully." || echo "WARNING: Migration step had issues (check logs)."
+else
+    echo "Skipping migrations (SKIP_MIGRATIONS=true)..."
+fi
 
 # Cache config for faster startup
 echo "Optimizing Laravel..."
