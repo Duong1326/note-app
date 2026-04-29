@@ -181,3 +181,72 @@ document.addEventListener('DOMContentLoaded', () => {
         requireUnlock(noteId, () => openEditNoteModal(editBtn));
     });
 });
+
+// ═══════════════════════════════════════════════════
+// Load More (Cursor-based Pagination)
+// ═══════════════════════════════════════════════════
+
+/**
+ * Fetches the next page of notes using cursor-based pagination.
+ * Uses window.FN_NEXT_CURSOR (set by the Blade view) to know where to start.
+ * Updates the cursor and hides the button when there are no more notes.
+ */
+let _loadingMore = false;
+
+async function loadMoreNotes() {
+    if (_loadingMore || !window.FN_NEXT_CURSOR) return;
+
+    _loadingMore = true;
+
+    const btn     = document.getElementById('loadMoreBtn');
+    const wrapper = document.getElementById('loadMoreWrapper');
+    const spinner = document.getElementById('loadMoreSpinner');
+
+    // Show spinner, hide button
+    if (btn)     btn.disabled = true;
+    if (wrapper) wrapper.style.display = 'none';
+    if (spinner) spinner.style.display = 'block';
+
+    try {
+        const url = `${window.FN_LOAD_MORE_URL}?cursor=${encodeURIComponent(window.FN_NEXT_CURSOR)}`;
+        const res = await apiFetch(url, 'GET');
+
+        if (!res.ok) throw new Error('Load failed');
+        const data = await res.json();
+
+        // Append new cards to the container
+        const container = document.getElementById('notesContainer');
+        if (container && data.notes?.length > 0) {
+            const fragment = document.createDocumentFragment();
+            data.notes.forEach(note => {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = buildNoteCardHtml(note);
+                const col = tmp.firstElementChild;
+                fragment.appendChild(col);
+            });
+            container.appendChild(fragment);
+        }
+
+        // Update cursor state
+        window.FN_NEXT_CURSOR = data.next_cursor || null;
+        window.FN_HAS_MORE    = data.has_more || false;
+
+        if (window.FN_HAS_MORE && window.FN_NEXT_CURSOR) {
+            // More pages exist — show button again
+            if (wrapper) wrapper.style.display = '';
+            if (btn)     btn.disabled = false;
+        } else {
+            // No more notes — hide button permanently
+            if (wrapper) wrapper.style.display = 'none';
+        }
+
+    } catch (err) {
+        showToast('Không thể tải thêm ghi chú. Vui lòng thử lại.', 'error');
+        // Restore button so user can retry
+        if (wrapper) wrapper.style.display = '';
+        if (btn)     btn.disabled = false;
+    } finally {
+        if (spinner) spinner.style.display = 'none';
+        _loadingMore = false;
+    }
+}

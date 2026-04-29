@@ -14,6 +14,8 @@ RUN apk add --no-cache \
     unzip \
     mysql-client \
     bash \
+    nodejs \
+    npm \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
 

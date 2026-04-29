@@ -96,12 +96,33 @@ class Note extends Model
                      ->orderByDesc('updated_at');
     }
 
-    /** Full-text keyword search on title and content */
+    /**
+     * Full-text keyword search on title and content.
+     *
+     * Uses MySQL FULLTEXT MATCH...AGAINST for queries ≥ 3 chars
+     * (requires the ft_notes_search index added in the 2026_04_29 migration).
+     * Falls back to LIKE for very short queries.
+     */
     public function scopeSearch(Builder $query, string $keyword): Builder
     {
-        return $query->where(function (Builder $q) use ($keyword) {
-            $q->where('title', 'like', "%{$keyword}%")
-              ->orWhere('content', 'like', "%{$keyword}%");
+        $clean = trim($keyword);
+
+        // FULLTEXT requires at least 3 meaningful characters
+        if (mb_strlen($clean) >= 3) {
+            // IN BOOLEAN MODE allows partial-word matches with a trailing *
+            $safeKeyword = str_replace(['*', '+', '-', '~', '<', '>', '(', ')', '"', '@', ' '], ' ', $clean);
+            $ftQuery     = '+' . implode('* +', array_filter(explode(' ', $safeKeyword))) . '*';
+
+            return $query->whereRaw(
+                'MATCH(title, content) AGAINST(? IN BOOLEAN MODE)',
+                [$ftQuery]
+            );
+        }
+
+        // Fallback: LIKE for very short queries (1-2 chars)
+        return $query->where(function (Builder $q) use ($clean) {
+            $q->where('title', 'like', "%{$clean}%")
+              ->orWhere('content', 'like', "%{$clean}%");
         });
     }
 

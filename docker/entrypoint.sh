@@ -15,6 +15,16 @@ if [ ! -d "vendor" ] || [ ! -f "vendor/autoload.php" ]; then
     composer install --prefer-dist --optimize-autoloader --no-interaction
 fi
 
+# Install Node dependencies and build frontend assets
+if [ -f "package.json" ]; then
+    if [ ! -d "node_modules" ]; then
+        echo "Installing Node.js dependencies..."
+        npm ci --prefer-offline 2>/dev/null || npm install
+    fi
+    echo "Building frontend assets with Vite..."
+    npm run build
+fi
+
 # Generate APP_KEY if not set
 if [ -f ".env" ] && grep -q "^APP_KEY=$" .env; then
     echo "Generating application key..."

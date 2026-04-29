@@ -62,7 +62,9 @@
                                     @if($note->attachments->count() > 0)
                                         <img class="fn-note-thumb"
                                             src="{{ $note->attachments->first()->thumbnailUrl(400) }}"
-                                            alt="Note image">
+                                            alt="Note image"
+                                            loading="lazy"
+                                            decoding="async">
                                     @endif
 
                                     {{-- Dropdown Menu --}}
@@ -199,6 +201,21 @@
                     </div>
                 @endif
 
+                {{-- Load More Button --}}
+                @if(!isset($searchQuery) || !$searchQuery)
+                    <div class="text-center mt-4" id="loadMoreWrapper"
+                         style="{{ $hasMoreNotes ? '' : 'display:none;' }}">
+                        <button type="button" class="fn-load-more-btn" id="loadMoreBtn"
+                                onclick="loadMoreNotes()">
+                            <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;">expand_more</span>
+                            Xem thêm ghi chú
+                        </button>
+                    </div>
+                    <div class="text-center mt-3" id="loadMoreSpinner" style="display:none;">
+                        <div class="fn-spinner"></div>
+                    </div>
+                @endif
+
             </div>
         </div>
 
@@ -229,7 +246,9 @@
                         @if($note->attachments->count() > 0)
                             <img class="fn-note-thumb"
                                 src="{{ $note->attachments->first()->thumbnailUrl(400) }}"
-                                alt="Note image">
+                                alt="Note image"
+                                loading="lazy"
+                                decoding="async">
                         @endif
 
                         {{-- Owner attribution --}}
@@ -325,10 +344,7 @@
 @endsection
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/note-create.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/note-lock.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/note-share.css') }}">
+    @vite(['resources/css/dashboard.css'])
 @endpush
 
 @push('scripts')
@@ -338,14 +354,9 @@
         window.FN_SHARED_CARDS_URL = '{{ route("notes.shared.cards") }}';
         window.FN_SHARED_VIEW_BASE = '/notes';
         window.FN_FILTER_LABEL_URL = '{{ route("dashboard.filter.label") }}';
+        window.FN_LOAD_MORE_URL = '{{ route("dashboard.load.more") }}';
+        window.FN_NEXT_CURSOR = @json($nextCursor);
+        window.FN_HAS_MORE = @json($hasMoreNotes);
     </script>
-    <script src="{{ asset('assets/js/note-lock.js') }}"></script>
-    <script src="{{ asset('assets/js/note-cards.js') }}"></script>
-    <script src="{{ asset('assets/js/note-attachments.js') }}"></script>
-    <script src="{{ asset('assets/js/note-slash-menu.js') }}"></script>
-    <script src="{{ asset('assets/js/note-modal.js') }}"></script>
-    <script src="{{ asset('assets/js/notes.js') }}"></script>
-    <script src="{{ asset('assets/js/labels.js') }}"></script>
-    <script src="{{ asset('assets/js/note-share.js') }}"></script>
-    <script src="{{ asset('assets/js/shared-notes.js') }}"></script>
+    @vite(['virtual:dashboard-scripts'])
 @endpush

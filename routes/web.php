@@ -49,6 +49,7 @@ Route::post('/resend-otp', [AuthController::class, 'resendOtp'])
 Route::middleware(['auth', \App\Http\Middleware\PreventBackHistory::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/filter-label', [DashboardController::class, 'filterByLabel'])->name('dashboard.filter.label');
+    Route::get('/dashboard/load-more', [DashboardController::class, 'loadMore'])->name('dashboard.load.more');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 

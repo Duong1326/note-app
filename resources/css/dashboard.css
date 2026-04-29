@@ -1,0 +1,11 @@
+/**
+ * resources/css/dashboard.css
+ *
+ * Dashboard + note modal CSS bundle.
+ * Loaded only on the dashboard page via @vite().
+ */
+
+@import "../../public/assets/css/dashboard.css";
+@import "../../public/assets/css/note-create.css";
+@import "../../public/assets/css/note-lock.css";
+@import "../../public/assets/css/note-share.css";

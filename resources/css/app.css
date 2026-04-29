@@ -1,0 +1,22 @@
+/**
+ * resources/css/app.css
+ *
+ * Main CSS bundle for the app layout (sidebar, header, notifications, base).
+ * Imported by Vite → compiled to a single minified file with content-hash.
+ *
+ * Import order matters:
+ *  1. Bootstrap – base styles
+ *  2. Our design-token overrides that build on Bootstrap
+ *  3. Component CSS files
+ */
+
+/* 1. Bootstrap 5 – full framework */
+@import "bootstrap/dist/css/bootstrap.min.css";
+
+/* 2. Our design-system tokens & base resets */
+@import "../../public/assets/css/app-base.css";
+
+/* 3. Layout components */
+@import "../../public/assets/css/sidebar.css";
+@import "../../public/assets/css/header.css";
+@import "../../public/assets/css/notifications.css";

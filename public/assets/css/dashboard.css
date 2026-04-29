@@ -462,3 +462,53 @@
         justify-content: center;
     }
 }
+
+/* ── Load More Button ────────────────────────── */
+.fn-load-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.75rem 2rem;
+    background: transparent;
+    color: var(--fn-primary);
+    border: 1.5px solid var(--fn-primary);
+    border-radius: 9999px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--fn-transition-normal);
+}
+
+.fn-load-more-btn:hover {
+    background: var(--fn-primary);
+    color: var(--fn-on-primary);
+    box-shadow: 0 4px 16px rgba(0, 74, 198, 0.2);
+    transform: translateY(-1px);
+}
+
+.fn-load-more-btn:active {
+    transform: scale(0.97);
+}
+
+.fn-load-more-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ── Loading Spinner ─────────────────────────── */
+.fn-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--fn-surface-container-high);
+    border-top-color: var(--fn-primary);
+    border-radius: 50%;
+    animation: fnSpin 0.7s linear infinite;
+    display: inline-block;
+}
+
+@keyframes fnSpin {
+    to { transform: rotate(360deg); }
+}
+

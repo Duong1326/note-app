@@ -7,8 +7,7 @@
     <title>Đăng nhập | {{ config('app.name', 'Fluid Notes') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
-    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
+    @vite(['resources/css/auth.css'])
 </head>
 
 <body>
@@ -98,7 +97,7 @@
         </div>
     </main>
 
-    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+    @vite(['resources/js/bootstrap.js'])
 </body>
 
 </html>
