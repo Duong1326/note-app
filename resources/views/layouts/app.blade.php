@@ -15,19 +15,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet">
 
-<<<<<<< Updated upstream
     {{-- Vite: Bootstrap CSS + App layout CSS (sidebar, header, notifications, base) --}}
     @vite(['resources/css/app.css'])
-=======
-    {{-- Bootstrap 5 --}}
-    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
-
-    {{-- App Styles (split for maintainability) --}}
-    <link rel="stylesheet" href="{{ asset('assets/css/app-base.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/sidebar.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/header.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/notifications.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/dark-mode.css') }}">
 
     {{-- Flash-free theme restore: runs before first paint --}}
     <script>
@@ -38,7 +27,6 @@
             document.documentElement.dataset.themeIcon = t === 'dark' ? 'light_mode' : 'dark_mode';
         })();
     </script>
->>>>>>> Stashed changes
 
     @stack('styles')
 </head>
@@ -219,17 +207,6 @@
         <script src="https://js.pusher.com/8.4/pusher.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.19.0/dist/echo.iife.js"></script>
 
-<<<<<<< Updated upstream
-    {{-- Pass config to JS --}}
-    <script>
-        window.__userId = {{ Auth::id() }};
-        window.__pusherKey = '{{ config("broadcasting.connections.pusher.key") }}';
-        window.__pusherCluster = '{{ config("broadcasting.connections.pusher.options.cluster") }}';
-        window.__appUrl = '{{ rtrim(config("app.url"), "/") }}';
-        window.__appDebug = {{ config('app.debug') ? 'true' : 'false' }};
-    </script>
-    {{-- echo-init is now bundled in virtual:core-scripts (loaded above) --}}
-=======
         {{-- Pass config to JS --}}
         <script>
             window.__userId = {{ Auth::id() }};
@@ -238,10 +215,7 @@
             window.__appUrl = '{{ rtrim(config("app.url"), "/") }}';
             window.__appDebug = {{ config('app.debug') ? 'true' : 'false' }};
         </script>
-
-        {{-- Echo initialization & notification listeners --}}
-        <script src="{{ asset('assets/js/echo-init.js') }}"></script>
->>>>>>> Stashed changes
+        {{-- echo-init is now bundled in virtual:core-scripts (loaded above) --}}
     @endauth
 
     @stack('scripts')

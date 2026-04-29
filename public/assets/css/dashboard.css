@@ -488,7 +488,6 @@
         width: 100%;
         justify-content: center;
     }
-<<<<<<< Updated upstream
 }
 
 /* ── Load More Button ────────────────────────── */
@@ -539,7 +538,3 @@
 @keyframes fnSpin {
     to { transform: rotate(360deg); }
 }
-
-=======
-}
->>>>>>> Stashed changes
