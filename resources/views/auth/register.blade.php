@@ -10,7 +10,7 @@
         <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
     </head>
     <body>
-        <main class="auth-main">
+        <main class="min-vh-100 d-flex align-items-center justify-content-center py-5 px-3">
             <div class="auth-card">
                 <section class="auth-panel-left">
                     <div class="panel-left-content">
@@ -19,7 +19,7 @@
                                 <span class="brand-icon">N</span>
                                 {{ config('app.name', 'Note App') }}
                             </a>
-                            <div class="hero-section">
+                            <div class="hero-section mt-5">
                                 <p class="hero-label">Get started</p>
                                 <h1 class="hero-title">Tạo tài khoản và bắt đầu ghi chú ngay.</h1>
                                 <p class="hero-desc">Tổ chức ý tưởng, quản lý công việc và lưu trữ mọi thứ quan trọng — tất cả trong một nơi duy nhất.</p>
@@ -48,16 +48,16 @@
                         </div>
 
                         @if ($errors->any())
-                            <div class="alert-error">
+                            <div class="alert auth-alert-error mt-3 py-2 px-3 small">
                                 {{ $errors->first() }}
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ route('register') }}" class="auth-form">
+                        <form method="POST" action="{{ route('register') }}" class="auth-form mt-4">
                             @csrf
 
-                            <div class="form-group">
-                                <label for="name">Họ và tên</label>
+                            <div class="mb-3">
+                                <label for="name" class="form-label fw-medium small">Họ và tên</label>
                                 <input
                                     id="name"
                                     type="text"
@@ -70,8 +70,8 @@
                                 >
                             </div>
 
-                            <div class="form-group">
-                                <label for="email">Email</label>
+                            <div class="mb-3">
+                                <label for="email" class="form-label fw-medium small">Email</label>
                                 <input
                                     id="email"
                                     type="email"
@@ -83,8 +83,8 @@
                                 >
                             </div>
 
-                            <div class="form-group">
-                                <label for="password">Mật khẩu</label>
+                            <div class="mb-3">
+                                <label for="password" class="form-label fw-medium small">Mật khẩu</label>
                                 <input
                                     id="password"
                                     type="password"
@@ -96,8 +96,8 @@
                                 <p class="password-hint">Mật khẩu gồm tối thiểu 6 ký tự</p>
                             </div>
 
-                            <div class="form-group">
-                                <label for="password_confirmation">Xác nhận mật khẩu</label>
+                            <div class="mb-3">
+                                <label for="password_confirmation" class="form-label fw-medium small">Xác nhận mật khẩu</label>
                                 <input
                                     id="password_confirmation"
                                     type="password"
@@ -108,12 +108,12 @@
                                 >
                             </div>
 
-                            <button type="submit" class="btn-submit">
+                            <button type="submit" class="btn btn-dark btn-auth w-100">
                                 Đăng ký
                             </button>
                         </form>
 
-                        <p class="auth-footer">
+                        <p class="auth-footer mt-4 small text-muted">
                             Đã có tài khoản?
                             <a href="{{ route('login') }}">Đăng nhập</a>
                         </p>

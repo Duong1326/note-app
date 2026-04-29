@@ -10,7 +10,7 @@
         <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
     </head>
     <body>
-        <main class="auth-main">
+        <main class="min-vh-100 d-flex align-items-center justify-content-center py-5 px-3">
             <div class="auth-card">
                 <section class="auth-panel-left">
                     <div class="panel-left-content">
@@ -19,7 +19,7 @@
                                 <span class="brand-icon">N</span>
                                 {{ config('app.name', 'Note App') }}
                             </a>
-                            <div class="hero-section">
+                            <div class="hero-section mt-5">
                                 <p class="hero-label">New password</p>
                                 <h1 class="hero-title">Tạo mật khẩu mới cho tài khoản của bạn.</h1>
                                 <p class="hero-desc">Chọn một mật khẩu mới và đăng nhập lại để tiếp tục sử dụng.</p>
@@ -48,16 +48,16 @@
                         </div>
 
                         @if ($errors->any())
-                            <div class="alert-error">
+                            <div class="alert auth-alert-error mt-3 py-2 px-3 small">
                                 {{ $errors->first() }}
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ route('password.update') }}" class="auth-form">
+                        <form method="POST" action="{{ route('password.update') }}" class="auth-form mt-4">
                             @csrf
 
-                            <div class="form-group">
-                                <label for="password">Mật khẩu mới</label>
+                            <div class="mb-3">
+                                <label for="password" class="form-label fw-medium small">Mật khẩu mới</label>
                                 <input
                                     id="password"
                                     type="password"
@@ -70,8 +70,8 @@
                                 <p class="password-hint">Mật khẩu gồm tối thiểu 6 ký tự</p>
                             </div>
 
-                            <div class="form-group">
-                                <label for="password_confirmation">Xác nhận mật khẩu</label>
+                            <div class="mb-3">
+                                <label for="password_confirmation" class="form-label fw-medium small">Xác nhận mật khẩu</label>
                                 <input
                                     id="password_confirmation"
                                     type="password"
@@ -82,12 +82,12 @@
                                 >
                             </div>
 
-                            <button type="submit" class="btn-submit">
+                            <button type="submit" class="btn btn-dark btn-auth w-100">
                                 Đặt lại mật khẩu
                             </button>
                         </form>
 
-                        <p class="auth-footer">
+                        <p class="auth-footer mt-4 small text-muted">
                             Nhớ mật khẩu rồi?
                             <a href="{{ route('login') }}">Quay lại đăng nhập</a>
                         </p>

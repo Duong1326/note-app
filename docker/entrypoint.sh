@@ -54,10 +54,11 @@ echo "MySQL is ready!"
 echo "Running migrations..."
 php artisan migrate --force 2>/dev/null || echo "Migration failed or already up to date"
 
-# Clear and cache config
+# Cache config for faster startup
 echo "Optimizing Laravel..."
-php artisan config:clear
-php artisan cache:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
 echo "Application is ready! Visit http://localhost:8080"
 

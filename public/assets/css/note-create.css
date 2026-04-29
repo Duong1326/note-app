@@ -59,14 +59,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 1.5rem 2rem;
-    border-bottom: 1px solid var(--fn-outline-variant);
-    border-bottom-color: rgba(195, 198, 215, 0.2);
-}
-
-.fn-note-create-header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    border-bottom: 1px solid rgba(195, 198, 215, 0.2);
 }
 
 .fn-note-create-icon {
@@ -116,14 +109,6 @@
 }
 
 /* ── Field Groups ────────────────────────────── */
-.fn-note-field-group {
-    margin-bottom: 1.5rem;
-}
-
-.fn-note-field-group:last-child {
-    margin-bottom: 0;
-}
-
 .fn-field-label {
     display: flex;
     align-items: center;
@@ -210,12 +195,6 @@
     border-bottom: 1px solid rgba(195, 198, 215, 0.15);
 }
 
-.fn-label-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
 .fn-label-chip {
     display: inline-flex;
     cursor: pointer;
@@ -253,22 +232,6 @@
     box-shadow: 0 1px 4px rgba(0, 74, 198, 0.12);
 }
 
-/* ── Field Error Messages ────────────────────── */
-.fn-field-error {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--fn-error);
-    margin-top: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.fn-field-error::before {
-    content: '●';
-    font-size: 0.5rem;
-}
-
 /* ── Form Footer ─────────────────────────────── */
 .fn-note-create-footer {
     display: flex;
@@ -280,12 +243,6 @@
 }
 
 /* ── Toolbar Buttons ─────────────────────────── */
-.fn-note-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
 .fn-toolbar-btn {
     display: inline-flex;
     align-items: center;
@@ -317,12 +274,6 @@
 }
 
 /* ── Action Buttons ──────────────────────────── */
-.fn-note-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
 .fn-btn-discard {
     display: inline-flex;
     align-items: center;
@@ -479,12 +430,6 @@
     border-bottom: 1px solid rgba(195, 198, 215, 0.15);
 }
 
-.fn-modal-header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
 .fn-modal-icon {
     width: 36px;
     height: 36px;
@@ -530,14 +475,6 @@
 /* ── Modal Body ──────────────────────────────── */
 .fn-modal-body {
     padding: 1.75rem 2rem;
-}
-
-.fn-modal-field {
-    margin-bottom: 1.25rem;
-}
-
-.fn-modal-field:last-child {
-    margin-bottom: 0;
 }
 
 .fn-modal-title-input {
@@ -587,9 +524,6 @@
     border-radius: 0.625rem;
     padding: 1rem 1.25rem;
     margin: 1.25rem 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
 }
 
 .fn-modal-labels-title {
@@ -597,13 +531,6 @@
     font-weight: 700;
     color: var(--fn-on-surface);
     margin: 0;
-}
-
-.fn-modal-chips {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1rem;
 }
 
 .fn-checkbox-label {
@@ -657,11 +584,6 @@
 }
 
 /* Add Label Inline Wrapper */
-.fn-modal-add-label-wrapper {
-    display: flex;
-    align-items: center;
-}
-
 .fn-modal-add-label-btn {
     display: inline-flex;
     align-items: center;
@@ -704,11 +626,6 @@
     background: rgba(242, 243, 255, 0.3);
 }
 
-.fn-modal-toolbar {
-    display: flex;
-    gap: 0.125rem;
-}
-
 .fn-modal-tool-btn {
     display: inline-flex;
     align-items: center;
@@ -732,12 +649,6 @@
 
 .fn-modal-tool-btn .material-symbols-outlined {
     font-size: 20px;
-}
-
-.fn-modal-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
 }
 
 .fn-modal-btn-cancel {
