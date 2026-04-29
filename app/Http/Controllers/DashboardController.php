@@ -51,17 +51,15 @@ class DashboardController extends Controller
             : null;
 
         return view('dashboard', [
-            'recentNotes' => $notesQuery->clone()
-                ->with(['labels', 'attachments', 'shares'])
-                ->defaultOrder()
-                ->take($isSearch ? 50 : 6)
-                ->get(),
+            'recentNotes' => $recentNotes,
             'sharedNotes' => $user->sharedNotes()
                 ->with(['note.labels', 'note.attachments', 'note.user:id,name,avatar_url'])
                 ->latest()
                 ->get(),
             'labels' => $user->labels()->orderBy('name')->get(),
             'searchQuery' => $request->q,
+            'hasMoreNotes' => $hasMoreNotes,
+            'nextCursor' => $nextCursor,
         ]);
     }
 

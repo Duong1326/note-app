@@ -15,8 +15,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet">
 
-    {{-- Vite: Bootstrap CSS + App layout CSS (sidebar, header, notifications, base) --}}
-    @vite(['resources/css/app.css'])
+    {{-- Static CSS: Bootstrap + App layout --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/app-base.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/header.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/notifications.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/dark-mode.css') }}">
 
     {{-- Flash-free theme restore: runs before first paint --}}
     <script>
@@ -196,8 +201,9 @@
         <span class="material-symbols-outlined">add</span>
     </button>
 
-    {{-- Vite: Selective Bootstrap JS + Core helpers --}}
-    @vite(['resources/js/bootstrap.js', 'virtual:core-scripts'])
+    {{-- Static JS: Bootstrap + Core helpers --}}
+    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('assets/js/app.js') }}"></script>
 
     {{-- Toast Container --}}
     <div class="fn-toast-container" id="toastContainer"></div>
@@ -215,7 +221,7 @@
             window.__appUrl = '{{ rtrim(config("app.url"), "/") }}';
             window.__appDebug = {{ config('app.debug') ? 'true' : 'false' }};
         </script>
-        {{-- echo-init is now bundled in virtual:core-scripts (loaded above) --}}
+        <script src="{{ asset('assets/js/echo-init.js') }}"></script>
     @endauth
 
     @stack('scripts')

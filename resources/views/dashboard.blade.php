@@ -358,7 +358,10 @@
 @endsection
 
 @push('styles')
-    @vite(['resources/css/dashboard.css'])
+    <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/note-create.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/note-lock.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/note-share.css') }}">
 @endpush
 
 @push('scripts')
@@ -372,5 +375,13 @@
         window.FN_NEXT_CURSOR = @json($nextCursor);
         window.FN_HAS_MORE = @json($hasMoreNotes);
     </script>
-    @vite(['virtual:dashboard-scripts'])
+    <script src="{{ asset('assets/js/notes.js') }}"></script>
+    <script src="{{ asset('assets/js/note-modal.js') }}"></script>
+    <script src="{{ asset('assets/js/note-cards.js') }}"></script>
+    <script src="{{ asset('assets/js/note-attachments.js') }}"></script>
+    <script src="{{ asset('assets/js/note-lock.js') }}"></script>
+    <script src="{{ asset('assets/js/note-share.js') }}"></script>
+    <script src="{{ asset('assets/js/note-slash-menu.js') }}"></script>
+    <script src="{{ asset('assets/js/labels.js') }}"></script>
+    <script src="{{ asset('assets/js/shared-notes.js') }}"></script>
 @endpush

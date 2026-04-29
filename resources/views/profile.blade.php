@@ -109,9 +109,9 @@
 @endsection
 
 @push('styles')
-    @vite(['resources/css/profile.css'])
+    <link rel="stylesheet" href="{{ asset('assets/css/profile.css') }}">
 @endpush
 
 @push('scripts')
-    @vite(['virtual:profile-scripts'])
+    <script src="{{ asset('assets/js/profile.js') }}"></script>
 @endpush
