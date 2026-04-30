@@ -384,4 +384,6 @@
     <script src="{{ asset('assets/js/note-slash-menu.js') }}"></script>
     <script src="{{ asset('assets/js/labels.js') }}"></script>
     <script src="{{ asset('assets/js/shared-notes.js') }}"></script>
+    <script src="{{ asset('assets/js/live-search.js') }}"></script>
+    <script src="{{ asset('assets/js/auto-save.js') }}"></script>
 @endpush

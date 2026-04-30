@@ -995,3 +995,52 @@
 .fn-lightbox-close .material-symbols-outlined {
     font-size: 28px;
 }
+
+/* ─────────────────────────────────────────────────────
+   Auto-Save Status Indicator (modal footer toolbar)
+   ─────────────────────────────────────────────────── */
+
+.fn-modal-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.fn-autosave-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    color: var(--fn-on-surface-variant);
+    opacity: 0;
+    transition: opacity 0.3s ease, color 0.3s ease;
+    white-space: nowrap;
+    pointer-events: none;
+    min-width: 0;
+}
+
+.fn-autosave-status.pending,
+.fn-autosave-status.saving,
+.fn-autosave-status.saved {
+    opacity: 1;
+}
+
+.fn-autosave-status.saving {
+    color: var(--fn-primary);
+}
+
+.fn-autosave-status.saved {
+    color: #16a34a;  /* green-600 */
+}
+
+.fn-autosave-icon {
+    font-size: 14px !important;
+    vertical-align: middle;
+    animation: none;
+}
+
+.fn-autosave-status.saving .fn-autosave-icon {
+    animation: fn-spin 0.9s linear infinite;
+}

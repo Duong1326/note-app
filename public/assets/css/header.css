@@ -164,3 +164,35 @@
         padding: 0 1rem;
     }
 }
+
+/* ── Search Clear Button (now a <button>) ────── */
+.fn-search-clear {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.fn-search-clear:hover .material-symbols-outlined {
+    color: var(--fn-on-surface);
+}
+
+/* ── Search Spinner ──────────────────────────── */
+.fn-search-spinner {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(0, 74, 198, 0.2);
+    border-top-color: var(--fn-primary, #004ac6);
+    border-radius: 50%;
+    animation: fn-search-spin 0.6s linear infinite;
+    display: none;   /* shown via JS */
+}
+
+@keyframes fn-search-spin {
+    to { transform: translateY(-50%) rotate(360deg); }
+}

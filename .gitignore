@@ -21,4 +21,5 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
-
+node_modules
+multi_workspace_plan.md

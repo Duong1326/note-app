@@ -113,9 +113,35 @@ class DashboardController extends Controller
     }
 
     /**
-     * AJAX endpoint: return notes filtered by one or more labels (label_ids[]).
-     * Notes must have ALL selected labels (intersection/AND logic).
+     * AJAX live-search endpoint.
+     * GET /dashboard/search?q=<keyword>
+     *
+     * Returns notes matching the keyword (title OR content) as JSON cards.
+     * Used by the live-search JS (300 ms debounce) so the page never reloads.
      */
+    public function search(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $q    = trim((string) $request->input('q', ''));
+
+        $query = $user->notes()
+            ->with(['labels', 'attachments', 'shares'])
+            ->defaultOrder();
+
+        if ($q !== '') {
+            $query->search($q);
+        }
+
+        $notes = $query->take(self::SEARCH_LIMIT)->get()
+            ->map(fn ($note) => $note->toCardArray());
+
+        return response()->json([
+            'notes'       => $notes,
+            'query'       => $q,
+            'total'       => $notes->count(),
+        ]);
+    }
+
     public function filterByLabel(Request $request): JsonResponse
     {
         $user = $request->user();

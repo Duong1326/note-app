@@ -172,6 +172,15 @@ function openEditNoteModal(btn, token = null) {
 
     document.querySelector('.fn-modal-title').innerText = 'Chỉnh sửa ghi chú';
     _showModal();
+
+    // Start auto-save watch with the current baseline values
+    if (typeof autoSaveReset === 'function') {
+        autoSaveReset(
+            btn.dataset.title,
+            btn.dataset.content ?? '',
+            JSON.parse(btn.dataset.labels || '[]')
+        );
+    }
 }
 
 function closeNewNoteModal() {
@@ -201,6 +210,9 @@ function closeNewNoteModal() {
         saveBtn.disabled = false;
         saveBtn.innerHTML = 'Lưu thay đổi';
     }
+
+    // Cancel any pending auto-save
+    if (typeof autoSaveCancel === 'function') autoSaveCancel();
 }
 
 function _showModal() {

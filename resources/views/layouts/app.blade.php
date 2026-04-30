@@ -119,18 +119,19 @@
                 <button class="fn-menu-toggle" onclick="toggleSidebar()">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
-                <form action="{{ route('dashboard') }}" method="GET" class="fn-search-box m-0 p-0">
-                    <div class="fn-search-box">
-                        <span class="material-symbols-outlined">search</span>
-                        <input type="text" name="q" class="fn-search-input" placeholder="Tìm kiếm ghi chú..."
-                            id="globalSearch" value="{{ request('q') }}">
-                        @if(request('q'))
-                            <a href="{{ route('dashboard') }}" class="fn-search-clear" title="Xóa tìm kiếm">
-                                <span class="material-symbols-outlined fn-icon-sm">close</span>
-                            </a>
-                        @endif
-                    </div>
-                </form>
+                {{-- Live search: no form submit, AJAX debounce 300ms --}}
+                <div class="fn-search-box">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="text" class="fn-search-input" placeholder="Tìm kiếm ghi chú..."
+                        id="globalSearch" autocomplete="off"
+                        value="{{ request('q') }}">
+                    <button type="button" class="fn-search-clear" id="searchClearBtn"
+                        style="display:{{ request('q') ? 'flex' : 'none' }};"
+                        title="Xóa tìm kiếm" onclick="clearLiveSearch()">
+                        <span class="material-symbols-outlined fn-icon-sm">close</span>
+                    </button>
+                    <span class="fn-search-spinner" id="searchSpinner" style="display:none;"></span>
+                </div>
             </div>
 
             <div class="fn-header-actions">
@@ -220,6 +221,7 @@
             window.__pusherCluster = '{{ config("broadcasting.connections.pusher.options.cluster") }}';
             window.__appUrl = '{{ rtrim(config("app.url"), "/") }}';
             window.__appDebug = {{ config('app.debug') ? 'true' : 'false' }};
+            window.FN_SEARCH_URL = '{{ route("dashboard.search") }}';
         </script>
         <script src="{{ asset('assets/js/echo-init.js') }}"></script>
     @endauth
