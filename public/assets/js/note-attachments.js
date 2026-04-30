@@ -26,23 +26,23 @@ let _existingAttachments = [];
 // Attachment Section Toggle
 // ═══════════════════════════════════════════════════
 
+/**
+ * Open the shared image-picker popover above the modal header.
+ * The selected file is added to _pendingFiles and previewed in the grid.
+ */
 function toggleAttachmentSection() {
-    const section = document.getElementById('attachmentSection');
-    const btn = document.getElementById('btnToggleAttachment');
-    const isHidden = section.classList.contains('d-none');
-    section.classList.toggle('d-none', !isHidden);
-    section.classList.toggle('d-flex', isHidden);
-    btn.classList.toggle('active', isHidden);
+    const titleRow = document.querySelector('#newNoteModal .fn-title-row');
+    if (!titleRow) return;
+
+    openImgPicker({ el: titleRow, placement: 'above' }, (file) => {
+        _pendingFiles.push(file);
+        renderPendingPreviews();
+    });
 }
 
+/** @deprecated – kept for compatibility; use toggleAttachmentSection instead */
 function showAttachmentSection() {
-    const section = document.getElementById('attachmentSection');
-    const btn = document.getElementById('btnToggleAttachment');
-    if (section?.classList.contains('d-none')) {
-        section.classList.remove('d-none');
-        section.classList.add('d-flex');
-        btn?.classList.add('active');
-    }
+    toggleAttachmentSection();
 }
 
 function hideAttachmentSection() {

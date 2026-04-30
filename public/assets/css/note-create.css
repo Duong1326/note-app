@@ -25,6 +25,32 @@
     visibility: visible;
 }
 
+/* ── Slash image picker (absolutely positioned at caret inside overlay) ── */
+.fn-slash-img-picker {
+    position: fixed;      /* fixed so we can position by viewport coords */
+    z-index: 1150;
+    width: 280px;
+    background: var(--fn-surface-container-lowest, #fff);
+    border: 1px solid var(--fn-outline-variant, #ddd);
+    border-radius: 0.875rem;
+    padding: 0.5rem;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    pointer-events: none;
+}
+
+.fn-slash-img-picker:not(.d-none) {
+    display: block !important;
+}
+
+.fn-slash-img-picker.fn-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
 /* ── Modal Card ──────────────────────────────── */
 .fn-modal-card {
     width: 100%;
@@ -43,6 +69,7 @@
     flex-shrink: 0;
     transform: translateY(24px) scale(0.96);
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;  /* anchor for slash img picker */
 }
 
 .fn-modal-card>form {
@@ -328,6 +355,48 @@
 
 .fn-content-image-remove .material-symbols-outlined {
     font-size: 16px;
+}
+
+/* ── Inline Slash Image Picker (inside editor, at caret position) ── */
+.fn-content-slash-picker {
+    display: block;
+    margin: 0.5rem 0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    animation: fn-picker-in 0.18s ease;
+}
+
+@keyframes fn-picker-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.fn-content-picker-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 1rem;
+    border: 2px dashed var(--fn-outline-variant, #ccc);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    color: var(--fn-on-surface-variant, #666);
+    text-align: center;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    user-select: none;
+}
+
+.fn-content-picker-zone:hover,
+.fn-content-picker-zone.drag-over {
+    border-color: var(--fn-primary, #004ac6);
+    background: rgba(0, 74, 198, 0.04);
+}
+
+.fn-content-picker-zone .material-symbols-outlined {
+    font-size: 24px;
+    color: var(--fn-primary, #004ac6);
+    opacity: 0.75;
 }
 
 /* ── Inline Divider Block ────────────────────────── */
@@ -996,15 +1065,73 @@
     font-size: 28px;
 }
 
-/* ─────────────────────────────────────────────────────
-   Auto-Save Status Indicator (modal footer toolbar)
-   ─────────────────────────────────────────────────── */
+/* ---------------------------------------------------------
+   Image Picker – Inline block inside modal body (above title)
+   --------------------------------------------------------- */
 
-.fn-modal-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+/* Wrapper shown/hidden via d-none + fn-visible */
+.fn-inline-img-picker {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.2s ease, opacity 0.2s ease, margin-bottom 0.2s ease;
+    margin-bottom: 0;
 }
+
+.fn-inline-img-picker:not(.d-none) {
+    max-height: 160px;
+    opacity: 0;
+    display: block !important;
+}
+
+.fn-inline-img-picker.fn-visible {
+    opacity: 1;
+    max-height: 160px;
+    margin-bottom: 0.5rem;
+}
+
+.fn-img-picker-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 1rem;
+    border: 2px dashed var(--fn-outline-variant, #ccc);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    color: var(--fn-on-surface-variant, #666);
+    text-align: center;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    user-select: none;
+}
+
+.fn-img-picker-zone:hover,
+.fn-img-picker-zone.drag-over {
+    border-color: var(--fn-primary, #004ac6);
+    background: rgba(0, 74, 198, 0.04);
+}
+
+.fn-img-picker-zone .material-symbols-outlined {
+    font-size: 26px;
+    color: var(--fn-primary, #004ac6);
+    opacity: 0.75;
+}
+
+.fn-img-picker-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fn-on-surface, #1a1a1a);
+}
+
+.fn-img-picker-hint {
+    font-size: 0.7rem;
+    opacity: 0.5;
+}
+
+/* ---------------------------------------------------------
+   Auto-Save Status Indicator (modal header, right side)
+   --------------------------------------------------------- */
 
 .fn-autosave-status {
     display: inline-flex;
@@ -1014,6 +1141,7 @@
     font-weight: 500;
     font-family: 'Inter', sans-serif;
     color: var(--fn-on-surface-variant);
+    /* Hidden in idle — keeps space so header doesn't shift */
     opacity: 0;
     transition: opacity 0.3s ease, color 0.3s ease;
     white-space: nowrap;
@@ -1032,15 +1160,61 @@
 }
 
 .fn-autosave-status.saved {
-    color: #16a34a;  /* green-600 */
+    color: #16a34a;
 }
 
 .fn-autosave-icon {
-    font-size: 14px !important;
+    font-size: 18px !important;
     vertical-align: middle;
     animation: none;
 }
 
 .fn-autosave-status.saving .fn-autosave-icon {
     animation: fn-spin 0.9s linear infinite;
+}
+
+/* ---------------------------------------------------------
+   Title Row: hover-to-reveal attach button
+   --------------------------------------------------------- */
+
+.fn-title-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.fn-title-row .fn-modal-title-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.fn-title-attach-btn {
+    flex-shrink: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, color 0.18s ease, background 0.18s ease;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin-left: 4px;
+}
+
+/* Show when hovering anywhere in the title row */
+.fn-title-row:hover .fn-title-attach-btn,
+.fn-title-row:focus-within .fn-title-attach-btn {
+    opacity: 0.55;
+    pointer-events: auto;
+}
+
+.fn-title-attach-btn:hover {
+    opacity: 1 !important;
+    color: var(--fn-primary);
+    background: rgba(0, 74, 198, 0.06);
+}
+
+.fn-title-attach-btn.active {
+    opacity: 1 !important;
+    color: var(--fn-primary);
+    background: rgba(0, 74, 198, 0.1);
 }

@@ -129,6 +129,9 @@ function openNewNoteModal() {
 
     _showModal();
     setTimeout(() => document.getElementById('modalNoteTitle')?.focus(), 350);
+
+    // Activate auto-save watching for the new note (baseline = empty)
+    if (typeof autoSaveResetNew === 'function') autoSaveResetNew();
 }
 
 /**
@@ -204,15 +207,10 @@ function closeNewNoteModal() {
     clearEditorContent();
     hideSlashMenu();
 
-    // Reset save button state
-    const saveBtn = document.querySelector('#createNoteForm .fn-modal-btn-save');
-    if (saveBtn) {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = 'Lưu thay đổi';
-    }
-
-    // Cancel any pending auto-save
-    if (typeof autoSaveCancel === 'function') autoSaveCancel();
+    // Cancel any pending auto-save and close all pickers
+    if (typeof autoSaveCancel      === 'function') autoSaveCancel();
+    if (typeof closeImgPicker      === 'function') closeImgPicker();
+    if (typeof closeSlashImgPicker === 'function') closeSlashImgPicker();
 }
 
 function _showModal() {
@@ -233,6 +231,9 @@ async function submitNoteForm() {
         return;
     }
 
+    // Cancel any pending auto-save timer (manual save takes priority)
+    if (typeof autoSaveCancel === 'function') autoSaveCancel();
+
     const labelIds  = [...document.querySelectorAll('input[name="label_ids[]"]:checked')].map(cb => cb.value);
     const isEditing = _editingNoteId !== null;
 
@@ -252,14 +253,6 @@ async function submitNoteForm() {
             closeNewNoteModal();
             return;
         }
-    }
-
-    // ── Loading state on save button ──
-    const saveBtn = document.querySelector('#createNoteForm .fn-modal-btn-save');
-    const saveBtnOriginalHtml = saveBtn?.innerHTML;
-    if (saveBtn) {
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<span class="fn-btn-spinner"></span> Đang lưu…';
     }
 
     try {
@@ -283,7 +276,6 @@ async function submitNoteForm() {
                     ? Object.values(data.errors).flat()[0]
                     : (data.message || 'Có lỗi xảy ra');
                 showToast(firstError, 'error');
-                if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = saveBtnOriginalHtml; }
                 return;
             }
 
@@ -329,7 +321,6 @@ async function submitNoteForm() {
                     ? Object.values(dataFirst.errors).flat()[0]
                     : (dataFirst.message || 'Có lỗi xảy ra');
                 showToast(firstError, 'error');
-                if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = saveBtnOriginalHtml; }
                 return;
             }
 
@@ -373,7 +364,6 @@ async function submitNoteForm() {
 
     } catch {
         showToast('Lỗi kết nối, vui lòng thử lại', 'error');
-        if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = saveBtnOriginalHtml; }
     }
 }
 

@@ -10,12 +10,19 @@
                 </div>
                 <h2 class="fn-modal-title">Ghi chú mới</h2>
             </div>
-            <button type="button" class="fn-modal-close" onclick="closeNewNoteModal()">
-                <span class="material-symbols-outlined">close</span>
-            </button>
+
+            {{-- Header right: auto-save status + close --}}
+            <div class="d-flex align-items-center gap-2">
+                {{-- Auto-save status indicator (injected by auto-save.js) --}}
+                <span class="fn-autosave-status" id="modalAutoSaveStatus" aria-live="polite"></span>
+
+                <button type="button" class="fn-modal-close" onclick="closeNewNoteModal()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
         </div>
 
-        {{-- Form --}}
+        {{-- Form (no footer — auto-save handles saving) --}}
         <form action="{{ route('notes.store') }}" method="POST" id="createNoteForm">
             @csrf
             <div class="fn-modal-body">
@@ -29,10 +36,26 @@
                     </button>
                 </div>
 
-                {{-- Title --}}
-                <div class="fn-modal-field">
+                {{-- Inline image picker (shown above title when attach btn clicked) --}}
+                <div class="fn-inline-img-picker d-none" id="modalInlineImgPicker">
+                    <div class="fn-img-picker-zone" id="modalInlinePickerZone">
+                        <span class="material-symbols-outlined">add_photo_alternate</span>
+                        <span class="fn-img-picker-label">Nhấn hoặc kéo thả ảnh</span>
+                        <span class="fn-img-picker-hint">JPEG &bull; PNG &bull; GIF &bull; WebP &bull; tối đa 10 MB</span>
+                    </div>
+                    <input type="file" id="modalInlinePickerInput"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" class="d-none">
+                </div>
+
+                {{-- Title + hover attach button --}}
+                <div class="fn-modal-field fn-title-row">
                     <input type="text" name="title" id="modalNoteTitle" class="fn-modal-title-input"
                         placeholder="Tiêu đề ghi chú" required />
+                    <button type="button" class="fn-title-attach-btn fn-modal-tool-btn fn-attach-toggle-btn"
+                        id="btnToggleAttachment" title="Đính kèm ảnh"
+                        onclick="toggleAttachmentSection()">
+                        <span class="material-symbols-outlined">image</span>
+                    </button>
                 </div>
 
                 {{-- Labels --}}
@@ -68,7 +91,7 @@
                         data-placeholder="Nhấn &lsquo;/&rsquo; để chèn khối • Bắt đầu viết ý tưởng..."></div>
                 </div>
 
-                {{-- Image Attachments --}}
+                {{-- Image Attachments (grids only – picker handled by openImgPicker) --}}
                 <div class="fn-modal-field fn-attachment-section d-none" id="attachmentSection">
                     <label class="fn-modal-labels-title d-flex align-items-center gap-1">
                         <span class="material-symbols-outlined fn-icon-sm">image</span>
@@ -80,35 +103,8 @@
 
                     {{-- Pending previews (queued for upload) --}}
                     <div class="fn-attachment-grid" id="pendingPreviews"></div>
-
-                    {{-- Drop zone --}}
-                    <label class="fn-attachment-dropzone" id="attachmentDropzone" for="attachmentFileInput">
-                        <span class="material-symbols-outlined">add_photo_alternate</span>
-                        <span>Nhấn hoặc kéo thả ảnh vào đây</span>
-                        <span class="fn-attachment-hint">JPEG, PNG, GIF, WebP &bull; tối đa 10 MB mỗi ảnh</span>
-                    </label>
-                    <input type="file" id="attachmentFileInput"
-                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" multiple class="d-none">
                 </div>
 
-            </div>
-
-            {{-- Footer --}}
-            <div class="fn-modal-footer">
-                <div class="fn-modal-toolbar">
-                    <button type="button" class="fn-modal-tool-btn fn-attach-toggle-btn" id="btnToggleAttachment"
-                        title="Đính kèm ảnh" onclick="toggleAttachmentSection()">
-                        <span class="material-symbols-outlined">image</span>
-                    </button>
-                    <button type="button" class="fn-modal-tool-btn" title="Thêm danh sách">
-                        <span class="material-symbols-outlined">list</span>
-                    </button>
-                </div>
-                <div class="fn-modal-actions">
-                    <button type="button" class="fn-modal-btn-cancel" id="btnCancelNote"
-                        onclick="closeNewNoteModal()">Hủy</button>
-                    <button type="submit" class="fn-modal-btn-save">Lưu thay đổi</button>
-                </div>
             </div>
         </form>
 

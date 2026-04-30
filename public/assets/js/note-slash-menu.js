@@ -363,35 +363,52 @@ function _restoreEditorSelection() {
 // ═══════════════════════════════════════════════════
 
 function _insertImageBlock() {
-    // Save current caret position before file picker steals focus
-    const sel = window.getSelection();
-    const savedRange = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+    const sel         = window.getSelection();
+    const savedRange  = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
     const currentEditor = _activeEditor || document.getElementById('modalNoteContent');
 
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/jpeg,image/jpg,image/png,image/gif,image/webp';
-    input.onchange = () => {
-        const file = input.files[0];
-        if (!file) return;
+    /* ── Build an inline picker block ─────────────────── */
+    const pickerBlock = document.createElement('div');
+    pickerBlock.className       = 'fn-content-slash-picker';
+    pickerBlock.contentEditable = 'false';
 
+    const fileInput = document.createElement('input');
+    fileInput.type   = 'file';
+    fileInput.accept = 'image/jpeg,image/jpg,image/png,image/gif,image/webp';
+    fileInput.className = 'd-none';
+
+    pickerBlock.innerHTML = `
+        <div class="fn-content-picker-zone">
+            <span class="material-symbols-outlined">add_photo_alternate</span>
+            <span class="fn-img-picker-label">Nhấn hoặc kéo thả ảnh</span>
+            <span class="fn-img-picker-hint">JPEG &bull; PNG &bull; GIF &bull; WebP &bull; tối đa 10 MB</span>
+        </div>
+    `;
+    pickerBlock.appendChild(fileInput);
+
+    /* ── Handle selected file ──────────────────────────── */
+    const handleFile = (file) => {
+        if (!file.type.startsWith('image/')) {
+            if (typeof showToast === 'function') showToast('Chỉ hỗ trợ file ảnh', 'error');
+            return;
+        }
         if (file.size > 10 * 1024 * 1024) {
-            showToast('Ảnh vượt quá 10 MB', 'error');
+            if (typeof showToast === 'function') showToast('Ảnh vượt quá 10 MB', 'error');
             return;
         }
 
-        // Use FileReader (data URL / base64) instead of createObjectURL (blob URL).
-        // Blob URLs are revoked by WebKit when the object is GC'd → "WebKitBlobResource error 1".
-        // Data URLs are embedded directly in HTML and never expire.
+        // Remember where the picker is so we can insert the image right after it
+        const nextSibling = pickerBlock.nextSibling;
+        const parent      = pickerBlock.parentNode;
+        pickerBlock.remove();
+
         const reader = new FileReader();
-        reader.onload = (e) => {
-            const dataUrl = e.target.result;
+        reader.onload = (ev) => {
+            const dataUrl = ev.target.result;
 
-            // Create the inline image frame
             const wrapper = document.createElement('div');
-            wrapper.className = 'fn-content-image-block';
+            wrapper.className       = 'fn-content-image-block';
             wrapper.contentEditable = 'false';
-
             wrapper.innerHTML = `
                 <img src="${dataUrl}" alt="Inline image" class="fn-content-image">
                 <button type="button" class="fn-content-image-remove" title="Xóa ảnh"
@@ -399,29 +416,53 @@ function _insertImageBlock() {
                     <span class="material-symbols-outlined">close</span>
                 </button>
             `;
-
-            // Store file reference for upload later
             wrapper.dataset.pendingFile = 'true';
             wrapper._file = file;
             _inlineContentFiles.push({ file, dataUrl, wrapper });
 
-            // Restore editor focus and caret position
-            if (currentEditor) currentEditor.focus();
-            if (savedRange) {
-                const s = window.getSelection();
-                s.removeAllRanges();
-                s.addRange(savedRange);
+            // Insert at the same position where picker was
+            if (nextSibling && nextSibling.parentNode === parent) {
+                parent.insertBefore(wrapper, nextSibling);
+            } else if (parent) {
+                parent.appendChild(wrapper);
+            } else {
+                currentEditor.appendChild(wrapper);
             }
 
-            // Insert the image block and move cursor below it
-            _insertBlockAtCaret(wrapper);
-
-            // Ensure editor stays focused after insertion
+            // Move cursor after image block
+            _moveCursorAfterBlock(wrapper);
             if (currentEditor) currentEditor.focus();
         };
         reader.readAsDataURL(file);
     };
-    input.click();
+
+    /* ── Wire events ───────────────────────────────────── */
+    const zone = pickerBlock.querySelector('.fn-content-picker-zone');
+    zone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+        const f = fileInput.files[0];
+        fileInput.value = '';
+        if (f) handleFile(f);
+    });
+
+    zone.addEventListener('dragover',  (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', (e) => { if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over'); });
+    zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        const f = e.dataTransfer.files[0];
+        if (f) handleFile(f);
+    });
+
+    /* ── Insert picker at caret (where slash was typed) ── */
+    if (currentEditor) currentEditor.focus();
+    if (savedRange) {
+        sel.removeAllRanges();
+        sel.addRange(savedRange);
+    }
+    _insertBlockAtCaret(pickerBlock);
+    if (currentEditor) currentEditor.focus();
 }
 
 function removeInlineImage(btn) {

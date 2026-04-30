@@ -378,6 +378,7 @@
     <script src="{{ asset('assets/js/notes.js') }}"></script>
     <script src="{{ asset('assets/js/note-modal.js') }}"></script>
     <script src="{{ asset('assets/js/note-cards.js') }}"></script>
+    <script src="{{ asset('assets/js/note-img-picker.js') }}"></script>
     <script src="{{ asset('assets/js/note-attachments.js') }}"></script>
     <script src="{{ asset('assets/js/note-lock.js') }}"></script>
     <script src="{{ asset('assets/js/note-share.js') }}"></script>
