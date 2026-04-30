@@ -4,6 +4,11 @@
  *             note-lock.js (requireUnlock, isNoteLocked)
  */
 
+// ── Presence & auto-save state ───────────────────────────────────
+let _presenceChannel    = null;
+let _sharedSaveTimer    = null;
+const _SHARED_SAVE_DELAY = 1500;  // ms debounce for shared auto-save
+
 // ── Lock-aware entry point ───────────────────────────────────────
 function openSharedNoteOrUnlock(noteId, permission, isLocked) {
     if (isLocked && permission === 'edit') {
@@ -100,6 +105,14 @@ async function openSharedNoteModal(noteId, permission, lockToken = null) {
             contentEl.addEventListener('input', contentEl._snSlashHandler);
         }
 
+        // ── Presence channel ──────────────────────────────
+        _joinPresenceChannel(noteId, modal);
+
+        // ── Auto-save for edit-permission users ───────────
+        if (canEdit) {
+            _setupSharedAutoSave(modal, noteId, lockToken);
+        }
+
     } catch (err) {
         console.error('[SharedNote] Load error:', err);
         modal.querySelector('.sn-title').value = '⚠ Không thể tải ghi chú';
@@ -112,6 +125,16 @@ async function openSharedNoteModal(noteId, permission, lockToken = null) {
 function closeSharedNoteModal() {
     const modal = document.getElementById('sharedNoteModal');
     if (!modal) return;
+
+    // Leave presence channel
+    if (_presenceChannel && modal.dataset.noteId) {
+        window.EchoInstance?.leave('note.' + modal.dataset.noteId);
+        _presenceChannel = null;
+    }
+
+    // Cancel pending auto-save
+    clearTimeout(_sharedSaveTimer);
+
     modal.classList.remove('show');
     // Reset content to avoid flash of old HTML on next open
     const contentEl = modal.querySelector('.sn-content');
@@ -123,7 +146,22 @@ function closeSharedNoteModal() {
             contentEl.removeEventListener('input', contentEl._snSlashHandler);
             contentEl._snSlashHandler = null;
         }
+        // Remove auto-save listener
+        if (contentEl._snAutoSaveHandler) {
+            contentEl.removeEventListener('input', contentEl._snAutoSaveHandler);
+            contentEl._snAutoSaveHandler = null;
+        }
     }
+    const titleEl = modal.querySelector('.sn-title');
+    if (titleEl?._snAutoSaveHandler) {
+        titleEl.removeEventListener('input', titleEl._snAutoSaveHandler);
+        titleEl._snAutoSaveHandler = null;
+    }
+
+    // Clear presence avatars
+    const avatarsEl = document.getElementById('snPresenceAvatars');
+    if (avatarsEl) avatarsEl.innerHTML = '';
+
     modal.dataset.noteId = '';
     modal.dataset.lockToken = '';  // discard one-time token
     // Reset shared editor reference so main note modal gets its own editor back
@@ -213,6 +251,130 @@ async function saveSharedNote() {
         if (saveBtn) {
             saveBtn.disabled = false;
             saveBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">save</span> Lưu';
+        }
+    }
+}
+
+// ── Presence channel helpers ─────────────────────────────────────
+function _joinPresenceChannel(noteId, modal) {
+    if (!window.EchoInstance) return;
+
+    // Leave any stale channel first
+    if (_presenceChannel && modal.dataset.noteId && modal.dataset.noteId !== String(noteId)) {
+        window.EchoInstance.leave('note.' + modal.dataset.noteId);
+    }
+
+    _presenceChannel = window.EchoInstance.join('note.' + noteId)
+        .here((members) => {
+            _renderPresenceAvatars(members.filter(m => m.id !== window.__userId));
+        })
+        .joining((member) => {
+            if (member.id === window.__userId) return;
+            const el = document.getElementById('snPresenceAvatars');
+            if (el && !el.querySelector(`[data-uid="${member.id}"]`)) {
+                el.insertAdjacentHTML('beforeend', _presenceAvatarHtml(member));
+            }
+        })
+        .leaving((member) => {
+            document.querySelector(`#snPresenceAvatars [data-uid="${member.id}"]`)?.remove();
+        })
+        .error((err) => {
+            console.warn('[SharedNote] Presence channel error:', err);
+        });
+}
+
+function _renderPresenceAvatars(members) {
+    const el = document.getElementById('snPresenceAvatars');
+    if (!el) return;
+    el.innerHTML = members.map(_presenceAvatarHtml).join('');
+}
+
+function _presenceAvatarHtml(member) {
+    const initials = (member.name || '?').substring(0, 2).toUpperCase();
+    const avatar = member.avatar_url
+        ? `<img src="${_escapeAttr(member.avatar_url)}" alt="${_escapeAttr(member.name)}">`
+        : initials;
+    return `<div class="sn-presence-avatar" data-uid="${member.id}" title="${_escapeAttr(member.name)} đang xem">${avatar}</div>`;
+}
+
+function _escapeAttr(str) {
+    const d = document.createElement('div');
+    d.setAttribute('x', str || '');
+    return d.outerHTML.slice(4, -2);
+}
+
+// ── Auto-save for shared editors ─────────────────────────────────
+function _setupSharedAutoSave(modal, noteId, lockToken) {
+    const titleEl   = modal.querySelector('.sn-title');
+    const contentEl = modal.querySelector('.sn-content');
+
+    const handler = () => {
+        clearTimeout(_sharedSaveTimer);
+        _sharedSaveTimer = setTimeout(() => _doSharedAutoSave(modal, noteId, lockToken), _SHARED_SAVE_DELAY);
+    };
+
+    if (titleEl) {
+        titleEl._snAutoSaveHandler = handler;
+        titleEl.addEventListener('input', handler);
+    }
+    if (contentEl) {
+        contentEl._snAutoSaveHandler = handler;
+        contentEl.addEventListener('input', handler);
+    }
+}
+
+async function _doSharedAutoSave(modal, noteId, lockToken) {
+    const title = modal.querySelector('.sn-title')?.value.trim();
+    if (!title) return; // need title to save
+    if (!modal.classList.contains('show')) return; // modal closed
+
+    const contentEl = modal.querySelector('.sn-content');
+    const content   = contentEl?.innerHTML.trim() || '';
+
+    // Show saving indicator
+    const saveBtn = modal.querySelector('.sn-save-btn');
+    const origHtml = saveBtn?.innerHTML;
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="fn-btn-spinner"></span>';
+    }
+
+    try {
+        if (typeof uploadInlineContentImages === 'function') {
+            await uploadInlineContentImages(noteId, lockToken);
+        }
+        const finalContent = contentEl?.innerHTML.trim() || content;
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken(),
+            ...(lockToken ? { 'X-Note-Token': lockToken } : {}),
+        };
+        const res = await fetch(`/notes/${noteId}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({ title, content: finalContent }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) return;
+
+        // Patch shared card
+        const col = document.querySelector(`.fn-shared-note-col[data-note-id="${noteId}"]`);
+        if (col) {
+            const t = col.querySelector('.fn-note-title');
+            const e = col.querySelector('.fn-note-excerpt');
+            const d = col.querySelector('.fn-note-date');
+            if (t) t.textContent = data.note?.title || title;
+            if (e) e.textContent = contentToExcerpt(finalContent);
+            if (d) d.textContent = 'Vừa cập nhật';
+        }
+    } catch (err) {
+        console.error('[SharedNote] Auto-save error:', err);
+    } finally {
+        if (saveBtn && origHtml) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = origHtml;
         }
     }
 }

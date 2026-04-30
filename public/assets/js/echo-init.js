@@ -197,11 +197,28 @@ function _handleNoteUpdated(data) {
     if (sharedModal && sharedModal.classList.contains('show') &&
         String(sharedModal.dataset.noteId) === String(data.note_id)) {
 
+        // Only update fields that are NOT currently focused (don't stomp user's edits)
         if (data.updated_by.id !== window.__userId) {
             const titleInput = sharedModal.querySelector('.sn-title');
-            const contentInput = sharedModal.querySelector('.sn-content');
-            if (titleInput && !titleInput.matches(':focus')) titleInput.value = data.note_title;
-            if (contentInput && !contentInput.matches(':focus')) contentInput.value = data.note_content || '';
+            const contentEl  = sharedModal.querySelector('.sn-content');
+            if (titleInput && document.activeElement !== titleInput) {
+                titleInput.value = data.note_title;
+            }
+            if (contentEl && document.activeElement !== contentEl) {
+                // sn-content is a contenteditable div — use innerHTML not .value
+                contentEl.innerHTML = data.note_content || '';
+            }
+            // Show a subtle "updated by" indicator
+            const ownerEl = sharedModal.querySelector('.sn-owner-badge');
+            if (ownerEl) {
+                const prev = ownerEl.textContent;
+                ownerEl.textContent = `✏ ${data.updated_by.name} vừa cập nhật`;
+                ownerEl.style.color = 'var(--fn-primary, #004ac6)';
+                setTimeout(() => {
+                    ownerEl.textContent = prev;
+                    ownerEl.style.color = '';
+                }, 3000);
+            }
         }
     }
 }

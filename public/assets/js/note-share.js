@@ -223,6 +223,13 @@ function renderRecipients() {
             ? `<img src="${escapeHtml(share.avatar_url)}" alt="${escapeHtml(share.name)}">`
             : initials;
 
+        const sharedAtHtml = share.shared_at
+            ? `<div class="fn-share-shared-at">
+                   <span class="material-symbols-outlined">schedule</span>
+                   Chia sẻ ${escapeHtml(share.shared_at)}
+               </div>`
+            : '';
+
         const row = document.createElement('div');
         row.className = 'fn-share-recipient';
         row.dataset.shareId = share.id;
@@ -231,6 +238,7 @@ function renderRecipients() {
             <div class="fn-share-recipient-info">
                 <div class="fn-share-recipient-name">${escapeHtml(share.name)}</div>
                 <div class="fn-share-recipient-email">${escapeHtml(share.email)}</div>
+                ${sharedAtHtml}
             </div>
             <select class="fn-share-perm-select" onchange="updateSharePermission(${share.id}, this.value)">
                 <option value="read"  ${share.permission === 'read' ? 'selected' : ''}>Chỉ đọc</option>

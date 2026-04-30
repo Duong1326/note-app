@@ -87,10 +87,14 @@ class NoteService
     }
 
     /**
-     * Delete a note.
+     * Delete a note. Only the owner may delete.
      */
-    public function delete(Note $note): void
+    public function delete(Note $note, int $requestingUserId): void
     {
+        if ($note->user_id !== $requestingUserId) {
+            throw new Exception('Bạn không có quyền xóa ghi chú này.');
+        }
+
         try {
             $note->delete();
         } catch (Exception $e) {

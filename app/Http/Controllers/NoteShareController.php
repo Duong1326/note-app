@@ -35,6 +35,7 @@ class NoteShareController extends Controller
                 'email'      => $s->sharedWith->email,
                 'avatar_url' => $s->sharedWith->avatarUrl(),
                 'permission' => $s->permission,
+                'shared_at'  => $s->created_at->diffForHumans(),
             ]);
 
         return response()->json(['success' => true, 'shares' => $shares]);
@@ -85,6 +86,7 @@ class NoteShareController extends Controller
                 'email'      => $recipient->email,
                 'avatar_url' => $recipient->avatarUrl(),
                 'permission' => $share->permission,
+                'shared_at'  => $share->created_at->diffForHumans(),
             ];
 
             // Broadcast real-time notification to the recipient

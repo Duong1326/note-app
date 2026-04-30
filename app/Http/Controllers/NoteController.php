@@ -67,7 +67,14 @@ class NoteController extends Controller
         $sharedUserIds = $note->shares()->pluck('shared_with_user_id')->toArray();
         $deletedBy     = request()->user();
 
-        $this->noteService->delete($note);
+        try {
+            $this->noteService->delete($note, $deletedBy->id);
+        } catch (\Exception $e) {
+            if (request()->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 403);
+            }
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
 
         // Notify shared users in real-time so they remove the card
         if (!empty($sharedUserIds)) {
@@ -83,6 +90,12 @@ class NoteController extends Controller
 
     public function pin(Note $note): JsonResponse|RedirectResponse
     {
+        abort_if(
+            $note->user_id !== request()->user()->id,
+            403,
+            'Bạn không có quyền ghim ghi chú này.'
+        );
+
         $this->noteService->pin($note);
 
         if (request()->expectsJson()) {
@@ -94,6 +107,12 @@ class NoteController extends Controller
 
     public function unpin(Note $note): JsonResponse|RedirectResponse
     {
+        abort_if(
+            $note->user_id !== request()->user()->id,
+            403,
+            'Bạn không có quyền bỏ ghim ghi chú này.'
+        );
+
         $this->noteService->unpin($note);
 
         if (request()->expectsJson()) {

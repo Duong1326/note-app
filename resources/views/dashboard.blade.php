@@ -315,6 +315,8 @@
                     </div>
                     <span class="fn-perm-badge sn-perm-badge ms-1"></span>
                 </div>
+                {{-- Presence avatars: people currently viewing this note --}}
+                <div id="snPresenceAvatars" class="sn-presence-avatars" title="Đang xem ghi chú này"></div>
                 <button type="button" class="fn-modal-close" onclick="closeSharedNoteModal()">
                     <span class="material-symbols-outlined">close</span>
                 </button>

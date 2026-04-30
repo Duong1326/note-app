@@ -403,3 +403,64 @@
 /* Hide remove buttons when in read-only shared view */
 .sn-content[contenteditable="false"] .fn-content-image-remove { display: none; }
 
+/* ── Shared-at timestamp in recipient row ────────────────────── */
+.fn-share-shared-at {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.68rem;
+    color: var(--fn-on-surface-variant, #888);
+    margin-top: 0.1rem;
+    opacity: 0.75;
+}
+
+.fn-share-shared-at .material-symbols-outlined {
+    font-size: 13px;
+    line-height: 1;
+}
+
+/* ── Presence avatars in shared modal header ─────────────────── */
+.sn-presence-avatars {
+    display: flex;
+    align-items: center;
+    margin-left: auto;   /* push to right, before close button */
+    margin-right: 0.5rem;
+    gap: 0;
+}
+
+.sn-presence-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--fn-surface, #fff);
+    overflow: hidden;
+    background: var(--fn-tertiary, #1d8348);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: -8px;
+    transition: transform 0.2s ease;
+    cursor: default;
+    animation: presence-in 0.25s ease;
+}
+
+.sn-presence-avatar:first-child { margin-left: 0; }
+
+.sn-presence-avatar:hover { transform: translateY(-2px) scale(1.1); z-index: 2; }
+
+.sn-presence-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+@keyframes presence-in {
+    from { opacity: 0; transform: scale(0.6); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
