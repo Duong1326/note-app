@@ -383,8 +383,18 @@ function _insertImageBlock() {
             <span class="fn-img-picker-label">Nhấn hoặc kéo thả ảnh</span>
             <span class="fn-img-picker-hint">JPEG &bull; PNG &bull; GIF &bull; WebP &bull; tối đa 10 MB</span>
         </div>
+        <button type="button" class="fn-picker-cancel-btn fn-slash-picker-cancel" title="Hủy">
+            <span class="material-symbols-outlined">close</span>
+        </button>
     `;
     pickerBlock.appendChild(fileInput);
+
+    // Wire cancel button (must do after innerHTML sets it)
+    pickerBlock.querySelector('.fn-slash-picker-cancel')
+        .addEventListener('click', () => {
+            pickerBlock.remove();
+            if (currentEditor) currentEditor.focus();
+        });
 
     /* ── Handle selected file ──────────────────────────── */
     const handleFile = (file) => {

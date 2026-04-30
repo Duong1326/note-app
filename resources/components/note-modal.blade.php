@@ -43,6 +43,9 @@
                         <span class="fn-img-picker-label">Nhấn hoặc kéo thả ảnh</span>
                         <span class="fn-img-picker-hint">JPEG &bull; PNG &bull; GIF &bull; WebP &bull; tối đa 10 MB</span>
                     </div>
+                    <button type="button" class="fn-picker-cancel-btn" onclick="closeImgPicker()" title="Hủy">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
                     <input type="file" id="modalInlinePickerInput"
                         accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" class="d-none">
                 </div>
