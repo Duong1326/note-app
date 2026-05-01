@@ -334,7 +334,6 @@
 
 [data-theme="dark"] .fnp-editor-wrap .fn-modal-thumb-preview::after {
     background: linear-gradient(to top, var(--fn-surface-container-lowest, #1a1a2e) 0%, transparent 100%);
-<<<<<<< HEAD
 }
 
 /* ── Realtime presence avatars (edit page) ─────────── */
@@ -375,10 +374,13 @@
 }
 
 @keyframes fnp-presence-in {
-    from { opacity: 0; transform: scale(0.6); }
-    to   { opacity: 1; transform: scale(1); }
-}
+    from {
+        opacity: 0;
+        transform: scale(0.6);
+    }
 
-=======
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
->>>>>>> 7d8e85737a9d8fa18f64832f046042a8063eaaaf
