@@ -84,13 +84,6 @@ function patchNoteCard(noteId, note) {
     updateCardLabels(col, note.labels);
     updateCardThumbnail(col, note.attachments);
 
-    const editBtn = col.querySelector('.dropdown-menu li:first-child a');
-    if (editBtn) {
-        editBtn.dataset.title = note.title;
-        editBtn.dataset.content = note.content ?? '';
-        editBtn.dataset.labels = JSON.stringify(note.labels?.map(l => l.id) ?? []);
-        editBtn.dataset.attachments = JSON.stringify(note.attachments ?? []);
-    }
 }
 
 function patchPinCard(col, noteId, isPinned) {
@@ -173,13 +166,8 @@ function buildNoteCardHtml(note) {
                     <ul class="dropdown-menu dropdown-menu-end fn-dropdown-menu shadow-sm border-0 rounded-3">
                         <li>
                              <a class="dropdown-item d-flex align-items-center gap-2 py-2"
-                               href="javascript:void(0)"
-                               data-id="${note.id}"
-                               data-title="${escapeAttr(note.title)}"
-                               data-content="${escapeAttr(note.content ?? '')}"
-                               data-labels='${labelIds}'
-                               data-attachments='${escapeAttr(attachmentsJson)}'
-                               onclick="requireUnlock(${note.id}, (tok) => openEditNoteModal(this, tok))">
+                               href="/notes/${note.id}/edit"
+                               onclick="event.preventDefault(); requireUnlock(${note.id}, () => window.location.href = '/notes/${note.id}/edit')">
                                 <span class="material-symbols-outlined fn-icon-sm">edit</span>
                                 Chỉnh sửa
                             </a>

@@ -16,13 +16,10 @@
     let _zone   = null;  // #modalInlinePickerZone
     let _input  = null;  // #modalInlinePickerInput
 
-    /* ── Wire up the pre-existing DOM elements ─────────── */
-    document.addEventListener('DOMContentLoaded', () => {
-        _picker = document.getElementById('modalInlineImgPicker');
-        _zone   = document.getElementById('modalInlinePickerZone');
-        _input  = document.getElementById('modalInlinePickerInput');
+    let _eventsBound = false;
 
-        if (!_picker) return;
+    function _bindEvents() {
+        if (_eventsBound || !_picker || !_zone || !_input) return;
 
         // Click zone → open file browser
         _zone.addEventListener('click', () => _input.click());
@@ -55,6 +52,17 @@
                 closeImgPicker();
             }
         });
+
+        _eventsBound = true;
+    }
+
+    /* ── Wire up the pre-existing DOM elements ─────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+        _picker = document.getElementById('modalInlineImgPicker');
+        _zone   = document.getElementById('modalInlinePickerZone');
+        _input  = document.getElementById('modalInlinePickerInput');
+
+        if (_picker) _bindEvents();
     });
 
     /* ── File validation ───────────────────────────────── */
@@ -89,6 +97,7 @@
             _zone   = document.getElementById('modalInlinePickerZone');
             _input  = document.getElementById('modalInlinePickerInput');
             if (!_picker) return;
+            _bindEvents();
         }
 
         // Toggle: if already visible, close it

@@ -27,7 +27,8 @@
 
 /* ── Slash image picker (absolutely positioned at caret inside overlay) ── */
 .fn-slash-img-picker {
-    position: fixed;      /* fixed so we can position by viewport coords */
+    position: fixed;
+    /* fixed so we can position by viewport coords */
     z-index: 1150;
     width: 280px;
     background: var(--fn-surface-container-lowest, #fff);
@@ -69,7 +70,8 @@
     flex-shrink: 0;
     transform: translateY(24px) scale(0.96);
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;  /* anchor for slash img picker */
+    position: relative;
+    /* anchor for slash img picker */
 }
 
 .fn-modal-card>form {
@@ -368,8 +370,15 @@
 }
 
 @keyframes fn-picker-in {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .fn-content-picker-zone {

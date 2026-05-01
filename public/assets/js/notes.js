@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPendingPreviews();
     });
 
-    // Click-to-edit: clicking anywhere on a note card opens the edit modal
+    // Click-to-edit: clicking anywhere on a note card → navigate to full-page editor
     document.addEventListener('click', e => {
         const card = e.target.closest('.fn-note-card');
         if (!card) return;
@@ -169,12 +169,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ignore clicks on interactive elements inside the card
         if (e.target.closest('.dropdown') || e.target.closest('button') || e.target.closest('a')) return;
 
-        const col = card.closest('.note-col');
+        const col    = card.closest('.note-col');
         const noteId = col?.dataset.noteId;
-        const editBtn = card.querySelector('.dropdown-item[onclick*="openEditNoteModal"]');
-        if (!editBtn || !noteId) return;
+        if (!noteId) return;
 
-        requireUnlock(noteId, (token) => openEditNoteModal(editBtn, token));
+        // Navigate to the full-page editor
+        window.location.href = `/notes/${noteId}/edit`;
     });
 });
 

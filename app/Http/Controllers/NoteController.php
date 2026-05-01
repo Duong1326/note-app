@@ -10,6 +10,8 @@ use App\Http\Requests\Note\StoreNoteRequest;
 use App\Http\Requests\Note\UpdateNoteRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class NoteController extends Controller
 {
@@ -17,9 +19,53 @@ class NoteController extends Controller
         private NoteService $noteService,
     ) {}
 
+    /**
+     * Display the full-page editor for creating a new note.
+     * Reuses the notes.edit view with $note = null.
+     */
+    public function create(Request $request): View
+    {
+        return view('notes.edit', [
+            'note'            => null,
+            'labels'          => $request->user()->labels()->orderBy('name')->get(),
+            'isOwner'         => true,
+            'sharePermission' => null,
+        ]);
+    }
+
+    /**
+     * Display the full-page editor for an existing note.
+     * Accessible by the note owner or users with edit permission.
+     */
+    public function edit(Request $request, Note $note): View
+    {
+        $user = $request->user();
+
+        // Authorization: owner OR shared-edit user
+        $isOwner = $note->user_id === $user->id;
+        $sharePermission = null;
+
+        if (!$isOwner) {
+            $share = $note->shares()->where('shared_with_user_id', $user->id)->first();
+            abort_if(!$share, 403, 'Bạn không có quyền truy cập ghi chú này.');
+            $sharePermission = $share->permission; // 'view' | 'edit'
+        }
+
+        $note->load(['labels', 'attachments', 'shares']);
+
+        return view('notes.edit', [
+            'note'            => $note,
+            'labels'          => $user->labels()->orderBy('name')->get(),
+            'isOwner'         => $isOwner,
+            'sharePermission' => $sharePermission,
+        ]);
+    }
+
+
     public function store(StoreNoteRequest $request): JsonResponse|RedirectResponse
     {
         $note = $this->noteService->create($request->user(), $request->validated());
+
 
         if ($request->expectsJson()) {
             return response()->json([

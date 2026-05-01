@@ -13,10 +13,10 @@
                     <p class="fn-welcome-sub">Sẵn sàng ghi lại ý tưởng của bạn?</p>
                 </div>
                 <div class="col-12 col-md-4 text-md-end">
-                    <button type="button" class="fn-btn-new-note" onclick="openNewNoteModal()">
+                    <a href="{{ route('notes.create') }}" class="fn-btn-new-note">
                         <span class="material-symbols-outlined">add</span>
                         Ghi chú mới
-                    </button>
+                    </a>
                 </div>
             </div>
         </section>
@@ -75,13 +75,8 @@
                                             {{-- Edit --}}
                                             <li>
                                                 <a class="dropdown-item d-flex align-items-center gap-2 py-2"
-                                                    href="javascript:void(0)"
-                                                    data-id="{{ $note->id }}"
-                                                    data-title="{{ $note->title }}"
-                                                    data-content="{{ $note->content }}"
-                                                    data-labels="{{ $note->labels->pluck('id')->toJson() }}"
-                                                    data-attachments="{{ $note->attachments->map(fn($a) => ['id' => $a->id, 'url' => $a->secure_url, 'thumbnail_url' => $a->thumbnailUrl(400)])->toJson() }}"
-                                                    onclick="requireUnlock('{{ $note->id }}', (tok) => openEditNoteModal(this, tok))">
+                                                    href="{{ route('notes.edit', $note->id) }}"
+                                                    onclick="event.preventDefault(); requireUnlock('{{ $note->id }}', () => window.location.href = '{{ route('notes.edit', $note->id) }}')">
                                                     <span class="material-symbols-outlined fn-icon-sm">edit</span>
                                                     Chỉnh sửa
                                                 </a>
@@ -294,7 +289,6 @@
         </div>
     </div>
 
-    @include('components::note-modal')
     @include('components::note-lock-modals')
     @include('components::note-share-modal')
 
@@ -368,7 +362,6 @@
 
 @push('scripts')
     <script>
-        window.FN_STORE_URL = '{{ route("notes.store") }}';
         window.FN_LABEL_STORE_URL = '{{ route("labels.store") }}';
         window.FN_SHARED_CARDS_URL = '{{ route("notes.shared.cards") }}';
         window.FN_SHARED_VIEW_BASE = '/notes';
@@ -378,15 +371,10 @@
         window.FN_HAS_MORE = @json($hasMoreNotes);
     </script>
     <script src="{{ asset('assets/js/notes.js') }}"></script>
-    <script src="{{ asset('assets/js/note-modal.js') }}"></script>
     <script src="{{ asset('assets/js/note-cards.js') }}"></script>
-    <script src="{{ asset('assets/js/note-img-picker.js') }}"></script>
-    <script src="{{ asset('assets/js/note-attachments.js') }}"></script>
     <script src="{{ asset('assets/js/note-lock.js') }}"></script>
     <script src="{{ asset('assets/js/note-share.js') }}"></script>
-    <script src="{{ asset('assets/js/note-slash-menu.js') }}"></script>
     <script src="{{ asset('assets/js/labels.js') }}"></script>
     <script src="{{ asset('assets/js/shared-notes.js') }}"></script>
     <script src="{{ asset('assets/js/live-search.js') }}"></script>
-    <script src="{{ asset('assets/js/auto-save.js') }}"></script>
 @endpush

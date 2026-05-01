@@ -27,11 +27,15 @@ let _existingAttachments = [];
 // ═══════════════════════════════════════════════════
 
 /**
- * Open the shared image-picker popover above the modal header.
- * The selected file is added to _pendingFiles and previewed in the grid.
+ * Open the shared image-picker above the title row.
+ * Works in both the dashboard modal (#newNoteModal) and the
+ * full-page editor (#noteEditPage) contexts.
  */
 function toggleAttachmentSection() {
-    const titleRow = document.querySelector('#newNoteModal .fn-title-row');
+    // Prefer the page editor; fall back to the modal
+    const context = document.getElementById('noteEditPage')
+        || document.getElementById('newNoteModal');
+    const titleRow = context?.querySelector('.fn-title-row');
     if (!titleRow) return;
 
     openImgPicker({ el: titleRow, placement: 'above' }, (file) => {
@@ -120,7 +124,6 @@ function openLightbox(url) {
 }
 
 function closeLightbox(e) {
-    // Only close if we didn't click inside the image itself (if event is passed)
     const lb = document.getElementById('imageLightbox');
     if (!lb) return;
     lb.classList.add('d-none');
@@ -128,6 +131,9 @@ function closeLightbox(e) {
     // Restore overflow if modal is still open
     if (document.getElementById('newNoteModal')?.classList.contains('show')) {
         document.body.style.overflow = 'hidden';
+    } else if (!document.getElementById('noteEditPage')) {
+        // Only restore on dashboard (full-page editor never locks scroll)
+        document.body.style.overflow = '';
     } else {
         document.body.style.overflow = '';
     }
@@ -153,10 +159,6 @@ async function removeExistingAttachment(noteId, attachmentId, btn) {
         const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
         if (col) {
             updateCardThumbnail(col, _existingAttachments);
-            const editBtn = col.querySelector('.dropdown-item[onclick*="openEditNoteModal"]');
-            if (editBtn) {
-                editBtn.dataset.attachments = JSON.stringify(_existingAttachments);
-            }
         }
     } catch (err) {
         thumb.classList.remove('uploading');

@@ -105,9 +105,13 @@
     /* ── Schedule ────────────────────────────────────── */
 
     function _scheduleAutoSave() {
-        // Only run when the modal is actually visible
-        const modal = document.getElementById('newNoteModal');
-        if (!modal || !modal.classList.contains('show')) return;
+        // On the full-page editor, always allow auto-save
+        const isPageContext = !!document.getElementById('noteEditPage');
+        if (!isPageContext) {
+            // Dashboard modal context: only run when the modal is visible
+            const modal = document.getElementById('newNoteModal');
+            if (!modal || !modal.classList.contains('show')) return;
+        }
 
         clearTimeout(_autoSaveTimer);
         _setStatus('pending');

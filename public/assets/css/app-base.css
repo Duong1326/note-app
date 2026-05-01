@@ -6,64 +6,64 @@
 /* ── Color System (Material Design tokens) ───── */
 /* ── Light Mode Tokens (default) ──────────────── */
 :root {
-    --fn-primary:                  #004ac6;
-    --fn-primary-container:        #2563eb;
-    --fn-on-primary:               #ffffff;
-    --fn-on-primary-container:     #eeefff;
-    --fn-on-primary-fixed:         #00174b;
-    --fn-primary-fixed:            #dbe1ff;
-    --fn-primary-fixed-dim:        #b4c5ff;
-    --fn-inverse-primary:          #b4c5ff;
+    --fn-primary: #004ac6;
+    --fn-primary-container: #2563eb;
+    --fn-on-primary: #ffffff;
+    --fn-on-primary-container: #eeefff;
+    --fn-on-primary-fixed: #00174b;
+    --fn-primary-fixed: #dbe1ff;
+    --fn-primary-fixed-dim: #b4c5ff;
+    --fn-inverse-primary: #b4c5ff;
 
-    --fn-secondary:                #495c95;
-    --fn-secondary-container:      #acbfff;
-    --fn-on-secondary:             #ffffff;
-    --fn-on-secondary-container:   #394c84;
-    --fn-secondary-fixed:          #dbe1ff;
-    --fn-secondary-fixed-dim:      #b4c5ff;
+    --fn-secondary: #495c95;
+    --fn-secondary-container: #acbfff;
+    --fn-on-secondary: #ffffff;
+    --fn-on-secondary-container: #394c84;
+    --fn-secondary-fixed: #dbe1ff;
+    --fn-secondary-fixed-dim: #b4c5ff;
 
-    --fn-tertiary:                 #943700;
-    --fn-tertiary-container:       #bc4800;
-    --fn-on-tertiary:              #ffffff;
-    --fn-on-tertiary-container:    #ffede6;
-    --fn-tertiary-fixed:           #ffdbcd;
-    --fn-tertiary-fixed-dim:       #ffb596;
+    --fn-tertiary: #943700;
+    --fn-tertiary-container: #bc4800;
+    --fn-on-tertiary: #ffffff;
+    --fn-on-tertiary-container: #ffede6;
+    --fn-tertiary-fixed: #ffdbcd;
+    --fn-tertiary-fixed-dim: #ffb596;
 
-    --fn-error:                    #ba1a1a;
-    --fn-error-container:          #ffdad6;
-    --fn-on-error:                 #ffffff;
-    --fn-on-error-container:       #93000a;
+    --fn-error: #ba1a1a;
+    --fn-error-container: #ffdad6;
+    --fn-on-error: #ffffff;
+    --fn-on-error-container: #93000a;
 
-    --fn-surface:                  #faf8ff;
-    --fn-surface-dim:              #d2d9f4;
-    --fn-surface-bright:           #faf8ff;
-    --fn-surface-variant:          #dae2fd;
-    --fn-surface-tint:             #0053db;
+    --fn-surface: #faf8ff;
+    --fn-surface-dim: #d2d9f4;
+    --fn-surface-bright: #faf8ff;
+    --fn-surface-variant: #dae2fd;
+    --fn-surface-tint: #0053db;
     --fn-surface-container-lowest: #ffffff;
-    --fn-surface-container-low:    #f2f3ff;
-    --fn-surface-container:        #eaedff;
-    --fn-surface-container-high:   #e2e7ff;
-    --fn-surface-container-highest:#dae2fd;
+    --fn-surface-container-low: #f2f3ff;
+    --fn-surface-container: #eaedff;
+    --fn-surface-container-high: #e2e7ff;
+    --fn-surface-container-highest: #dae2fd;
 
-    --fn-on-surface:               #131b2e;
-    --fn-on-surface-variant:       #434655;
-    --fn-inverse-surface:          #283044;
-    --fn-inverse-on-surface:       #eef0ff;
+    --fn-on-surface: #131b2e;
+    --fn-on-surface-variant: #434655;
+    --fn-inverse-surface: #283044;
+    --fn-inverse-on-surface: #eef0ff;
 
-    --fn-outline:                  #737686;
-    --fn-outline-variant:          #c3c6d7;
+    --fn-outline: #737686;
+    --fn-outline-variant: #c3c6d7;
 
-    --fn-background:               #faf8ff;
-    --fn-on-background:            #131b2e;
+    --fn-background: #faf8ff;
+    --fn-on-background: #131b2e;
 
     /* Layout */
-    --fn-sidebar-width:            280px;
-    --fn-header-height:            72px;
+    --fn-sidebar-width: 280px;
+    --fn-header-height: 72px;
 
     /* Transitions */
-    --fn-transition-fast:          0.2s ease;
-    --fn-transition-normal:        0.3s ease;
-    --fn-transition-slow:          0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --fn-transition-fast: 0.2s ease;
+    --fn-transition-normal: 0.3s ease;
+    --fn-transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ── Base ──────────────────────────────────────── */
@@ -76,6 +76,10 @@ body {
 a {
     text-decoration: none;
     color: inherit;
+}
+
+input[type="checkbox"] {
+    appearance: none;
 }
 
 /* ── Shared Icon Utility ─────────────────────── */
@@ -110,7 +114,9 @@ a {
 
 /* Fallback: show after 500ms regardless (covers slow connections) */
 @keyframes fn-icon-reveal {
-    to { visibility: visible; }
+    to {
+        visibility: visible;
+    }
 }
 
 .material-symbols-outlined {
@@ -123,6 +129,7 @@ a {
         opacity: 0;
         transform: translateY(16px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -134,7 +141,18 @@ a {
     opacity: 0;
 }
 
-.fn-animate-in:nth-child(1) { animation-delay: 0.05s; }
-.fn-animate-in:nth-child(2) { animation-delay: 0.1s; }
-.fn-animate-in:nth-child(3) { animation-delay: 0.15s; }
-.fn-animate-in:nth-child(4) { animation-delay: 0.2s; }
+.fn-animate-in:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.fn-animate-in:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.fn-animate-in:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.fn-animate-in:nth-child(4) {
+    animation-delay: 0.2s;
+}

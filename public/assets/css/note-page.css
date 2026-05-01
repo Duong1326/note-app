@@ -1,0 +1,321 @@
+/* =====================================================
+   note-page.css  –  Full-page note editor (Notion-style)
+   Complements note-create.css. This file handles only the
+   page-level layout; shared component styles (editor input,
+   labels, attachments, slash menu) are already in note-create.css.
+   ===================================================== */
+
+/* ── Page wrapper ──────────────────────────────────── */
+.fnp-page {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - var(--fn-header-height, 64px));
+    background: var(--fn-surface-container-lowest);
+    animation: fnp-fade-in 0.25s ease;
+}
+
+@keyframes fnp-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Top bar ───────────────────────────────────────── */
+.fnp-topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 2rem;
+    border-bottom: 1px solid rgba(195, 198, 215, 0.15);
+    background: var(--fn-surface-container-lowest);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.fnp-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--fn-on-surface-variant);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    text-decoration: none;
+    transition: background 0.18s ease, color 0.18s ease;
+    flex-shrink: 0;
+}
+
+.fnp-back-btn:hover {
+    background: rgba(0, 74, 198, 0.06);
+    color: var(--fn-primary);
+    text-decoration: none;
+}
+
+.fnp-back-btn .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.fnp-back-label {
+    display: none;
+}
+
+@media (min-width: 576px) {
+    .fnp-back-label { display: inline; }
+}
+
+.fnp-topbar-center {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.fnp-breadcrumb-sep {
+    font-size: 18px;
+    color: var(--fn-on-surface-variant);
+    opacity: 0.4;
+    flex-shrink: 0;
+}
+
+.fnp-breadcrumb-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fn-on-surface);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 320px;
+}
+
+.fnp-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.fnp-shortcut-hint {
+    font-size: 0.75rem;
+    color: var(--fn-on-surface-variant);
+    opacity: 0.5;
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .fnp-shortcut-hint { display: inline-flex; align-items: center; gap: 0.2rem; }
+}
+
+.fnp-shortcut-hint kbd {
+    display: inline-block;
+    padding: 0.1rem 0.35rem;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 3px;
+    font-size: 0.65rem;
+    font-family: inherit;
+    background: rgba(0,0,0,0.04);
+}
+
+.fnp-perm-badge {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.fnp-perm-badge.edit {
+    background: rgba(0, 74, 198, 0.1);
+    color: var(--fn-primary);
+}
+
+.fnp-perm-badge.view {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--fn-on-surface-variant);
+}
+
+/* ── Editor wrap – centered Notion-like container ──── */
+.fnp-editor-wrap {
+    width: 100%;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 5rem;
+    flex: 1;
+}
+
+@media (max-width: 767.98px) {
+    .fnp-editor-wrap {
+        padding: 1.5rem 1.25rem 4rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .fnp-topbar {
+        padding: 0.625rem 1rem;
+    }
+    .fnp-editor-wrap {
+        padding: 1.25rem 1rem 3.5rem;
+    }
+}
+
+/* ── Thumbnail hero image ─────────────────────────── */
+/* Override modal's negative-margin bleed – on the full page we use
+   full-width hero style instead */
+.fnp-editor-wrap .fn-modal-thumb-preview {
+    width: calc(100% + 4rem);
+    margin: -2.5rem -2rem 2rem;
+    max-height: 280px;
+    border-radius: 0;
+}
+
+.fnp-editor-wrap .fn-modal-thumb-preview img {
+    height: 280px;
+}
+
+@media (max-width: 767.98px) {
+    .fnp-editor-wrap .fn-modal-thumb-preview {
+        width: calc(100% + 2.5rem);
+        margin: -1.5rem -1.25rem 1.5rem;
+        max-height: 200px;
+    }
+    .fnp-editor-wrap .fn-modal-thumb-preview img {
+        height: 200px;
+    }
+}
+
+/* ── Top Actions (Add Cover etc.) ─────────────────── */
+.fnp-top-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.fnp-editor-wrap:hover .fnp-top-actions,
+.fnp-top-actions:focus-within {
+    opacity: 1;
+}
+
+.fnp-top-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: transparent;
+    border: none;
+    color: var(--fn-on-surface-variant);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+    margin-left: -0.5rem; /* pull left to align text with title */
+}
+
+.fnp-top-action-btn .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.fnp-top-action-btn:hover {
+    background: rgba(0, 74, 198, 0.06);
+    color: var(--fn-primary);
+}
+
+/* Always show on mobile/touch */
+@media (hover: none) {
+    .fnp-top-actions {
+        opacity: 1;
+    }
+}
+
+/* ── Title ────────────────────────────────────────── */
+.fnp-title-row {
+    margin-bottom: 0 !important;
+    border-bottom: none !important;
+}
+
+.fnp-title-input {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.03em !important;
+    line-height: 1.25 !important;
+    padding-bottom: 0.25rem !important;
+    border-bottom: 2px solid transparent !important;
+    transition: border-color 0.2s ease !important;
+}
+
+.fnp-title-input:focus {
+    border-bottom-color: rgba(0, 74, 198, 0.15) !important;
+}
+
+/* ── Labels section ───────────────────────────────── */
+.fnp-labels-container {
+    margin-top: 1.25rem !important;
+    background: transparent !important;
+    padding: 0 !important;
+    border-bottom: 1px solid rgba(195, 198, 215, 0.15);
+    padding-bottom: 1rem !important;
+    margin-bottom: 0 !important;
+}
+
+/* ── Content area ─────────────────────────────────── */
+.fnp-editor-wrapper {
+    margin-top: 1.5rem !important;
+}
+
+.fnp-content-input {
+    min-height: 400px !important;
+    font-size: 1rem !important;
+    line-height: 1.8 !important;
+    color: var(--fn-on-surface) !important;
+}
+
+/* ── Meta footer ──────────────────────────────────── */
+.fnp-meta-footer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(195, 198, 215, 0.12);
+}
+
+.fnp-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--fn-on-surface-variant);
+    opacity: 0.55;
+}
+
+/* ── Suppress modal-only chrome on the page ───────── */
+/* The newNoteModal overlay is never rendered on this page,
+   but guard against any stray CSS that might be inherited. */
+.fnp-page .fn-modal-overlay {
+    display: none !important;
+}
+
+/* ── Dark mode tweaks ─────────────────────────────── */
+[data-theme="dark"] .fnp-topbar {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .fnp-labels-container {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .fnp-meta-footer {
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .fnp-editor-wrap .fn-modal-thumb-preview::after {
+    background: linear-gradient(to top, var(--fn-surface-container-lowest, #1a1a2e) 0%, transparent 100%);
+}

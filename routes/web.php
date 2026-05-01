@@ -56,6 +56,12 @@ Route::middleware(['auth', \App\Http\Middleware\PreventBackHistory::class])->gro
 
     Route::resource('notes', NoteController::class)->only(['store']);
 
+    // Full-page note editor: create new note
+    Route::get('/notes/create', [NoteController::class, 'create'])->name('notes.create');
+
+    // Full-page note editor view (read-only route, no note.token needed)
+    Route::get('/notes/{note}/edit', [NoteController::class, 'edit'])->name('notes.edit');
+
     // Mutation routes that require a valid unlock token for locked notes
     Route::middleware('note.token')->group(function () {
         Route::put('/notes/{note}',    [NoteController::class, 'update'])->name('notes.update');

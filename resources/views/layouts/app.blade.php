@@ -198,9 +198,9 @@
     </main>
 
     {{-- FAB (Mobile) --}}
-    <button class="fn-fab" onclick="openNewNoteModal()">
+    <a href="{{ route('notes.create') }}" class="fn-fab" title="Ghi chú mới">
         <span class="material-symbols-outlined">add</span>
-    </button>
+    </a>
 
     {{-- Static JS: Bootstrap + Core helpers --}}
     <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
@@ -208,6 +208,14 @@
 
     {{-- Toast Container --}}
     <div class="fn-toast-container" id="toastContainer"></div>
+
+    {{-- Global Image Lightbox (used by openLightbox() in note-attachments.js) --}}
+    <div class="fn-lightbox-overlay d-none" id="imageLightbox" onclick="closeLightbox(event)">
+        <button type="button" class="fn-lightbox-close" onclick="closeLightbox()" title="Đóng">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <img src="" alt="Preview" id="lightboxImage" class="fn-lightbox-img" onclick="event.stopPropagation()">
+    </div>
 
     @auth
         {{-- Pusher & Laravel Echo (CDN) --}}

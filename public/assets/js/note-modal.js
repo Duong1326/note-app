@@ -65,8 +65,6 @@ async function removeModalThumbnail() {
                 const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
                 if (col) {
                     updateCardThumbnail(col, _existingAttachments);
-                    const editBtn = col.querySelector('.dropdown-item[onclick*="openEditNoteModal"]');
-                    if (editBtn) editBtn.dataset.attachments = JSON.stringify(_existingAttachments);
                 }
             } catch (err) {
                 showToast(err.message || 'Không thể xóa ảnh', 'error');
@@ -101,90 +99,7 @@ let _editLockToken = null;
  */
 let _originalSnapshot = null;
 
-// ═══════════════════════════════════════════════════
-// Open / Close Modal
-// ═══════════════════════════════════════════════════
-
-function openNewNoteModal() {
-    _editingNoteId = null;
-    _pendingFiles = [];
-    _existingAttachments = [];
-
-    document.querySelector('.fn-modal-title').innerText = 'Ghi chú mới';
-    document.getElementById('createNoteForm')?.reset();
-    clearEditorContent();
-    const ea = document.getElementById('existingAttachments');
-    if (ea) ea.innerHTML = '';
-    const pp = document.getElementById('pendingPreviews');
-    if (pp) pp.innerHTML = '';
-
-    // Hide attachment section
-    const section = document.getElementById('attachmentSection');
-    section?.classList.add('d-none');
-    section?.classList.remove('d-flex');
-    document.getElementById('btnToggleAttachment')?.classList.remove('active');
-
-    // Hide modal thumbnail
-    updateModalThumbnail();
-
-    _showModal();
-    setTimeout(() => document.getElementById('modalNoteTitle')?.focus(), 350);
-
-    // Activate auto-save watching for the new note (baseline = empty)
-    if (typeof autoSaveResetNew === 'function') autoSaveResetNew();
-}
-
-/**
- * Open the edit modal. `token` is passed from requireUnlock callback
- * when the note is locked — it authorizes the PUT /notes/{id} request.
- */
-function openEditNoteModal(btn, token = null) {
-    _editingNoteId = btn.dataset.id;
-    _editLockToken = token;  // may be null for unlocked notes
-    _pendingFiles = [];
-    _existingAttachments = JSON.parse(btn.dataset.attachments || '[]');
-
-    const labels = JSON.parse(btn.dataset.labels || '[]');
-    document.getElementById('modalNoteTitle').value = btn.dataset.title;
-    setEditorContent(btn.dataset.content ?? '');
-
-    document.querySelectorAll('input[name="label_ids[]"]').forEach(cb => {
-        cb.checked = labels.includes(parseInt(cb.value));
-    });
-
-    // Snapshot để phát hiện thay đổi khi submit
-    _originalSnapshot = {
-        title: btn.dataset.title,
-        content: btn.dataset.content ?? '',
-        labelIds: labels.map(String).sort().join(','),
-    };
-
-    renderExistingAttachments();
-    const pp = document.getElementById('pendingPreviews');
-    if (pp) pp.innerHTML = '';
-
-    // Always hide attachment section when opening edit modal
-    // (thumbnail is shown above title; user can re-open via toolbar button)
-    const section = document.getElementById('attachmentSection');
-    section?.classList.add('d-none');
-    section?.classList.remove('d-flex');
-    document.getElementById('btnToggleAttachment')?.classList.remove('active');
-
-    // Show modal thumbnail preview
-    updateModalThumbnail();
-
-    document.querySelector('.fn-modal-title').innerText = 'Chỉnh sửa ghi chú';
-    _showModal();
-
-    // Start auto-save watch with the current baseline values
-    if (typeof autoSaveReset === 'function') {
-        autoSaveReset(
-            btn.dataset.title,
-            btn.dataset.content ?? '',
-            JSON.parse(btn.dataset.labels || '[]')
-        );
-    }
-}
+// (Modal opening functions removed during full-page editor refactor)
 
 function closeNewNoteModal() {
     document.getElementById('newNoteModal')?.classList.remove('show');
@@ -208,15 +123,12 @@ function closeNewNoteModal() {
     hideSlashMenu();
 
     // Cancel any pending auto-save and close all pickers
-    if (typeof autoSaveCancel      === 'function') autoSaveCancel();
-    if (typeof closeImgPicker      === 'function') closeImgPicker();
+    if (typeof autoSaveCancel === 'function') autoSaveCancel();
+    if (typeof closeImgPicker === 'function') closeImgPicker();
     if (typeof closeSlashImgPicker === 'function') closeSlashImgPicker();
 }
 
-function _showModal() {
-    document.getElementById('newNoteModal').classList.add('show');
-    document.body.style.overflow = 'hidden';
-}
+
 
 // ═══════════════════════════════════════════════════
 // Form Submission
@@ -234,7 +146,7 @@ async function submitNoteForm() {
     // Cancel any pending auto-save timer (manual save takes priority)
     if (typeof autoSaveCancel === 'function') autoSaveCancel();
 
-    const labelIds  = [...document.querySelectorAll('input[name="label_ids[]"]:checked')].map(cb => cb.value);
+    const labelIds = [...document.querySelectorAll('input[name="label_ids[]"]:checked')].map(cb => cb.value);
     const isEditing = _editingNoteId !== null;
 
     // Read content BEFORE upload for change detection only
@@ -283,8 +195,8 @@ async function submitNoteForm() {
 
             // Optimistic card update
             const filesToUpload = [..._pendingFiles];
-            const existingAtts  = [..._existingAttachments];
-            const uploadToken   = lockToken;
+            const existingAtts = [..._existingAttachments];
+            const uploadToken = lockToken;
 
             const tempThumbs = filesToUpload.map(f => ({
                 id: null, url: URL.createObjectURL(f), thumbnail_url: URL.createObjectURL(f),
@@ -303,8 +215,6 @@ async function submitNoteForm() {
                 const cardCol = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
                 if (cardCol) {
                     updateCardThumbnail(cardCol, allAttachments);
-                    const editBtn = cardCol.querySelector('.dropdown-item[onclick*="openEditNoteModal"]');
-                    if (editBtn) editBtn.dataset.attachments = JSON.stringify(allAttachments);
                 }
             }
 
@@ -335,7 +245,7 @@ async function submitNoteForm() {
             if (hasInlineImages) {
                 const bodyUpdate = new URLSearchParams({ title, content: finalContent });
                 labelIds.forEach(id => bodyUpdate.append('label_ids[]', id));
-                await apiFetch(`/notes/${noteId}`, 'PUT', bodyUpdate).catch(() => {});
+                await apiFetch(`/notes/${noteId}`, 'PUT', bodyUpdate).catch(() => { });
             }
 
             // Optimistic card
@@ -343,7 +253,7 @@ async function submitNoteForm() {
             const tempThumbs = filesToUpload.map(f => ({
                 id: null, url: URL.createObjectURL(f), thumbnail_url: URL.createObjectURL(f),
             }));
-            dataFirst.note.content    = finalContent;
+            dataFirst.note.content = finalContent;
             dataFirst.note.attachments = [...(dataFirst.note.attachments ?? []), ...tempThumbs];
             prependNoteCard(dataFirst.note);
 
@@ -356,8 +266,6 @@ async function submitNoteForm() {
                 const cardCol = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
                 if (cardCol) {
                     updateCardThumbnail(cardCol, allAttachments);
-                    const editBtn = cardCol.querySelector('.dropdown-item[onclick*="openEditNoteModal"]');
-                    if (editBtn) editBtn.dataset.attachments = JSON.stringify(allAttachments);
                 }
             }
         }
