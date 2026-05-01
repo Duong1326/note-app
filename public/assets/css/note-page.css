@@ -15,8 +15,15 @@
 }
 
 @keyframes fnp-fade-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ── Top bar ───────────────────────────────────────── */
@@ -65,7 +72,9 @@
 }
 
 @media (min-width: 576px) {
-    .fnp-back-label { display: inline; }
+    .fnp-back-label {
+        display: inline;
+    }
 }
 
 .fnp-topbar-center {
@@ -108,17 +117,21 @@
 }
 
 @media (min-width: 768px) {
-    .fnp-shortcut-hint { display: inline-flex; align-items: center; gap: 0.2rem; }
+    .fnp-shortcut-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+    }
 }
 
 .fnp-shortcut-hint kbd {
     display: inline-block;
     padding: 0.1rem 0.35rem;
-    border: 1px solid rgba(0,0,0,0.12);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 3px;
     font-size: 0.65rem;
     font-family: inherit;
-    background: rgba(0,0,0,0.04);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .fnp-perm-badge {
@@ -159,6 +172,7 @@
     .fnp-topbar {
         padding: 0.625rem 1rem;
     }
+
     .fnp-editor-wrap {
         padding: 1.25rem 1rem 3.5rem;
     }
@@ -184,6 +198,7 @@
         margin: -1.5rem -1.25rem 1.5rem;
         max-height: 200px;
     }
+
     .fnp-editor-wrap .fn-modal-thumb-preview img {
         height: 200px;
     }
@@ -216,7 +231,8 @@
     border-radius: 0.375rem;
     cursor: pointer;
     transition: background 0.18s ease, color 0.18s ease;
-    margin-left: -0.5rem; /* pull left to align text with title */
+    margin-left: -0.5rem;
+    /* pull left to align text with title */
 }
 
 .fnp-top-action-btn .material-symbols-outlined {

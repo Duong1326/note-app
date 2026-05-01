@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ['middleware' => ['web', 'auth']],
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: '*');
         $middleware->alias([
             'note.token' => \App\Http\Middleware\CheckNoteToken::class,
         ]);
