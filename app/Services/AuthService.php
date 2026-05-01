@@ -32,10 +32,17 @@ class AuthService
             ],
         ]);
 
-        // Send OTP email via queue (non-blocking)
-        Mail::to($data['email'])->queue(
-            new VerificationCodeMail($otp, $data['name'])
-        );
+        try {
+            // Send OTP email via queue (non-blocking)
+            Mail::to($data['email'])->queue(
+                new VerificationCodeMail($otp, $data['name'])
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Lỗi gửi mail đăng ký: ' . $e->getMessage());
+            throw ValidationException::withMessages([
+                'email' => ['Hệ thống đang gặp sự cố khi gửi email. Vui lòng thử lại sau hoặc cấu hình lại Mail trên server.'],
+            ]);
+        }
     }
 
 
@@ -100,9 +107,16 @@ class AuthService
         $registration['otp_expires_at'] = now()->addMinutes(5);
         session(['registration' => $registration]);
 
-        Mail::to($registration['email'])->queue(
-            new VerificationCodeMail($otp, $registration['name'])
-        );
+        try {
+            Mail::to($registration['email'])->queue(
+                new VerificationCodeMail($otp, $registration['name'])
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Lỗi gửi lại mail OTP: ' . $e->getMessage());
+            throw ValidationException::withMessages([
+                'otp' => ['Hệ thống đang gặp sự cố khi gửi email. Vui lòng thử lại sau hoặc cấu hình lại Mail.'],
+            ]);
+        }
     }
 
     public function login(array $credentials, bool $remember = false): User

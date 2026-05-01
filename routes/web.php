@@ -12,21 +12,15 @@ use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NoteShareController;
 use App\Http\Controllers\ProfileController;
 
-Route::get('/', function () {
-    return redirect()->route('login');
-})->name('home');
+Route::get('/', [AuthController::class, 'redirectHome'])->name('home');
 
 
 //guest
 Route::middleware('guest')->group(function () {
-    Route::get('/register', function () {
-        return view('auth.register');
-    })->name('register');
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
-    Route::get('/login', function () {
-        return view('auth.login');
-    })->name('login');
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
