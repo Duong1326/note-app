@@ -65,4 +65,19 @@ class AuthController extends Controller
 
         return redirect()->route('login')->with('success', 'Đăng xuất thành công!');
     }
+
+    public function showRegisterForm()
+    {
+        return view('auth.register');
+    }
+
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
+    public function redirectHome()
+    {
+        return redirect()->route('login');
+    }
 }
