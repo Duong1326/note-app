@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Illuminate\Http\Response;
 
 class DashboardController extends Controller
 {
@@ -14,7 +14,7 @@ class DashboardController extends Controller
     /** Maximum notes returned for a search query. */
     private const SEARCH_LIMIT = 50;
 
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $user = $request->user();
         $notesQuery = $user->notes();
@@ -50,7 +50,11 @@ class DashboardController extends Controller
             ? base64_encode($lastNote->updated_at->toIso8601String() . '|' . $lastNote->id)
             : null;
 
-        return view('dashboard', [
+        // Prevent browsers from caching this page in bfcache.
+        // Without no-store, navigating back from the edit page may restore
+        // a stale cached DOM that already has note cards, causing duplicates
+        // when the JS also prepends/patches cards on re-mount.
+        return response(view('dashboard', [
             'recentNotes' => $recentNotes,
             'sharedNotes' => $user->sharedNotes()
                 ->with(['note.labels', 'note.attachments', 'note.user:id,name,avatar_url'])
@@ -60,7 +64,7 @@ class DashboardController extends Controller
             'searchQuery' => $request->q,
             'nextCursor' => $nextCursor,
             'hasMoreNotes' => $hasMoreNotes,
-        ]);
+        ]))->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 
     /**

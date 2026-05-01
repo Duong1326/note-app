@@ -30,6 +30,17 @@
             {{-- Auto-save status indicator (injected by auto-save.js via #modalAutoSaveStatus) --}}
             <span class="fn-autosave-status" id="modalAutoSaveStatus" aria-live="polite"></span>
 
+            {{-- Remote update badge (shown when another user edits this note) --}}
+            @if($note)
+            <span id="fnpRemoteUpdateBadge"
+                  style="font-size:0.72rem; color:var(--fn-primary); opacity:0; transition:opacity 0.4s ease; white-space:nowrap;"></span>
+            @endif
+
+            {{-- Presence avatars: other users currently viewing this note --}}
+            @if($note)
+            <div id="fnpPresenceAvatars" style="display:flex; align-items:center; gap:0;"></div>
+            @endif
+
             @if($isOwner)
                 @if($note)
                 <button type="button" class="btn btn-sm d-flex align-items-center gap-1 fnp-btn-share" 
@@ -202,6 +213,14 @@
     <link rel="stylesheet" href="{{ asset('assets/css/note-page.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/note-share.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/note-lock.css') }}">
+    {{-- bfcache guard for edit page: reload if restored from bfcache --}}
+    <script>
+        window.addEventListener('pageshow', function (e) {
+            if (e.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
 @endpush
 
 @php

@@ -134,14 +134,22 @@
         //
         let _createdNoteId = null;
 
+        // ── FIX 1: Guard card functions — they operate on dashboard DOM,
+        //    not on the full-page editor. Override them so they don't
+        //    silently fail or interfere before navigation. ──────────────────────
+        window.patchNoteCard = function () { /* no-op on edit page */ };
+        window.moveCardToTopOfUnpinned = function () { /* no-op on edit page */ };
+
         if (isCreateMode) {
             // Intercept prependNoteCard to grab the newly created note's ID
-            const _origPrepend = window.prependNoteCard;
             window.prependNoteCard = function (note) {
                 _createdNoteId = note?.id ?? null;
                 // Don't actually prepend a card since we're navigating away
                 // (the card will be rendered by the dashboard on next load)
             };
+        } else {
+            // In edit mode, prependNoteCard should never be called, but guard anyway
+            window.prependNoteCard = function () { /* no-op on edit page */ };
         }
 
         window.closeNewNoteModal = function () {
@@ -152,12 +160,13 @@
 
             if (isCreateMode && _createdNoteId) {
                 // After creating → go to the new note's edit page
-                window.location.href = `/notes/${_createdNoteId}/edit`;
+                window.location.replace(`/notes/${_createdNoteId}/edit`);
             } else {
-                // After editing (or cancelled create) → back to dashboard
-                window.location.href = '/dashboard';
+                // After editing → back to dashboard, use replace() to bust bfcache
+                window.location.replace('/dashboard');
             }
         };
+
 
         // ── 11. Locked notes: require unlock before editing ─────────────────────
         if (isOwner && isLocked && !isCreateMode) {
@@ -174,6 +183,108 @@
             }
         }
 
+        // ── 12. Realtime sync on the edit page (FIX 3) ─────────────────────────
+        // Only for existing notes (not create mode)
+        if (!isCreateMode && noteId) {
+            _initEditPageRealtime(noteId, isOwner);
+        }
+
     }); // DOMContentLoaded
+
+    // ── Realtime: join presence channel + listen for remote updates ─────────
+    function _initEditPageRealtime(noteId, isOwner) {
+        // Wait for Echo to be available (it initialises asynchronously)
+        const _tryJoin = (retries = 0) => {
+            if (!window.EchoInstance) {
+                if (retries < 20) setTimeout(() => _tryJoin(retries + 1), 300);
+                return;
+            }
+            _joinPresence(noteId);
+            _listenUpdates(noteId);
+        };
+        _tryJoin();
+    }
+
+    function _joinPresence(noteId) {
+        const presenceEl = document.getElementById('fnpPresenceAvatars');
+
+        window.EchoInstance.join('note.' + noteId)
+            .here((members) => {
+                if (presenceEl) _renderPresence(presenceEl, members.filter(m => m.id !== window.__userId));
+            })
+            .joining((member) => {
+                if (member.id === window.__userId || !presenceEl) return;
+                if (!presenceEl.querySelector(`[data-uid="${member.id}"]`)) {
+                    presenceEl.insertAdjacentHTML('beforeend', _avatarHtml(member));
+                }
+            })
+            .leaving((member) => {
+                presenceEl?.querySelector(`[data-uid="${member.id}"]`)?.remove();
+            })
+            .error((err) => console.warn('[FNP] Presence error:', err));
+    }
+
+    function _listenUpdates(noteId) {
+        // Listen for updates broadcast by other users editing the same shared note
+        window.EchoInstance.private('user.' + window.__userId)
+            ?.listen('.note.updated', (data) => {
+                if (String(data.note_id) !== String(noteId)) return;
+                // Only update if the change came from another user
+                if (data.updated_by?.id === window.__userId) return;
+
+                const titleInput = document.getElementById('modalNoteTitle');
+                const contentEditor = document.getElementById('modalNoteContent');
+
+                // Don't stomp on fields the user is actively editing
+                if (titleInput && document.activeElement !== titleInput) {
+                    titleInput.value = data.note_title || '';
+                    // Update breadcrumb too
+                    const bc = document.getElementById('fnpBreadcrumbTitle');
+                    if (bc) bc.textContent = data.note_title || 'Ghi chú không có tiêu đề';
+                }
+                if (contentEditor && document.activeElement !== contentEditor) {
+                    if (typeof setEditorContent === 'function') {
+                        setEditorContent(data.note_content || '');
+                    } else {
+                        contentEditor.innerHTML = data.note_content || '';
+                    }
+                    // Reset auto-save baseline to new content so we don't re-save remote changes
+                    if (typeof autoSaveReset === 'function') {
+                        const newLabelIds = window.__FNP_LABEL_IDS ?? [];
+                        autoSaveReset(data.note_title, data.note_content, newLabelIds);
+                    }
+                }
+
+                // Show a subtle "updated by" toast
+                _showRemoteUpdateBadge(data.updated_by?.name);
+            });
+    }
+
+    function _renderPresence(el, members) {
+        el.innerHTML = members.map(_avatarHtml).join('');
+    }
+
+    function _avatarHtml(member) {
+        const initials = (member.name || '?').substring(0, 2).toUpperCase();
+        const img = member.avatar_url
+            ? `<img src="${_esc(member.avatar_url)}" alt="${_esc(member.name)}">`
+            : initials;
+        return `<div class="fnp-presence-avatar" data-uid="${member.id}" title="${_esc(member.name)} đang xem">${img}</div>`;
+    }
+
+    function _showRemoteUpdateBadge(name) {
+        const badge = document.getElementById('fnpRemoteUpdateBadge');
+        if (!badge) return;
+        badge.textContent = `✏ ${name || 'Ai đó'} vừa cập nhật`;
+        badge.style.opacity = '1';
+        clearTimeout(badge._hideTimer);
+        badge._hideTimer = setTimeout(() => { badge.style.opacity = '0'; }, 3500);
+    }
+
+    function _esc(str) {
+        const d = document.createElement('div');
+        d.setAttribute('x', str || '');
+        return d.outerHTML.slice(4, -2);
+    }
 
 })();

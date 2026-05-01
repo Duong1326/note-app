@@ -18,9 +18,9 @@
 // ═══════════════════════════════════════════════════
 
 /** Files pending upload (selected but note not yet saved) */
-let _pendingFiles = [];
+var _pendingFiles = [];  // var = window property so other scripts can access it
 /** Existing attachments loaded when opening edit mode */
-let _existingAttachments = [];
+var _existingAttachments = [];  // var = window property so note-page.js can seed it
 
 // ═══════════════════════════════════════════════════
 // Attachment Section Toggle

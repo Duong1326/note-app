@@ -2,11 +2,11 @@
  * notes.js – Notes dashboard orchestrator.
  * Handles: view toggle, AJAX actions (delete, pin/unpin), and event bindings.
  *
- * Depends on: app.js       (apiFetch, showToast, getCsrfToken)
- *             note-lock.js  (requireUnlock, getLockToken, clearLockToken)
- *             note-cards.js (removeNoteCard, patchPinCard, moveCardAfterPin)
- *             note-modal.js (openNewNoteModal, openEditNoteModal, closeNewNoteModal, submitNoteForm)
- *             note-attachments.js (renderPendingPreviews, showAttachmentSection)
+ * Depends on: app.js            (apiFetch, showToast, getCsrfToken)
+ *             note-lock.js      (requireUnlock)
+ *             note-cards.js     (removeNoteCard, patchPinCard, moveCardAfterPin, buildNoteCardHtml)
+ *             note-modal.js     (submitNoteForm, closeNewNoteModal)
+ *             note-attachments.js (renderPendingPreviews)
  */
 
 // ═══════════════════════════════════════════════════
@@ -77,31 +77,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('shown.bs.dropdown', e => e.target.closest('.note-col')?.classList.add('dropdown-open'));
     document.addEventListener('hidden.bs.dropdown', e => e.target.closest('.note-col')?.classList.remove('dropdown-open'));
 
-    // Note form submit
-    document.getElementById('createNoteForm')?.addEventListener('submit', e => {
-        e.preventDefault();
-        submitNoteForm();
-    });
-
-    // Close modal when clicking the overlay backdrop
-    document.getElementById('newNoteModal')?.addEventListener('click', e => {
-        if (e.target === e.currentTarget) closeNewNoteModal();
-    });
 
     // Keyboard shortcuts
     document.addEventListener('keydown', e => {
         // Slash menu takes priority when visible
-        if (_slashMenuVisible && handleSlashMenuKeydown(e)) return;
+        if (typeof _slashMenuVisible !== 'undefined' && _slashMenuVisible && typeof handleSlashMenuKeydown === 'function' && handleSlashMenuKeydown(e)) return;
 
         if (e.key === 'Escape') {
-            if (_slashMenuVisible) { hideSlashMenu(); return; }
-            closeNewNoteModal();
-        }
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            const modal = document.getElementById('newNoteModal');
-            if (modal?.classList.contains('show')) {
-                e.preventDefault();
-                submitNoteForm();
+            if (typeof _slashMenuVisible !== 'undefined' && _slashMenuVisible) {
+                if (typeof hideSlashMenu === 'function') hideSlashMenu();
+                return;
             }
         }
     });

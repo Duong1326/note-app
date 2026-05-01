@@ -1,33 +1,35 @@
 /**
- * note-modal.js – Create / Edit note modal logic and form submission.
- * Depends on: app.js (apiFetch, showToast)
- *             note-cards.js (patchNoteCard, prependNoteCard, moveCardToTopOfUnpinned)
- *             note-attachments.js (_pendingFiles, _existingAttachments, renderExistingAttachments,
- *                                  uploadPendingFiles, showAttachmentSection)
- *             note-lock.js (getLockToken, clearLockToken)
+ * note-modal.js – Note form submission and thumbnail helpers.
+ *
+ * This file has been refactored from the old overlay-modal system to work
+ * with the full-page editor (notes/edit.blade.php + note-page.js).
+ *
+ * Depends on: app.js             (apiFetch, showToast)
+ *             note-cards.js      (patchNoteCard, prependNoteCard, moveCardToTopOfUnpinned,
+ *                                 updateCardThumbnail)
+ *             note-attachments.js(_pendingFiles, _existingAttachments, renderExistingAttachments,
+ *                                  uploadPendingFilesParallel, renderPendingPreviews, updateModalThumbnail)
+ *             note-lock.js       (getLockToken, clearLockToken)
  */
 
 // ═══════════════════════════════════════════════════
-// Modal Thumbnail Preview
+// Thumbnail Preview (top of editor)
 // ═══════════════════════════════════════════════════
 
 /**
- * Update the thumbnail preview banner at the top of the modal.
+ * Update the thumbnail preview banner at the top of the editor.
  * Priority: first existing attachment → first pending file → hide.
  */
 function updateModalThumbnail() {
     const preview = document.getElementById('modalThumbPreview');
-    const img = document.getElementById('modalThumbImage');
+    const img     = document.getElementById('modalThumbImage');
     if (!preview || !img) return;
 
     let src = null;
 
-    // Check existing attachments first
     if (_existingAttachments.length > 0) {
         src = _existingAttachments[0].thumbnail_url || _existingAttachments[0].url;
-    }
-    // Fallback to first pending file
-    else if (_pendingFiles.length > 0) {
+    } else if (_pendingFiles.length > 0) {
         src = URL.createObjectURL(_pendingFiles[0]);
     }
 
@@ -41,31 +43,22 @@ function updateModalThumbnail() {
 }
 
 /**
- * Remove the modal thumbnail. If the thumbnail came from an existing
- * attachment, delete it from the server. If it came from a pending file,
- * remove it from the queue.
+ * Remove the thumbnail. Deletes from server if it was a saved attachment,
+ * or drops it from the pending queue if it was a local file.
  */
 async function removeModalThumbnail() {
     if (_existingAttachments.length > 0) {
-        const att = _existingAttachments[0];
+        const att    = _existingAttachments[0];
         const noteId = att.note_id ?? _editingNoteId;
 
-        // Server-side deletion for saved attachments
         if (att.id && noteId) {
             try {
                 const res = await apiFetch(`/notes/${noteId}/attachments/${att.id}`, 'DELETE');
                 if (!res.ok) throw new Error('Xóa ảnh thất bại');
                 _existingAttachments = _existingAttachments.filter(a => a.id !== att.id);
 
-                // Also remove from the attachment grid if present
                 const gridThumb = document.querySelector(`.fn-attachment-thumb[data-attachment-id="${att.id}"]`);
                 if (gridThumb) gridThumb.remove();
-
-                // Update the note card on the dashboard
-                const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
-                if (col) {
-                    updateCardThumbnail(col, _existingAttachments);
-                }
             } catch (err) {
                 showToast(err.message || 'Không thể xóa ảnh', 'error');
                 return;
@@ -84,104 +77,82 @@ async function removeModalThumbnail() {
 // State
 // ═══════════════════════════════════════════════════
 
-let _editingNoteId = null;
+/** ID of the note being edited. null = create mode.
+ *  Declared as `var` so note-page.js can set it via window._editingNoteId. */
+var _editingNoteId = null;
+
+/** One-time unlock token for locked notes.
+ *  Declared as `var` so note-page.js can set it via window._editLockToken. */
+var _editLockToken = null;
+
+// ═══════════════════════════════════════════════════
+// Close / Reset
+// ═══════════════════════════════════════════════════
 
 /**
- * One-time unlock token for editing a locked note.
- * Set when the user successfully unlocks a note to open the edit modal.
- * Sent as X-Note-Token on form submit, then cleared when the modal closes.
+ * Reset editor state and fire cleanup callbacks.
+ * On the full-page editor, note-page.js overrides this to also navigate away.
  */
-let _editLockToken = null;
-
-/**
- * Snapshot of the note state when the edit modal was opened.
- * Used to detect if the user actually made any changes before saving.
- */
-let _originalSnapshot = null;
-
-// (Modal opening functions removed during full-page editor refactor)
-
 function closeNewNoteModal() {
-    document.getElementById('newNoteModal')?.classList.remove('show');
-    document.body.style.overflow = '';
-    document.getElementById('createNoteForm')?.reset();
-
-    _editingNoteId = null;
-    _editLockToken = null;  // discard any unused token
-    _pendingFiles = [];
+    _editingNoteId   = null;
+    _editLockToken   = null;
+    _pendingFiles    = [];
     _existingAttachments = [];
-    _originalSnapshot = null;
 
-    // Reset modal thumbnail
+    // Reset thumbnail banner
     const preview = document.getElementById('modalThumbPreview');
-    const img = document.getElementById('modalThumbImage');
+    const img     = document.getElementById('modalThumbImage');
     if (preview) preview.classList.add('d-none');
-    if (img) img.src = '';
+    if (img)     img.src = '';
 
     // Reset editor content
-    clearEditorContent();
-    hideSlashMenu();
+    if (typeof clearEditorContent === 'function') clearEditorContent();
+    if (typeof hideSlashMenu      === 'function') hideSlashMenu();
 
-    // Cancel any pending auto-save and close all pickers
-    if (typeof autoSaveCancel === 'function') autoSaveCancel();
-    if (typeof closeImgPicker === 'function') closeImgPicker();
+    // Cancel pending auto-save and close pickers
+    if (typeof autoSaveCancel      === 'function') autoSaveCancel();
+    if (typeof closeImgPicker      === 'function') closeImgPicker();
     if (typeof closeSlashImgPicker === 'function') closeSlashImgPicker();
 }
-
-
 
 // ═══════════════════════════════════════════════════
 // Form Submission
 // ═══════════════════════════════════════════════════
 
 async function submitNoteForm() {
-    const title = document.getElementById('modalNoteTitle').value.trim();
+    const title = document.getElementById('modalNoteTitle')?.value.trim() ?? '';
 
     if (!title) {
         showToast('Vui lòng nhập tiêu đề ghi chú', 'error');
-        document.getElementById('modalNoteTitle').focus();
+        document.getElementById('modalNoteTitle')?.focus();
         return;
     }
 
     // Cancel any pending auto-save timer (manual save takes priority)
     if (typeof autoSaveCancel === 'function') autoSaveCancel();
 
-    const labelIds = [...document.querySelectorAll('input[name="label_ids[]"]:checked')].map(cb => cb.value);
+    const labelIds  = [...document.querySelectorAll('input[name="label_ids[]"]:checked')].map(cb => cb.value);
     const isEditing = _editingNoteId !== null;
 
-    // Read content BEFORE upload for change detection only
-    const contentBeforeUpload = getEditorContent();
-
-    // ── Kiểm tra thay đổi (chỉ áp dụng khi đang edit) ──
-    if (isEditing && _originalSnapshot) {
-        const currentLabelIds = labelIds.map(String).sort().join(',');
-        const hasChanges =
-            title !== _originalSnapshot.title ||
-            contentBeforeUpload !== _originalSnapshot.content ||
-            currentLabelIds !== _originalSnapshot.labelIds ||
-            _pendingFiles.length > 0;
-
-        if (!hasChanges) {
-            closeNewNoteModal();
-            return;
-        }
-    }
+    const contentBeforeUpload = typeof getEditorContent === 'function' ? getEditorContent() : '';
 
     try {
         let noteId;
         const lockToken = _editLockToken;
 
         if (isEditing) {
-            // ── EDIT: upload inline images first (noteId is known) ──
-            await uploadInlineContentImages(_editingNoteId, lockToken);
+            // ── EDIT: PUT existing note ──────────────────────────────────────
+            if (typeof uploadInlineContentImages === 'function') {
+                await uploadInlineContentImages(_editingNoteId, lockToken);
+            }
 
-            const content = getEditorContent();  // now has real Cloudinary URLs
-            const body = new URLSearchParams({ title, content });
+            const content = typeof getEditorContent === 'function' ? getEditorContent() : '';
+            const body    = new URLSearchParams({ title, content });
             labelIds.forEach(id => body.append('label_ids[]', id));
 
             const headers = lockToken ? { 'X-Note-Token': lockToken } : {};
-            const res = await apiFetch(`/notes/${_editingNoteId}`, 'PUT', body, headers);
-            const data = await res.json();
+            const res     = await apiFetch(`/notes/${_editingNoteId}`, 'PUT', body, headers);
+            const data    = await res.json();
 
             if (!res.ok) {
                 const firstError = data.errors
@@ -193,10 +164,10 @@ async function submitNoteForm() {
 
             noteId = data.note.id;
 
-            // Optimistic card update
+            // Optimistic card update (no-ops on edit page — note-page.js overrides these)
             const filesToUpload = [..._pendingFiles];
-            const existingAtts = [..._existingAttachments];
-            const uploadToken = lockToken;
+            const existingAtts  = [..._existingAttachments];
+            const uploadToken   = lockToken;
 
             const tempThumbs = filesToUpload.map(f => ({
                 id: null, url: URL.createObjectURL(f), thumbnail_url: URL.createObjectURL(f),
@@ -208,22 +179,22 @@ async function submitNoteForm() {
 
             closeNewNoteModal();
 
-            // Upload thumbnail attachments in background
+            // Upload thumbnail attachments in background after navigation
             if (filesToUpload.length > 0) {
-                const uploadResults = await uploadPendingFilesParallel(noteId, filesToUpload, uploadToken);
+                const uploadResults  = await uploadPendingFilesParallel(noteId, filesToUpload, uploadToken);
                 const allAttachments = [...existingAtts, ...uploadResults];
-                const cardCol = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
-                if (cardCol) {
+                const cardCol        = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
+                if (cardCol && typeof updateCardThumbnail === 'function') {
                     updateCardThumbnail(cardCol, allAttachments);
                 }
             }
 
         } else {
-            // ── NEW NOTE: POST first (inline images need noteId) ──
+            // ── CREATE: POST new note ────────────────────────────────────────
             const bodyFirst = new URLSearchParams({ title, content: contentBeforeUpload });
             labelIds.forEach(id => bodyFirst.append('label_ids[]', id));
 
-            const resFirst = await apiFetch(window.FN_STORE_URL, 'POST', bodyFirst);
+            const resFirst  = await apiFetch(window.FN_STORE_URL, 'POST', bodyFirst);
             const dataFirst = await resFirst.json();
 
             if (!resFirst.ok) {
@@ -236,24 +207,24 @@ async function submitNoteForm() {
 
             noteId = dataFirst.note.id;
 
-            // Upload inline images now that we have noteId
-            await uploadInlineContentImages(noteId, null);
-            const finalContent = getEditorContent();  // real URLs now
-
-            // Update content with real URLs if any inline images were present
+            // Upload inline images now that we have a noteId
+            if (typeof uploadInlineContentImages === 'function') {
+                await uploadInlineContentImages(noteId, null);
+            }
+            const finalContent   = typeof getEditorContent === 'function' ? getEditorContent() : '';
             const hasInlineImages = finalContent !== contentBeforeUpload;
             if (hasInlineImages) {
                 const bodyUpdate = new URLSearchParams({ title, content: finalContent });
                 labelIds.forEach(id => bodyUpdate.append('label_ids[]', id));
-                await apiFetch(`/notes/${noteId}`, 'PUT', bodyUpdate).catch(() => { });
+                await apiFetch(`/notes/${noteId}`, 'PUT', bodyUpdate).catch(() => {});
             }
 
-            // Optimistic card
+            // Optimistic card (note-page.js overrides prependNoteCard to capture the ID)
             const filesToUpload = [..._pendingFiles];
-            const tempThumbs = filesToUpload.map(f => ({
+            const tempThumbs    = filesToUpload.map(f => ({
                 id: null, url: URL.createObjectURL(f), thumbnail_url: URL.createObjectURL(f),
             }));
-            dataFirst.note.content = finalContent;
+            dataFirst.note.content     = finalContent;
             dataFirst.note.attachments = [...(dataFirst.note.attachments ?? []), ...tempThumbs];
             prependNoteCard(dataFirst.note);
 
@@ -262,10 +233,9 @@ async function submitNoteForm() {
             // Upload thumbnail attachments in background
             if (filesToUpload.length > 0) {
                 const uploadResults = await uploadPendingFilesParallel(noteId, filesToUpload, null);
-                const allAttachments = [...uploadResults];
-                const cardCol = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
-                if (cardCol) {
-                    updateCardThumbnail(cardCol, allAttachments);
+                const cardCol       = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
+                if (cardCol && typeof updateCardThumbnail === 'function') {
+                    updateCardThumbnail(cardCol, [...uploadResults]);
                 }
             }
         }
@@ -274,4 +244,3 @@ async function submitNoteForm() {
         showToast('Lỗi kết nối, vui lòng thử lại', 'error');
     }
 }
-

@@ -369,6 +369,28 @@
         window.FN_LOAD_MORE_URL = '{{ route("dashboard.load.more") }}';
         window.FN_NEXT_CURSOR = @json($nextCursor);
         window.FN_HAS_MORE = @json($hasMoreNotes);
+
+        // bfcache guard + dedup (safety net for fresh loads)
+        (function () {
+            function _deduplicateNoteCards() {
+                var seen = {};
+                document.querySelectorAll('#notesContainer .note-col[data-note-id]').forEach(function (col) {
+                    var id = col.dataset.noteId;
+                    if (seen[id]) { col.remove(); } else { seen[id] = true; }
+                });
+            }
+            // Run on DOMContentLoaded for fresh loads
+            document.addEventListener('DOMContentLoaded', _deduplicateNoteCards);
+            // Run on pageshow for bfcache restores (e.persisted = true)
+            // Bfcache preserves existing event listeners so this WILL fire correctly
+            window.addEventListener('pageshow', function (e) {
+                if (e.persisted) {
+                    window.location.reload();
+                } else {
+                    _deduplicateNoteCards();
+                }
+            });
+        })();
     </script>
     <script src="{{ asset('assets/js/notes.js') }}"></script>
     <script src="{{ asset('assets/js/note-cards.js') }}"></script>

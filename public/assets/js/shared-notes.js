@@ -11,12 +11,9 @@ const _SHARED_SAVE_DELAY = 1500;  // ms debounce for shared auto-save
 
 // ── Lock-aware entry point ───────────────────────────────────────
 function openSharedNoteOrUnlock(noteId, permission, isLocked) {
-    if (isLocked && permission === 'edit') {
-        // Open the password dialog and pass the token to openSharedNoteModal on success
-        openUnlockModal(noteId, (token) => openSharedNoteModal(noteId, permission, token));
-    } else {
-        openSharedNoteModal(noteId, permission, null);
-    }
+    // Navigate to the full-page editor (same as owner editing)
+    // The controller already handles shared-user authorization
+    window.location.href = `/notes/${noteId}/edit`;
 }
 
 // ── Open modal — fetch + populate ───────────────────────────────
