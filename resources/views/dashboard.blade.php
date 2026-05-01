@@ -214,13 +214,11 @@
             </div>
         </div>
 
-    </div>
-
-    {{-- ═══════════════════════════════════════════
-         SHARED WITH ME SECTION
-    ═══════════════════════════════════════════ --}}
-    <div class="fn-shared-section fn-animate-in" id="sharedSection"
-         style="{{ $sharedNotes->count() === 0 ? 'display:none;' : '' }}">
+        {{-- ═══════════════════════════════════════════
+             SHARED WITH ME SECTION
+        ═══════════════════════════════════════════ --}}
+        <div class="fn-shared-section fn-animate-in" id="sharedSection"
+             style="{{ $sharedNotes->count() === 0 ? 'display:none;' : '' }}">
         <div class="d-flex align-items-center gap-2 mb-4">
             <h3 class="fn-section-title">Được chia sẻ với tôi</h3>
             <span class="fn-shared-badge" id="sharedCount">{{ $sharedNotes->count() }}</span>
@@ -287,7 +285,9 @@
                 </div>
             @endforeach
         </div>
-    </div>
+    </div>{{-- end fn-shared-section --}}
+
+</div>{{-- end fn-dashboard --}}
 
     @include('components::note-lock-modals')
     @include('components::note-share-modal')

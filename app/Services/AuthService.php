@@ -62,7 +62,7 @@ class AuthService
             ]);
         }
 
-        if ((string)$inputOtp !== (string)$registration['otp']) {
+        if ((string) $inputOtp !== (string) $registration['otp']) {
             throw ValidationException::withMessages([
                 'otp' => ['Mã xác thực không đúng. Vui lòng thử lại.'],
             ]);
@@ -128,7 +128,7 @@ class AuthService
             ], $remember)
         ) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials do not match our records.'],
+                'email' => ['Email hoặc mật khẩu không đúng.'],
             ]);
         }
 
