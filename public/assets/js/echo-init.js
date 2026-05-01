@@ -20,8 +20,8 @@ function initEcho() {
     // Enable Pusher logging in dev
     Pusher.logToConsole = window.__appDebug || false;
 
-    // Build absolute auth endpoint so it works behind Render's HTTPS proxy
-    const authUrl = (window.__appUrl || window.location.origin) + '/broadcasting/auth';
+    // Nếu dùng __appUrl (backend domain khác), browser sẽ block cookie → 401.
+    const authUrl = window.location.origin + '/broadcasting/auth';
 
     window.EchoInstance = new Echo({
         broadcaster: 'pusher',
@@ -33,11 +33,13 @@ function initEcho() {
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
                 'X-Requested-With': 'XMLHttpRequest',
-            }
+            },
+            // Gửi cookie session kèm theo request auth (cần thiết cho cross-origin)
+            withCredentials: true,
         }
     });
 
-    console.log('[Echo] Initialised. Auth endpoint:', authUrl);
+    console.log('[Echo] Initialised. Auth endpoint:', authUrl, '| Origin:', window.location.origin);
 
     // Monitor connection state for debugging
     window.EchoInstance.connector.pusher.connection.bind('connected', () => {
@@ -200,7 +202,7 @@ function _handleNoteUpdated(data) {
         // Only update fields that are NOT currently focused (don't stomp user's edits)
         if (data.updated_by.id !== window.__userId) {
             const titleInput = sharedModal.querySelector('.sn-title');
-            const contentEl  = sharedModal.querySelector('.sn-content');
+            const contentEl = sharedModal.querySelector('.sn-content');
             if (titleInput && document.activeElement !== titleInput) {
                 titleInput.value = data.note_title;
             }
