@@ -225,40 +225,61 @@
     }
 
     function _listenUpdates(noteId) {
-        // Listen for updates broadcast by other users editing the same shared note
-        window.EchoInstance.private('user.' + window.__userId)
-            ?.listen('.note.updated', (data) => {
-                if (String(data.note_id) !== String(noteId)) return;
-                // Only update if the change came from another user
+        // ── Cách 1: hook vào echo-init.js (kênh private-user.X đã subscribe sẵn) ──
+        // Không thể gọi .private().listen() lại trên cùng channel vì Echo sẽ tạo
+        // instance mới mà không thực sự nhận event. Dùng hook array thay thế.
+        if (!Array.isArray(window.__onNoteUpdatedHooks)) {
+            window.__onNoteUpdatedHooks = [];
+        }
+        window.__onNoteUpdatedHooks.push(function (data) {
+            if (String(data.note_id) !== String(noteId)) return;
+            if (data.updated_by?.id === window.__userId) return;
+            _applyRemoteUpdate(data);
+        });
+
+        // ── Cách 2: lắng nghe trực tiếp trên presence channel note.{noteId} ──
+        // Server broadcast NoteUpdated lên cả channel này, nên đây là nguồn dự phòng
+        // (presence channel đã được join bởi _joinPresence ở trên)
+        window.EchoInstance
+            .join('note.' + noteId)
+            .listen('.note.updated', (data) => {
                 if (data.updated_by?.id === window.__userId) return;
-
-                const titleInput = document.getElementById('modalNoteTitle');
-                const contentEditor = document.getElementById('modalNoteContent');
-
-                // Don't stomp on fields the user is actively editing
-                if (titleInput && document.activeElement !== titleInput) {
-                    titleInput.value = data.note_title || '';
-                    // Update breadcrumb too
-                    const bc = document.getElementById('fnpBreadcrumbTitle');
-                    if (bc) bc.textContent = data.note_title || 'Ghi chú không có tiêu đề';
-                }
-                if (contentEditor && document.activeElement !== contentEditor) {
-                    if (typeof setEditorContent === 'function') {
-                        setEditorContent(data.note_content || '');
-                    } else {
-                        contentEditor.innerHTML = data.note_content || '';
-                    }
-                    // Reset auto-save baseline to new content so we don't re-save remote changes
-                    if (typeof autoSaveReset === 'function') {
-                        const newLabelIds = window.__FNP_LABEL_IDS ?? [];
-                        autoSaveReset(data.note_title, data.note_content, newLabelIds);
-                    }
-                }
-
-                // Show a subtle "updated by" toast
-                _showRemoteUpdateBadge(data.updated_by?.name);
+                _applyRemoteUpdate(data);
             });
     }
+
+    // Áp dụng nội dung từ xa vào editor (gọi từ cả 2 nguồn trên)
+    let _lastAppliedAt = 0; // chống gọi 2 lần trong cùng 1 tick
+    function _applyRemoteUpdate(data) {
+        const now = Date.now();
+        if (now - _lastAppliedAt < 200) return; // debounce 200ms
+        _lastAppliedAt = now;
+
+        const titleInput = document.getElementById('modalNoteTitle');
+        const contentEditor = document.getElementById('modalNoteContent');
+
+        // Không ghi đè field đang được user focus vào
+        if (titleInput && document.activeElement !== titleInput) {
+            titleInput.value = data.note_title || '';
+            const bc = document.getElementById('fnpBreadcrumbTitle');
+            if (bc) bc.textContent = data.note_title || 'Ghi chú không có tiêu đề';
+        }
+        if (contentEditor && document.activeElement !== contentEditor) {
+            if (typeof setEditorContent === 'function') {
+                setEditorContent(data.note_content || '');
+            } else {
+                contentEditor.innerHTML = data.note_content || '';
+            }
+            // Reset baseline để auto-save không ghi lại thay đổi từ xa
+            if (typeof autoSaveReset === 'function') {
+                const curLabels = window.__FNP_LABEL_IDS ?? [];
+                autoSaveReset(data.note_title, data.note_content, curLabels);
+            }
+        }
+
+        _showRemoteUpdateBadge(data.updated_by?.name);
+    }
+
 
     function _renderPresence(el, members) {
         el.innerHTML = members.map(_avatarHtml).join('');

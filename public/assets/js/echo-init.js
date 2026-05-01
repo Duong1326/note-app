@@ -164,6 +164,13 @@ function _handleNoteUpdated(data) {
     _addNotification(notification);
     _showRealtimeToast(notification);
 
+    // ── Gọi tất cả hook đã được đăng ký (vd: note-page.js cần update editor) ──
+    if (Array.isArray(window.__onNoteUpdatedHooks)) {
+        window.__onNoteUpdatedHooks.forEach(fn => {
+            try { fn(data); } catch (e) { console.warn('[Echo] onNoteUpdated hook error:', e); }
+        });
+    }
+
     const excerpt = data.note_excerpt || '';
     const attachments = data.attachments || [];
     const thumbUrl = attachments.length > 0
