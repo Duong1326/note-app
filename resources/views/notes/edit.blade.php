@@ -31,6 +31,16 @@
             <span class="fn-autosave-status" id="modalAutoSaveStatus" aria-live="polite"></span>
 
             @if($isOwner)
+                @if($note)
+                <button type="button" class="btn btn-sm d-flex align-items-center gap-1 fnp-btn-share" 
+                        style="background-color: var(--fn-primary-fixed); color: var(--fn-on-primary-fixed); border: none; border-radius: 8px; padding: 6px 14px; font-weight: 500; transition: background 0.2s;"
+                        onmouseover="this.style.backgroundColor='var(--fn-primary-fixed-dim)'" 
+                        onmouseout="this.style.backgroundColor='var(--fn-primary-fixed)'"
+                        onclick="openShareModal({{ $note->id }}, this)">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">share</span>
+                    Chia sẻ
+                </button>
+                @endif
                 <span class="fnp-shortcut-hint">
                 </span>
             @else
@@ -79,9 +89,9 @@
             {{-- Top Actions (Notion-style, above title) --}}
             @if($isOwner)
             <div class="fnp-top-actions">
-                <button type="button" class="fnp-top-action-btn" id="btnToggleAttachment" title="Đính kèm ảnh bìa" onclick="toggleAttachmentSection()">
+                <button type="button" class="fnp-top-action-btn" id="btnToggleAttachment" title="Thêm ảnh bìa" onclick="toggleAttachmentSection()">
                     <span class="material-symbols-outlined fn-icon-sm">image</span>
-                    Đính kèm ảnh
+                    Thêm ảnh bìa
                 </button>
             </div>
             @endif
@@ -183,11 +193,14 @@
     </div>
 </div>
 
+@include('components::note-share-modal')
+
 @endsection
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/note-create.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/note-page.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/note-share.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/note-lock.css') }}">
 @endpush
 
@@ -226,6 +239,7 @@
 <script src="{{ asset('assets/js/note-img-picker.js') }}"></script>
 <script src="{{ asset('assets/js/note-attachments.js') }}"></script>
 <script src="{{ asset('assets/js/note-lock.js') }}"></script>
+<script src="{{ asset('assets/js/note-share.js') }}"></script>
 <script src="{{ asset('assets/js/note-slash-menu.js') }}"></script>
 <script src="{{ asset('assets/js/labels.js') }}"></script>
 <script src="{{ asset('assets/js/auto-save.js') }}"></script>

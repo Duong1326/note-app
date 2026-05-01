@@ -9,7 +9,7 @@ let _emailChips = [];
 let _existingShares = [];
 
 // ── Modal open / close ─────────────────────────────
-function openShareModal(noteId) {
+function openShareModal(noteId, triggerElement = null) {
     _shareNoteId = noteId;
     _emailChips = [];
     _existingShares = [];
@@ -22,8 +22,29 @@ function openShareModal(noteId) {
     document.getElementById('shareRecipientList').innerHTML = '';
     document.getElementById('permRead').checked = true;
 
+    const modal = document.getElementById('shareNoteModal');
+    const card = modal.querySelector('.fn-share-modal');
+
+    // If triggerElement is provided, position as a popover below the element
+    if (triggerElement) {
+        modal.classList.add('share-popover-mode');
+        const rect = triggerElement.getBoundingClientRect();
+        card.style.position = 'absolute';
+        card.style.top = (rect.bottom + 8) + 'px';
+        card.style.right = (window.innerWidth - rect.right) + 'px';
+        card.style.margin = '0';
+        card.style.transform = 'none';
+    } else {
+        modal.classList.remove('share-popover-mode');
+        card.style.position = '';
+        card.style.top = '';
+        card.style.right = '';
+        card.style.margin = '';
+        card.style.transform = '';
+    }
+
     // Show modal
-    document.getElementById('shareNoteModal').classList.add('show');
+    modal.classList.add('show');
     setTimeout(() => document.getElementById('shareEmailInput').focus(), 100);
 
     // Fetch existing recipients

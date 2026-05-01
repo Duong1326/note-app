@@ -136,7 +136,7 @@
                                                 <a class="dropdown-item d-flex align-items-center gap-2 py-2"
                                                     href="javascript:void(0)"
                                                     onclick="openShareModal({{ $note->id }})">
-                                                    <span class="material-symbols-outlined fn-icon-sm" style="color:#0f9b58">share</span>
+                                                    <span class="material-symbols-outlined fn-icon-sm" style="color:var(--fn-primary)">share</span>
                                                     Chia sẻ
                                                 </a>
                                             </li>

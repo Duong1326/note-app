@@ -5,7 +5,7 @@
 /* ── Share icon badge on note card ──────────────────────────── */
 .fn-share-badge {
     font-size: 14px;
-    color: var(--fn-tertiary, #1d8348);
+    color: var(--fn-primary, #004ac6);
     opacity: 0.7;
     user-select: none;
     transition: opacity var(--fn-transition-fast);
@@ -23,8 +23,8 @@
     height: 44px;
     border-radius: 12px;
     flex-shrink: 0;
-    background: #0f9b58;
-    box-shadow: 0 4px 12px rgba(15, 155, 88, 0.28);
+    background: var(--fn-primary);
+    box-shadow: 0 4px 12px rgba(0, 74, 198, 0.28);
 }
 
 .fn-share-icon-wrap .material-symbols-outlined {
@@ -188,8 +188,15 @@
 }
 
 @keyframes chipIn {
-    from { opacity: 0; transform: scale(0.8); }
-    to   { opacity: 1; transform: scale(1); }
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .fn-email-chip.invalid {
@@ -210,7 +217,9 @@
     line-height: 1;
 }
 
-.fn-email-chip-remove:hover { opacity: 1; }
+.fn-email-chip-remove:hover {
+    opacity: 1;
+}
 
 .fn-email-chip-remove .material-symbols-outlined {
     font-size: 14px;
@@ -230,17 +239,18 @@
 
 /* ── Share action button ─────────────────────────────────────── */
 .btn-share-primary {
-    background: #0f9b58;
+    background: var(--fn-primary);
     color: #fff;
     border: none;
-    box-shadow: 0 4px 12px rgba(15, 155, 88, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 74, 198, 0.25);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .btn-share-primary:hover:not(:disabled) {
-    box-shadow: 0 6px 20px rgba(15, 155, 88, 0.35);
-    transform: translateY(-1px);
+    background: var(--fn-primary);
     color: #fff;
+    box-shadow: 0 6px 20px rgba(0, 74, 198, 0.35);
+    transform: translateY(-1px);
 }
 
 .btn-share-primary:disabled {
@@ -260,17 +270,17 @@
     letter-spacing: 0.05em;
     padding: 0.125rem 0.5rem;
     border-radius: 9999px;
-    background: #0f9b58;
+    background: var(--fn-primary);
     color: #fff;
 }
 
 .fn-note-card.fn-shared-card {
-    border-color: rgba(15, 155, 88, 0.15);
+    border-color: rgba(0, 74, 198, 0.15);
 }
 
 .fn-note-card.fn-shared-card:hover {
-    border-color: rgba(15, 155, 88, 0.3);
-    box-shadow: 0 4px 20px rgba(15, 155, 88, 0.12);
+    border-color: rgba(0, 74, 198, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 74, 198, 0.12);
 }
 
 /* ── Owner attribution on shared card ───────────────────────── */
@@ -286,13 +296,13 @@
     height: 20px;
     border-radius: 50%;
     object-fit: cover;
-    background: var(--fn-tertiary-fixed, #d5f5e3);
+    background: var(--fn-primary-fixed, #dbe8ff);
     font-size: 0.5rem;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #0f9b58;
+    color: var(--fn-on-primary-fixed, #001849);
     flex-shrink: 0;
     overflow: hidden;
 }
@@ -327,8 +337,8 @@
 }
 
 .fn-perm-badge.edit {
-    background: rgba(15, 155, 88, 0.12);
-    color: #0f9b58;
+    background: var(--fn-primary-fixed);
+    color: var(--fn-on-primary-fixed);
 }
 
 /* ── Empty shared state ──────────────────────────────────────── */
@@ -393,15 +403,45 @@
 }
 
 /* Rich-text block rendering inside shared modal */
-.sn-content .fn-content-image-block { margin: 0.25rem 0; }
-.sn-content .fn-content-image       { max-height: 200px; border-radius: 0.5rem; display: block; max-width: 100%; }
-.sn-content .fn-content-divider hr  { border: none; height: 1px; background: var(--fn-outline-variant); margin: 0.5rem 0; }
-.sn-content .fn-content-heading     { font-weight: 700; color: var(--fn-on-surface); }
-.sn-content .fn-content-h1          { font-size: 1.4rem; }
-.sn-content .fn-content-h2          { font-size: 1.15rem; }
-.sn-content .fn-content-h3          { font-size: 1rem; }
+.sn-content .fn-content-image-block {
+    margin: 0.25rem 0;
+}
+
+.sn-content .fn-content-image {
+    max-height: 200px;
+    border-radius: 0.5rem;
+    display: block;
+    max-width: 100%;
+}
+
+.sn-content .fn-content-divider hr {
+    border: none;
+    height: 1px;
+    background: var(--fn-outline-variant);
+    margin: 0.5rem 0;
+}
+
+.sn-content .fn-content-heading {
+    font-weight: 700;
+    color: var(--fn-on-surface);
+}
+
+.sn-content .fn-content-h1 {
+    font-size: 1.4rem;
+}
+
+.sn-content .fn-content-h2 {
+    font-size: 1.15rem;
+}
+
+.sn-content .fn-content-h3 {
+    font-size: 1rem;
+}
+
 /* Hide remove buttons when in read-only shared view */
-.sn-content[contenteditable="false"] .fn-content-image-remove { display: none; }
+.sn-content[contenteditable="false"] .fn-content-image-remove {
+    display: none;
+}
 
 /* ── Shared-at timestamp in recipient row ────────────────────── */
 .fn-share-shared-at {
@@ -423,7 +463,8 @@
 .sn-presence-avatars {
     display: flex;
     align-items: center;
-    margin-left: auto;   /* push to right, before close button */
+    margin-left: auto;
+    /* push to right, before close button */
     margin-right: 0.5rem;
     gap: 0;
 }
@@ -434,7 +475,7 @@
     border-radius: 50%;
     border: 2px solid var(--fn-surface, #fff);
     overflow: hidden;
-    background: var(--fn-tertiary, #1d8348);
+    background: var(--fn-primary, #004ac6);
     color: #fff;
     font-size: 0.65rem;
     font-weight: 700;
@@ -448,9 +489,14 @@
     animation: presence-in 0.25s ease;
 }
 
-.sn-presence-avatar:first-child { margin-left: 0; }
+.sn-presence-avatar:first-child {
+    margin-left: 0;
+}
 
-.sn-presence-avatar:hover { transform: translateY(-2px) scale(1.1); z-index: 2; }
+.sn-presence-avatar:hover {
+    transform: translateY(-2px) scale(1.1);
+    z-index: 2;
+}
 
 .sn-presence-avatar img {
     width: 100%;
@@ -460,7 +506,27 @@
 }
 
 @keyframes presence-in {
-    from { opacity: 0; transform: scale(0.6); }
-    to   { opacity: 1; transform: scale(1); }
+    from {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
+/* ── Share Modal Popover Mode ───────────────────────────────── */
+.share-popover-mode {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.share-popover-mode .fn-share-modal {
+    max-width: 380px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--fn-outline-variant, #ccc);
+}
