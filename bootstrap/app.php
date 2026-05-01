@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ['middleware' => ['web', 'auth']],
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Đăng ký CORS middleware toàn cục (xử lý /broadcasting/auth cross-origin)
+        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
+
         $middleware->alias([
             'note.token' => \App\Http\Middleware\CheckNoteToken::class,
         ]);
