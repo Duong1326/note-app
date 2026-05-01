@@ -37,7 +37,9 @@ class AuthService
                 new VerificationCodeMail($otp, $data['name'])
             );
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Lỗi gửi mail đăng ký: ' . $e->getMessage());
+            try {
+                \Illuminate\Support\Facades\Log::error('Lỗi gửi mail đăng ký: ' . $e->getMessage());
+            } catch (\Throwable) {}
             throw ValidationException::withMessages([
                 'email' => ['Hệ thống đang gặp sự cố khi gửi email. Vui lòng thử lại sau hoặc cấu hình lại Mail trên server.'],
             ]);
@@ -111,7 +113,9 @@ class AuthService
                 new VerificationCodeMail($otp, $registration['name'])
             );
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Lỗi gửi lại mail OTP: ' . $e->getMessage());
+            try {
+                \Illuminate\Support\Facades\Log::error('Lỗi gửi lại mail OTP: ' . $e->getMessage());
+            } catch (\Throwable) {}
             throw ValidationException::withMessages([
                 'otp' => ['Hệ thống đang gặp sự cố khi gửi email. Vui lòng thử lại sau hoặc cấu hình lại Mail.'],
             ]);
