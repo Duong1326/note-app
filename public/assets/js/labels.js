@@ -222,77 +222,11 @@ function addLabelCheckbox(label) {
     chipsContainer.appendChild(chip);
 }
 
-// ═══════════════════════════════════════════════════
-// Modal Inline Label Creation
-// ═══════════════════════════════════════════════════
-
-function toggleModalAddLabelForm(forceClose = false) {
-    const btn   = document.getElementById('modalAddLabelBtn');
-    const input = document.getElementById('modalNewLabelInput');
-    if (!btn || !input) return;
-
-    if (forceClose || !input.classList.contains('d-none')) {
-        input.classList.add('d-none');
-        btn.classList.remove('d-none');
-        input.value = '';
-    } else {
-        input.classList.remove('d-none');
-        btn.classList.add('d-none');
-        input.focus();
-    }
-}
-
-/**
- * Called on blur of the modal label input.
- * Saves the label if text is present; otherwise just closes the input.
- */
-async function onModalLabelBlur() {
-    const input = document.getElementById('modalNewLabelInput');
-    const name  = input?.value.trim();
-    if (name) {
-        await createLabelFromModal();
-    } else {
-        toggleModalAddLabelForm(true);
-    }
-}
-
-async function createLabelFromModal() {
-    const input = document.getElementById('modalNewLabelInput');
-    const name  = input.value.trim();
-    if (!name) {
-        toggleModalAddLabelForm(true);
-        return;
-    }
-
-    try {
-        const body = new URLSearchParams({ name });
-        const res  = await apiFetch(window.FN_LABEL_STORE_URL, 'POST', body);
-        const data = await res.json();
-
-        if (!res.ok) {
-            const msg = data.errors?.name?.[0] || data.message || 'Có lỗi xảy ra';
-            showToast(msg, 'error');
-            return;
-        }
-
-        const label = data.data;
-        appendLabelItem(label); // sync sidebar
-        addLabelCheckbox(label); // sync modal
-
-        // Auto-check the new label
-        const checkbox = document.getElementById(`modal_label_${label.id}`);
-        if (checkbox) checkbox.checked = true;
-
-        toggleModalAddLabelForm(true);
-
-    } catch {
-        showToast('Lỗi kết nối', 'error');
-    }
-}
 
 // ═══════════════════════════════════════════════════
 // Label Filter (multi-select)
 // ═══════════════════════════════════════════════════
+
 
 /** Set of currently active label ids */
 const _activeLabelIds = new Set();
@@ -426,3 +360,287 @@ function _renderFilteredNotes(notes) {
 
     container.innerHTML = notes.map(note => buildNoteCardHtml(note)).join('');
 }
+
+// ═══════════════════════════════════════════════════
+// LabelPills – Notion-style inline tag pills
+// Only active on the full-page note editor (notes/edit)
+// ═══════════════════════════════════════════════════
+
+const LabelPills = (() => {
+    /* ── Config ──────────────────────────────────── */
+    const COLOR_COUNT = 8;
+
+    // Deterministic color index based on label id
+    const _color = (id) => (parseInt(id) || 0) % COLOR_COUNT;
+
+    /* ── State ───────────────────────────────────── */
+    let _pillRow    = null;   // #fnpLabelPills
+    let _chips      = null;   // #modalLabelsChips (hidden checkboxes)
+    let _canEdit    = false;
+    let _allLabels  = [];     // [{id, name}, …]
+    let _picker     = null;   // floating dropdown element
+
+    /* ── Init ────────────────────────────────────── */
+    function init() {
+        _pillRow   = document.getElementById('fnpLabelPills');
+        _chips     = document.getElementById('modalLabelsChips');
+        _canEdit   = window.__FNP_CAN_EDIT_LABELS === true;
+        _allLabels = Array.isArray(window.__FNP_ALL_LABELS) ? window.__FNP_ALL_LABELS : [];
+
+        if (!_pillRow) return; // not on edit page
+
+        render();
+
+        // Keep pills in sync when auto-save or label JS toggles a checkbox
+        if (_chips) {
+            _chips.addEventListener('change', () => render());
+        }
+
+        // Close picker on outside click
+        document.addEventListener('click', (e) => {
+            if (_picker && !_picker.contains(e.target) && !e.target.closest('.fnp-pill-add')) {
+                _closePicker();
+            }
+        }, true);
+    }
+
+    /* ── Render ──────────────────────────────────── */
+    function render() {
+        if (!_pillRow) return;
+
+        const checkedIds = _getCheckedIds();
+        const checkedNames = _getCheckedNames(checkedIds);
+
+        let html = '';
+
+        // Active label pills
+        checkedIds.forEach(id => {
+            const name = checkedNames[id] || `#${id}`;
+            const colorCls = `fnp-pill-color-${_color(id)}`;
+            const removeBtn = _canEdit
+                ? `<button class="fnp-pill-remove" data-label-id="${id}" title="Bỏ nhãn" type="button">
+                       <span class="material-symbols-outlined">close</span>
+                   </button>`
+                : '';
+            html += `<span class="fnp-label-pill ${colorCls}" data-label-id="${id}">
+                        ${escapeHtml(name)}${removeBtn}
+                     </span>`;
+        });
+
+        // + Add button (only for owners)
+        if (_canEdit) {
+            html += `<button class="fnp-pill-add" id="fnpPillAddBtn" type="button" title="Thêm nhãn">
+                        <span class="material-symbols-outlined">add</span>
+                        Thêm
+                     </button>`;
+        }
+
+        _pillRow.innerHTML = html;
+
+        // Wire remove buttons
+        _pillRow.querySelectorAll('.fnp-pill-remove').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                _removeLabelPill(parseInt(btn.dataset.labelId));
+            });
+        });
+
+        // Wire add button
+        const addBtn = _pillRow.querySelector('#fnpPillAddBtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                _togglePicker(addBtn);
+            });
+        }
+    }
+
+    /* ── Remove a label ──────────────────────────── */
+    function _removeLabelPill(labelId) {
+        const cb = document.getElementById(`modal_label_${labelId}`);
+        if (cb) {
+            cb.checked = false;
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        render();
+        _scheduleAutoSave();
+    }
+
+    /* ── Picker dropdown ─────────────────────────── */
+    function _togglePicker(anchor) {
+        if (_picker) { _closePicker(); return; }
+
+        const checkedIds = new Set(_getCheckedIds());
+        const filter = { text: '' };
+
+        _picker = document.createElement('div');
+        _picker.className = 'fnp-label-picker';
+        _picker.setAttribute('role', 'listbox');
+        _picker.innerHTML = _buildPickerHtml(checkedIds, '');
+
+        document.body.appendChild(_picker);
+        _positionPicker(anchor);
+
+        // Search input
+        const searchInput = _picker.querySelector('.fnp-picker-search');
+        searchInput?.focus();
+        searchInput?.addEventListener('input', () => {
+            filter.text = searchInput.value.trim().toLowerCase();
+            const list = _picker.querySelector('.fnp-picker-list');
+            if (list) list.innerHTML = _buildPickerItems(_getCheckedIds(), filter.text);
+            _wirePickerItems();
+        });
+
+        // Enter on search to create new label
+        searchInput?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && searchInput.value.trim()) {
+                e.preventDefault();
+                _createFromPicker(searchInput.value.trim());
+            }
+            if (e.key === 'Escape') _closePicker();
+        });
+
+        _wirePickerItems();
+        _wirePickerNew();
+    }
+
+    function _buildPickerHtml(checkedIds, filterText) {
+        return `
+            <input class="fnp-picker-search" type="text" placeholder="Tìm hoặc tạo nhãn..." value="${escapeAttr(filterText)}">
+            <div class="fnp-picker-list">${_buildPickerItems([...checkedIds], filterText)}</div>
+            <div class="fnp-picker-divider"></div>
+            <div class="fnp-picker-new" id="fnpPickerNew">
+                <span class="material-symbols-outlined">add</span>
+                Tạo nhãn mới
+            </div>`;
+    }
+
+    function _buildPickerItems(checkedIdArr, filterText) {
+        const checkedSet = new Set(checkedIdArr.map(Number));
+        return _allLabels
+            .filter(l => !filterText || l.name.toLowerCase().includes(filterText))
+            .map(l => {
+                const sel = checkedSet.has(Number(l.id)) ? 'selected' : '';
+                return `<div class="fnp-picker-item ${sel}" data-label-id="${l.id}" role="option" aria-selected="${!!sel}">
+                            <span class="fnp-picker-check"></span>
+                            ${escapeHtml(l.name)}
+                        </div>`;
+            }).join('') || `<div style="padding:0.5rem 0.75rem;font-size:0.8rem;color:var(--fn-on-surface-variant);opacity:.6;">Không có nhãn phù hợp</div>`;
+    }
+
+    function _wirePickerItems() {
+        _picker?.querySelectorAll('.fnp-picker-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const id = parseInt(item.dataset.labelId);
+                const cb = document.getElementById(`modal_label_${id}`);
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                item.classList.toggle('selected', cb?.checked);
+                item.setAttribute('aria-selected', String(!!cb?.checked));
+                render(); // update pills immediately
+                _scheduleAutoSave();
+            });
+        });
+    }
+
+    function _wirePickerNew() {
+        const newBtn = document.getElementById('fnpPickerNew');
+        if (!newBtn) return;
+        newBtn.addEventListener('click', () => {
+            const search = _picker?.querySelector('.fnp-picker-search');
+            const name = search?.value.trim() || '';
+            _createFromPicker(name);
+        });
+    }
+
+    async function _createFromPicker(name) {
+        if (!name) return;
+        _closePicker();
+
+        try {
+            const body = new URLSearchParams({ name });
+            const res  = await apiFetch(window.FN_LABEL_STORE_URL, 'POST', body);
+            const data = await res.json();
+            if (!res.ok) { showToast(data.errors?.name?.[0] || data.message || 'Có lỗi', 'error'); return; }
+
+            const label = data.data;
+            // Register globally
+            _allLabels.push({ id: label.id, name: label.name });
+            appendLabelItem(label);   // sidebar sync
+            addLabelCheckbox(label);  // checkbox sync
+
+            // Auto-check the new label
+            const cb = document.getElementById(`modal_label_${label.id}`);
+            if (cb) { cb.checked = true; cb.dispatchEvent(new Event('change', { bubbles: true })); }
+
+            render();
+            _scheduleAutoSave();
+        } catch { showToast('Lỗi kết nối', 'error'); }
+    }
+
+    function _positionPicker(anchor) {
+        if (!_picker || !anchor) return;
+        const rect = anchor.getBoundingClientRect();
+        const pickerH = 300; // estimated
+        const spaceBelow = window.innerHeight - rect.bottom;
+
+        _picker.style.left = Math.min(rect.left, window.innerWidth - 240) + 'px';
+        if (spaceBelow < pickerH && rect.top > pickerH) {
+            _picker.style.top = (rect.top + window.scrollY - pickerH) + 'px';
+        } else {
+            _picker.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+        }
+    }
+
+    function _closePicker() {
+        _picker?.remove();
+        _picker = null;
+    }
+
+    /* ── Helpers ─────────────────────────────────── */
+    function _getCheckedIds() {
+        if (!_chips) return [];
+        return [..._chips.querySelectorAll('input[type="checkbox"]:checked')]
+            .map(cb => parseInt(cb.value));
+    }
+
+    function _getCheckedNames(ids) {
+        const map = {};
+        ids.forEach(id => {
+            const label = _allLabels.find(l => Number(l.id) === id);
+            if (label) map[id] = label.name;
+            else {
+                // Fallback: read from checkbox span
+                const span = _chips?.querySelector(`input#modal_label_${id} ~ .fn-checkbox-text`);
+                map[id] = span?.textContent || `#${id}`;
+            }
+        });
+        return map;
+    }
+
+    function _scheduleAutoSave() {
+        // Trigger auto-save.js by dispatching change on the chips container
+        _chips?.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    /* ── Public API ──────────────────────────────── */
+    return { init, render };
+})();
+
+// Auto-init on DOMContentLoaded when on the edit page
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('fnpLabelPills')) {
+        LabelPills.init();
+
+        // Patch addLabelCheckbox to also re-render pills when a new label is added
+        const _orig = window.addLabelCheckbox || addLabelCheckbox;
+        window.addLabelCheckbox = function (label) {
+            _orig(label);
+            setTimeout(() => LabelPills.render(), 0);
+        };
+    }
+});
+
+
