@@ -33,8 +33,7 @@ class AuthService
         ]);
 
         try {
-            // Send OTP email via queue (non-blocking)
-            Mail::to($data['email'])->queue(
+            Mail::to($data['email'])->send(
                 new VerificationCodeMail($otp, $data['name'])
             );
         } catch (\Throwable $e) {
@@ -108,7 +107,7 @@ class AuthService
         session(['registration' => $registration]);
 
         try {
-            Mail::to($registration['email'])->queue(
+            Mail::to($registration['email'])->send(
                 new VerificationCodeMail($otp, $registration['name'])
             );
         } catch (\Throwable $e) {
