@@ -98,7 +98,6 @@
         </div>
     </main>
 
-    @vite(['resources/js/bootstrap.js'])
 </body>
 
 </html>

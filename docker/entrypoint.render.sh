@@ -9,12 +9,6 @@ echo ">> Configuring Apache to listen on port ${LISTEN_PORT}..."
 sed -i "s/Listen 80/Listen ${LISTEN_PORT}/g" /etc/apache2/ports.conf
 sed -i "s/:80/:${LISTEN_PORT}/g" /etc/apache2/sites-available/000-default.conf
 
-# Clear cache cũ trước
-echo ">> Clearing old cache..."
-php artisan config:clear || true
-php artisan route:clear || true
-php artisan view:clear || true
-
 # Cache cấu hình cho production
 echo ">> Caching configuration..."
 php artisan config:cache || true
