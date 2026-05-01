@@ -183,7 +183,25 @@
             }
         }
 
-        // ── 12. Realtime sync on the edit page (FIX 3) ─────────────────────────
+        // ── 12. Realtime sync on the edit page ─────────────────────────────────
+        // Theo dõi thời điểm user gõ phím gần nhất để tránh ghi đè khi đang nhập
+        let _userLastTypedAt = 0;
+        const USER_TYPING_GRACE = 3000; // ms sau lần gõ cuối mới nhận update từ xa
+
+        const titleInput2 = document.getElementById('modalNoteTitle');
+        const contentEditor2 = document.getElementById('modalNoteContent');
+
+        if (titleInput2) {
+            titleInput2.addEventListener('input', () => { _userLastTypedAt = Date.now(); });
+        }
+        if (contentEditor2) {
+            contentEditor2.addEventListener('input', () => { _userLastTypedAt = Date.now(); });
+        }
+
+        // Expose cho _applyRemoteUpdate
+        window.__fnpUserLastTypedAt = () => _userLastTypedAt;
+        window.__fnpTypingGrace = USER_TYPING_GRACE;
+
         // Only for existing notes (not create mode)
         if (!isCreateMode && noteId) {
             _initEditPageRealtime(noteId, isOwner);
@@ -248,37 +266,54 @@
             });
     }
 
-    // Áp dụng nội dung từ xa vào editor (gọi từ cả 2 nguồn trên)
-    let _lastAppliedAt = 0; // chống gọi 2 lần trong cùng 1 tick
+    // Áp dụng nội dung từ xa vào editor
+    let _lastAppliedAt = 0;
     function _applyRemoteUpdate(data) {
         const now = Date.now();
-        if (now - _lastAppliedAt < 200) return; // debounce 200ms
+        // Debounce: chống gọi 2 lần trong cùng 1 tick (hook + presence channel)
+        if (now - _lastAppliedAt < 200) return;
         _lastAppliedAt = now;
 
-        const titleInput = document.getElementById('modalNoteTitle');
+        // Nếu user vừa gõ trong vòng typing-grace ms → hoãn lại 3s
+        const lastTyped = typeof window.__fnpUserLastTypedAt === 'function'
+            ? window.__fnpUserLastTypedAt() : 0;
+        const grace = window.__fnpTypingGrace || 3000;
+        if (now - lastTyped < grace) {
+            console.log('[FNP] User is typing – delaying remote update by', grace - (now - lastTyped), 'ms');
+            setTimeout(() => _applyRemoteUpdate(data), grace - (now - lastTyped) + 100);
+            return;
+        }
+
+        console.log('[FNP] Applying remote update from', data.updated_by?.name, '| noteId:', data.note_id);
+
+        const titleInput   = document.getElementById('modalNoteTitle');
         const contentEditor = document.getElementById('modalNoteContent');
 
-        // Không ghi đè field đang được user focus vào
-        if (titleInput && document.activeElement !== titleInput) {
+        // Cập nhật tiêu đề
+        if (titleInput) {
             titleInput.value = data.note_title || '';
             const bc = document.getElementById('fnpBreadcrumbTitle');
             if (bc) bc.textContent = data.note_title || 'Ghi chú không có tiêu đề';
         }
-        if (contentEditor && document.activeElement !== contentEditor) {
+
+        // Cập nhật nội dung editor
+        if (contentEditor) {
             if (typeof setEditorContent === 'function') {
                 setEditorContent(data.note_content || '');
             } else {
                 contentEditor.innerHTML = data.note_content || '';
             }
-            // Reset baseline để auto-save không ghi lại thay đổi từ xa
-            if (typeof autoSaveReset === 'function') {
-                const curLabels = window.__FNP_LABEL_IDS ?? [];
-                autoSaveReset(data.note_title, data.note_content, curLabels);
-            }
+        }
+
+        // Reset auto-save baseline để không ghi lại thay đổi từ xa
+        if (typeof autoSaveReset === 'function') {
+            const curLabels = window.__FNP_LABEL_IDS ?? [];
+            autoSaveReset(data.note_title, data.note_content, curLabels);
         }
 
         _showRemoteUpdateBadge(data.updated_by?.name);
     }
+
 
 
     function _renderPresence(el, members) {
