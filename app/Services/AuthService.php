@@ -28,7 +28,7 @@ class AuthService
                 'email' => $data['email'],
                 'password' => $data['password'],
                 'otp' => $otp,
-                'otp_expires_at' => now()->addMinutes(5),
+                'otp_expires_at' => now()->addMinutes(5)->toISOString(),
             ],
         ]);
 
@@ -56,13 +56,13 @@ class AuthService
             ]);
         }
 
-        if (now()->greaterThan($registration['otp_expires_at'])) {
+        if (now()->greaterThan(\Carbon\Carbon::parse($registration['otp_expires_at']))) {
             throw ValidationException::withMessages([
                 'otp' => ['Mã xác thực đã hết hạn. Vui lòng gửi lại mã mới.'],
             ]);
         }
 
-        if ((string)$inputOtp !== (string)$registration['otp']) {
+        if ((string) $inputOtp !== (string) $registration['otp']) {
             throw ValidationException::withMessages([
                 'otp' => ['Mã xác thực không đúng. Vui lòng thử lại.'],
             ]);
@@ -104,7 +104,7 @@ class AuthService
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         $registration['otp'] = $otp;
-        $registration['otp_expires_at'] = now()->addMinutes(5);
+        $registration['otp_expires_at'] = now()->addMinutes(5)->toISOString();
         session(['registration' => $registration]);
 
         try {
@@ -128,7 +128,7 @@ class AuthService
             ], $remember)
         ) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials do not match our records.'],
+                'email' => ['Email hoặc mật khẩu không đúng.'],
             ]);
         }
 

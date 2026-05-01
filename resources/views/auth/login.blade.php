@@ -98,7 +98,10 @@
         </div>
     </main>
 
+<<<<<<< HEAD
     <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+=======
+>>>>>>> 7c33b04fb21603edb1367ea3541a57c2ee6c96c6
 </body>
 
 </html>

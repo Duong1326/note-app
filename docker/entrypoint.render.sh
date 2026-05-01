@@ -19,6 +19,10 @@ php artisan view:cache || true
 echo ">> Running migrations..."
 php artisan migrate --force || true
 
+# Khởi động queue worker chạy nền (background)
+echo ">> Starting queue worker in background..."
+php artisan queue:work --sleep=3 --tries=3 --max-time=3600 --daemon &
+
 # Khởi động Apache
 echo ">> Starting Apache on port ${LISTEN_PORT}..."
 exec "$@"
