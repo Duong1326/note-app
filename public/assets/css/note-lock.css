@@ -85,8 +85,6 @@
     font-size: 18px;
 }
 
-/* ── Primary gradient button (used for lock actions) ──────────── */
-
 .btn-lock-primary {
     background: var(--fn-primary);
     color: var(--fn-on-primary);
@@ -95,10 +93,22 @@
     transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
+.btn-lock-primary:hover:not(:disabled) {
+    background: var(--fn-primary);
+    color: var(--fn-on-primary);
+    transform: translateY(-1px);
+}
+
 .btn-lock-danger {
     background: #dc2626;
     color: #fff;
     border: none;
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.btn-lock-danger:hover:not(:disabled) {
+    background: #dc2626;
+    color: #fff;
+    transform: translateY(-1px);
 }
