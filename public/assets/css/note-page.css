@@ -410,6 +410,9 @@
     white-space: nowrap;
     user-select: none;
     font-family: 'Inter', sans-serif;
+    /* color is supplied by the .fnp-pill-c-* class below */
+    background: var(--fnp-pill-bg, var(--fn-surface-variant));
+    color: var(--fnp-pill-fg, var(--fn-on-surface-variant));
 }
 
 .fnp-label-pill:hover {
@@ -441,15 +444,19 @@
     font-size: 13px;
 }
 
-/* ── Pill color palette (8 pastel cycles) ────────── */
-.fnp-pill-color-0 { background: #dbeafe; color: #1e40af; }
-.fnp-pill-color-1 { background: #dcfce7; color: #166534; }
-.fnp-pill-color-2 { background: #fef9c3; color: #854d0e; }
-.fnp-pill-color-3 { background: #fce7f3; color: #9d174d; }
-.fnp-pill-color-4 { background: #ede9fe; color: #4c1d95; }
-.fnp-pill-color-5 { background: #ffedd5; color: #9a3412; }
-.fnp-pill-color-6 { background: #f0fdf4; color: #14532d; }
-.fnp-pill-color-7 { background: #f1f5f9; color: #334155; }
+/* ── Pill color palette (8 theme-relative hues) ─── */
+/* Each class injects CSS-variable overrides so dark mode
+   re-declarations (at bottom of this file) just redefine
+   the two variables – no selector duplication needed.    */
+
+.fnp-pill-c-0 { --fnp-pill-bg: #dbeafe; --fnp-pill-fg: #1d4ed8; } /* blue   */
+.fnp-pill-c-1 { --fnp-pill-bg: #dcfce7; --fnp-pill-fg: #15803d; } /* green  */
+.fnp-pill-c-2 { --fnp-pill-bg: #fef9c3; --fnp-pill-fg: #92400e; } /* amber  */
+.fnp-pill-c-3 { --fnp-pill-bg: #fce7f3; --fnp-pill-fg: #9d174d; } /* pink   */
+.fnp-pill-c-4 { --fnp-pill-bg: #ede9fe; --fnp-pill-fg: #5b21b6; } /* violet */
+.fnp-pill-c-5 { --fnp-pill-bg: #ffedd5; --fnp-pill-fg: #9a3412; } /* orange */
+.fnp-pill-c-6 { --fnp-pill-bg: #e0f2fe; --fnp-pill-fg: #0369a1; } /* sky    */
+.fnp-pill-c-7 { --fnp-pill-bg: #f1f5f9; --fnp-pill-fg: #334155; } /* slate  */
 
 /* ── Add label pill button ───────────────────────── */
 .fnp-pill-add {
@@ -595,14 +602,15 @@
     border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
-[data-theme="dark"] .fnp-pill-color-0 { background: #1e3a5f; color: #93c5fd; }
-[data-theme="dark"] .fnp-pill-color-1 { background: #14532d; color: #86efac; }
-[data-theme="dark"] .fnp-pill-color-2 { background: #422006; color: #fde68a; }
-[data-theme="dark"] .fnp-pill-color-3 { background: #500724; color: #fbcfe8; }
-[data-theme="dark"] .fnp-pill-color-4 { background: #2e1065; color: #c4b5fd; }
-[data-theme="dark"] .fnp-pill-color-5 { background: #431407; color: #fdba74; }
-[data-theme="dark"] .fnp-pill-color-6 { background: #052e16; color: #6ee7b7; }
-[data-theme="dark"] .fnp-pill-color-7 { background: #1e293b; color: #94a3b8; }
+/* ── Pill palette – dark variants ─────────────────── */
+[data-theme="dark"] .fnp-pill-c-0 { --fnp-pill-bg: #1e3a5f; --fnp-pill-fg: #93c5fd; }
+[data-theme="dark"] .fnp-pill-c-1 { --fnp-pill-bg: #14532d; --fnp-pill-fg: #86efac; }
+[data-theme="dark"] .fnp-pill-c-2 { --fnp-pill-bg: #451a03; --fnp-pill-fg: #fde68a; }
+[data-theme="dark"] .fnp-pill-c-3 { --fnp-pill-bg: #500724; --fnp-pill-fg: #fbcfe8; }
+[data-theme="dark"] .fnp-pill-c-4 { --fnp-pill-bg: #2e1065; --fnp-pill-fg: #c4b5fd; }
+[data-theme="dark"] .fnp-pill-c-5 { --fnp-pill-bg: #431407; --fnp-pill-fg: #fdba74; }
+[data-theme="dark"] .fnp-pill-c-6 { --fnp-pill-bg: #082f49; --fnp-pill-fg: #7dd3fc; }
+[data-theme="dark"] .fnp-pill-c-7 { --fnp-pill-bg: #1e293b; --fnp-pill-fg: #94a3b8; }
 
 [data-theme="dark"] .fnp-label-picker {
     background: var(--fn-surface-container, #1e1e2e);

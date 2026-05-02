@@ -7,8 +7,8 @@
 // ═══════════════════════════════════════════════════
 
 function toggleAddLabelForm(forceClose = false) {
-    const btn   = document.getElementById('sidebarAddBtn');
-    const form  = document.getElementById('sidebarLabelAddForm');
+    const btn = document.getElementById('sidebarAddBtn');
+    const form = document.getElementById('sidebarLabelAddForm');
     const input = document.getElementById('newSidebarLabelInput');
 
     if (forceClose || !form.classList.contains('d-none')) {
@@ -24,7 +24,7 @@ function toggleAddLabelForm(forceClose = false) {
 
 async function onSidebarLabelBlur() {
     const input = document.getElementById('newSidebarLabelInput');
-    const name  = input?.value.trim();
+    const name = input?.value.trim();
     if (name) {
         await createLabel();
     } else {
@@ -34,12 +34,12 @@ async function onSidebarLabelBlur() {
 
 async function createLabel() {
     const input = document.getElementById('newSidebarLabelInput');
-    const name  = input.value.trim();
+    const name = input.value.trim();
     if (!name) return toggleAddLabelForm();
 
     try {
         const body = new URLSearchParams({ name });
-        const res  = await apiFetch(window.FN_LABEL_STORE_URL, 'POST', body);
+        const res = await apiFetch(window.FN_LABEL_STORE_URL, 'POST', body);
         const data = await res.json();
 
         if (!res.ok) {
@@ -73,8 +73,8 @@ async function deleteLabel(labelId) {
 
         if (row) {
             row.style.transition = 'opacity 0.3s ease, margin-top 0.3s ease';
-            row.style.opacity    = '0';
-            row.style.marginTop  = `-${row.offsetHeight}px`;
+            row.style.opacity = '0';
+            row.style.marginTop = `-${row.offsetHeight}px`;
             setTimeout(() => row.remove(), 320);
         }
 
@@ -85,7 +85,7 @@ async function deleteLabel(labelId) {
         // Fade-remove badges from visible note cards
         document.querySelectorAll(`.fn-label-badge[data-label-id="${labelId}"]`).forEach(badge => {
             badge.style.transition = 'opacity 0.2s';
-            badge.style.opacity    = '0';
+            badge.style.opacity = '0';
             setTimeout(() => {
                 const parent = badge.parentNode;
                 badge.remove();
@@ -111,15 +111,15 @@ async function deleteLabel(labelId) {
 }
 
 async function saveRenameLabel(labelId) {
-    const row     = document.querySelector(`.fn-sidebar-label-item[data-label-id="${labelId}"]`);
-    const input   = row?.querySelector('.fn-sidebar-label-input');
+    const row = document.querySelector(`.fn-sidebar-label-item[data-label-id="${labelId}"]`);
+    const input = row?.querySelector('.fn-sidebar-label-input');
     const newName = input?.value.trim();
 
     if (!newName) return cancelRenameLabel(labelId);
 
     try {
         const body = new URLSearchParams({ name: newName, _method: 'PUT' });
-        const res  = await apiFetch(`/labels/${labelId}`, 'POST', body);
+        const res = await apiFetch(`/labels/${labelId}`, 'POST', body);
         const data = await res.json();
 
         if (!res.ok) {
@@ -222,11 +222,77 @@ function addLabelCheckbox(label) {
     chipsContainer.appendChild(chip);
 }
 
+// ═══════════════════════════════════════════════════
+// Modal Inline Label Creation
+// ═══════════════════════════════════════════════════
+
+function toggleModalAddLabelForm(forceClose = false) {
+    const btn = document.getElementById('modalAddLabelBtn');
+    const input = document.getElementById('modalNewLabelInput');
+    if (!btn || !input) return;
+
+    if (forceClose || !input.classList.contains('d-none')) {
+        input.classList.add('d-none');
+        btn.classList.remove('d-none');
+        input.value = '';
+    } else {
+        input.classList.remove('d-none');
+        btn.classList.add('d-none');
+        input.focus();
+    }
+}
+
+/**
+ * Called on blur of the modal label input.
+ * Saves the label if text is present; otherwise just closes the input.
+ */
+async function onModalLabelBlur() {
+    const input = document.getElementById('modalNewLabelInput');
+    const name = input?.value.trim();
+    if (name) {
+        await createLabelFromModal();
+    } else {
+        toggleModalAddLabelForm(true);
+    }
+}
+
+async function createLabelFromModal() {
+    const input = document.getElementById('modalNewLabelInput');
+    const name = input.value.trim();
+    if (!name) {
+        toggleModalAddLabelForm(true);
+        return;
+    }
+
+    try {
+        const body = new URLSearchParams({ name });
+        const res = await apiFetch(window.FN_LABEL_STORE_URL, 'POST', body);
+        const data = await res.json();
+
+        if (!res.ok) {
+            const msg = data.errors?.name?.[0] || data.message || 'Có lỗi xảy ra';
+            showToast(msg, 'error');
+            return;
+        }
+
+        const label = data.data;
+        appendLabelItem(label); // sync sidebar
+        addLabelCheckbox(label); // sync modal
+
+        // Auto-check the new label
+        const checkbox = document.getElementById(`modal_label_${label.id}`);
+        if (checkbox) checkbox.checked = true;
+
+        toggleModalAddLabelForm(true);
+
+    } catch {
+        showToast('Lỗi kết nối', 'error');
+    }
+}
 
 // ═══════════════════════════════════════════════════
 // Label Filter (multi-select)
 // ═══════════════════════════════════════════════════
-
 
 /** Set of currently active label ids */
 const _activeLabelIds = new Set();
@@ -287,7 +353,7 @@ async function _fetchFilteredNotes() {
     _activeLabelIds.forEach(id => url.searchParams.append('label_ids[]', id));
 
     try {
-        const res  = await apiFetch(url.toString());
+        const res = await apiFetch(url.toString());
         const data = await res.json();
         _renderFilteredNotes(data.notes ?? []);
     } catch {
@@ -367,24 +433,23 @@ function _renderFilteredNotes(notes) {
 // ═══════════════════════════════════════════════════
 
 const LabelPills = (() => {
-    /* ── Config ──────────────────────────────────── */
     const COLOR_COUNT = 8;
 
     // Deterministic color index based on label id
     const _color = (id) => (parseInt(id) || 0) % COLOR_COUNT;
 
     /* ── State ───────────────────────────────────── */
-    let _pillRow    = null;   // #fnpLabelPills
-    let _chips      = null;   // #modalLabelsChips (hidden checkboxes)
-    let _canEdit    = false;
-    let _allLabels  = [];     // [{id, name}, …]
-    let _picker     = null;   // floating dropdown element
+    let _pillRow = null;   // #fnpLabelPills
+    let _chips = null;   // #modalLabelsChips (hidden checkboxes)
+    let _canEdit = false;
+    let _allLabels = [];     // [{id, name}, …]
+    let _picker = null;   // floating dropdown element
 
     /* ── Init ────────────────────────────────────── */
     function init() {
-        _pillRow   = document.getElementById('fnpLabelPills');
-        _chips     = document.getElementById('modalLabelsChips');
-        _canEdit   = window.__FNP_CAN_EDIT_LABELS === true;
+        _pillRow = document.getElementById('fnpLabelPills');
+        _chips = document.getElementById('modalLabelsChips');
+        _canEdit = window.__FNP_CAN_EDIT_LABELS === true;
         _allLabels = Array.isArray(window.__FNP_ALL_LABELS) ? window.__FNP_ALL_LABELS : [];
 
         if (!_pillRow) return; // not on edit page
@@ -416,7 +481,7 @@ const LabelPills = (() => {
         // Active label pills
         checkedIds.forEach(id => {
             const name = checkedNames[id] || `#${id}`;
-            const colorCls = `fnp-pill-color-${_color(id)}`;
+            const colorCls = `fnp-pill-c-${_color(id)}`;
             const removeBtn = _canEdit
                 ? `<button class="fnp-pill-remove" data-label-id="${id}" title="Bỏ nhãn" type="button">
                        <span class="material-symbols-outlined">close</span>
@@ -561,7 +626,7 @@ const LabelPills = (() => {
 
         try {
             const body = new URLSearchParams({ name });
-            const res  = await apiFetch(window.FN_LABEL_STORE_URL, 'POST', body);
+            const res = await apiFetch(window.FN_LABEL_STORE_URL, 'POST', body);
             const data = await res.json();
             if (!res.ok) { showToast(data.errors?.name?.[0] || data.message || 'Có lỗi', 'error'); return; }
 

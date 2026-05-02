@@ -264,32 +264,7 @@
     color: var(--fn-on-surface);
 }
 
-[data-theme="dark"] .fn-modal-labels-container {
-    background: var(--fn-surface-container);
-    border: 1px solid var(--fn-outline-variant);
-}
 
-[data-theme="dark"] .fn-checkbox-label:hover {
-    background: rgba(180, 197, 255, 0.06);
-}
-
-[data-theme="dark"] .fn-checkbox-label:has(.fn-checkbox-input:checked) {
-    background: rgba(37, 99, 235, 0.15);
-}
-
-[data-theme="dark"] .fn-checkbox-box {
-    border-color: var(--fn-outline);
-}
-
-[data-theme="dark"] .fn-modal-add-label-btn:hover {
-    background: rgba(180, 197, 255, 0.08);
-}
-
-[data-theme="dark"] .fn-modal-add-label-input {
-    background: var(--fn-surface-container-lowest);
-    color: var(--fn-on-surface);
-    border-color: var(--fn-primary);
-}
 
 /* Thumbnail gradient overlay – keep only fade in dark mode */
 [data-theme="dark"] .fn-modal-thumb-preview::after {

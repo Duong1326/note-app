@@ -116,34 +116,19 @@
                     required />
             </div>
 
-            {{-- Labels --}}
-            <div class="fn-modal-field fn-modal-labels-container fnp-labels-container">
-                <label class="fn-modal-labels-title">Nhãn</label>
-                <div class="fn-modal-chips" id="modalLabelsChips">
-                    @foreach($labels as $label)
-                        <label class="fn-checkbox-label" for="modal_label_{{ $label->id }}">
-                            <input type="checkbox"  name="label_ids[]" id="modal_label_{{ $label->id }}"
-                                value="{{ $label->id }}" class="fn-checkbox-input"
-                                {{ ($note && $note->labels->contains($label->id)) ? 'checked' : '' }}
-                                @if(!$isOwner && $sharePermission !== 'edit') disabled @endif />
-                            <span class="fn-checkbox-text">{{ $label->name }}</span>
-                        </label>
-                    @endforeach
-                </div>
+            {{-- Labels (Inline Notion-style tag pills) --}}
+            <div class="fnp-label-pills-section">
+                <div id="fnpLabelPills" class="fnp-pill-row"></div>
+            </div>
 
-                @if($isOwner)
-                <div class="fn-modal-add-label-wrapper">
-                    <button type="button" class="fn-modal-add-label-btn" id="modalAddLabelBtn"
-                        onclick="toggleModalAddLabelForm()">
-                        <span class="material-symbols-outlined fn-icon-sm">add</span>
-                        Thêm nhãn
-                    </button>
-                    <input type="text" id="modalNewLabelInput" class="fn-modal-add-label-input d-none"
-                        placeholder="Nhập và nhấn Enter..."
-                        onkeydown="if(event.key==='Enter'){ event.preventDefault(); createLabelFromModal(); } else if(event.key==='Escape') { event.preventDefault(); toggleModalAddLabelForm(true); }"
-                        onblur="setTimeout(() => onModalLabelBlur(), 150)">
-                </div>
-                @endif
+            {{-- Hidden inputs to maintain form state and auto-save --}}
+            <div id="modalLabelsChips" class="d-none">
+                @foreach($labels as $label)
+                    <input type="checkbox" name="label_ids[]" id="modal_label_{{ $label->id }}"
+                        value="{{ $label->id }}" class="fn-checkbox-input"
+                        {{ ($note && $note->labels->contains($label->id)) ? 'checked' : '' }}
+                        @if(!$isOwner && $sharePermission !== 'edit') disabled @endif />
+                @endforeach
             </div>
 
             {{-- Content editor --}}
@@ -250,6 +235,8 @@
     window.__FNP_ATTACHMENTS  = @json($fnpAttachments);
     window.__FNP_IS_OWNER     = {{ $isOwner ? 'true' : 'false' }};
     window.__FNP_LOCKED       = {{ ($note?->is_locked) ? 'true' : 'false' }};
+    window.__FNP_ALL_LABELS   = @json($labels->map(fn($l) => ['id' => $l->id, 'name' => $l->name]));
+    window.__FNP_CAN_EDIT_LABELS = {{ ($isOwner || $sharePermission === 'edit') ? 'true' : 'false' }};
 </script>
 
 <script src="{{ asset('assets/js/notes.js') }}"></script>
