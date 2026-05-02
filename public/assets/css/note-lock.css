@@ -88,17 +88,11 @@
 /* ── Primary gradient button (used for lock actions) ──────────── */
 
 .btn-lock-primary {
-    background: var(--fn-primary-container);
+    background: var(--fn-primary);
     color: var(--fn-on-primary);
     border: none;
     box-shadow: 0 4px 12px rgba(0, 74, 198, 0.2);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.btn-lock-primary:hover:not(:disabled) {
-    box-shadow: 0 6px 16px rgba(0, 74, 198, 0.3);
-    transform: translateY(-1px);
-    color: var(--fn-on-primary);
 }
 
 .btn-lock-danger {
@@ -107,10 +101,4 @@
     border: none;
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.btn-lock-danger:hover:not(:disabled) {
-    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
-    transform: translateY(-1px);
-    color: #fff;
 }
