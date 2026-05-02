@@ -449,14 +449,54 @@
    re-declarations (at bottom of this file) just redefine
    the two variables – no selector duplication needed.    */
 
-.fnp-pill-c-0 { --fnp-pill-bg: #dbeafe; --fnp-pill-fg: #1d4ed8; } /* blue   */
-.fnp-pill-c-1 { --fnp-pill-bg: #dcfce7; --fnp-pill-fg: #15803d; } /* green  */
-.fnp-pill-c-2 { --fnp-pill-bg: #fef9c3; --fnp-pill-fg: #92400e; } /* amber  */
-.fnp-pill-c-3 { --fnp-pill-bg: #fce7f3; --fnp-pill-fg: #9d174d; } /* pink   */
-.fnp-pill-c-4 { --fnp-pill-bg: #ede9fe; --fnp-pill-fg: #5b21b6; } /* violet */
-.fnp-pill-c-5 { --fnp-pill-bg: #ffedd5; --fnp-pill-fg: #9a3412; } /* orange */
-.fnp-pill-c-6 { --fnp-pill-bg: #e0f2fe; --fnp-pill-fg: #0369a1; } /* sky    */
-.fnp-pill-c-7 { --fnp-pill-bg: #f1f5f9; --fnp-pill-fg: #334155; } /* slate  */
+.fnp-pill-c-0 {
+    --fnp-pill-bg: #dbeafe;
+    --fnp-pill-fg: #1d4ed8;
+}
+
+/* blue   */
+.fnp-pill-c-1 {
+    --fnp-pill-bg: #dcfce7;
+    --fnp-pill-fg: #15803d;
+}
+
+/* green  */
+.fnp-pill-c-2 {
+    --fnp-pill-bg: #fef9c3;
+    --fnp-pill-fg: #92400e;
+}
+
+/* amber  */
+.fnp-pill-c-3 {
+    --fnp-pill-bg: #fce7f3;
+    --fnp-pill-fg: #9d174d;
+}
+
+/* pink   */
+.fnp-pill-c-4 {
+    --fnp-pill-bg: #ede9fe;
+    --fnp-pill-fg: #5b21b6;
+}
+
+/* violet */
+.fnp-pill-c-5 {
+    --fnp-pill-bg: #ffedd5;
+    --fnp-pill-fg: #9a3412;
+}
+
+/* orange */
+.fnp-pill-c-6 {
+    --fnp-pill-bg: #e0f2fe;
+    --fnp-pill-fg: #0369a1;
+}
+
+/* sky    */
+.fnp-pill-c-7 {
+    --fnp-pill-bg: #f1f5f9;
+    --fnp-pill-fg: #334155;
+}
+
+/* slate  */
 
 /* ── Add label pill button ───────────────────────── */
 .fnp-pill-add {
@@ -502,8 +542,15 @@
 }
 
 @keyframes fnp-picker-in {
-    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .fnp-picker-search {
@@ -603,14 +650,45 @@
 }
 
 /* ── Pill palette – dark variants ─────────────────── */
-[data-theme="dark"] .fnp-pill-c-0 { --fnp-pill-bg: #1e3a5f; --fnp-pill-fg: #93c5fd; }
-[data-theme="dark"] .fnp-pill-c-1 { --fnp-pill-bg: #14532d; --fnp-pill-fg: #86efac; }
-[data-theme="dark"] .fnp-pill-c-2 { --fnp-pill-bg: #451a03; --fnp-pill-fg: #fde68a; }
-[data-theme="dark"] .fnp-pill-c-3 { --fnp-pill-bg: #500724; --fnp-pill-fg: #fbcfe8; }
-[data-theme="dark"] .fnp-pill-c-4 { --fnp-pill-bg: #2e1065; --fnp-pill-fg: #c4b5fd; }
-[data-theme="dark"] .fnp-pill-c-5 { --fnp-pill-bg: #431407; --fnp-pill-fg: #fdba74; }
-[data-theme="dark"] .fnp-pill-c-6 { --fnp-pill-bg: #082f49; --fnp-pill-fg: #7dd3fc; }
-[data-theme="dark"] .fnp-pill-c-7 { --fnp-pill-bg: #1e293b; --fnp-pill-fg: #94a3b8; }
+[data-theme="dark"] .fnp-pill-c-0 {
+    --fnp-pill-bg: #1e3a5f;
+    --fnp-pill-fg: #93c5fd;
+}
+
+[data-theme="dark"] .fnp-pill-c-1 {
+    --fnp-pill-bg: #14532d;
+    --fnp-pill-fg: #86efac;
+}
+
+[data-theme="dark"] .fnp-pill-c-2 {
+    --fnp-pill-bg: #451a03;
+    --fnp-pill-fg: #fde68a;
+}
+
+[data-theme="dark"] .fnp-pill-c-3 {
+    --fnp-pill-bg: #500724;
+    --fnp-pill-fg: #fbcfe8;
+}
+
+[data-theme="dark"] .fnp-pill-c-4 {
+    --fnp-pill-bg: #2e1065;
+    --fnp-pill-fg: #c4b5fd;
+}
+
+[data-theme="dark"] .fnp-pill-c-5 {
+    --fnp-pill-bg: #431407;
+    --fnp-pill-fg: #fdba74;
+}
+
+[data-theme="dark"] .fnp-pill-c-6 {
+    --fnp-pill-bg: #082f49;
+    --fnp-pill-fg: #7dd3fc;
+}
+
+[data-theme="dark"] .fnp-pill-c-7 {
+    --fnp-pill-bg: #1e293b;
+    --fnp-pill-fg: #94a3b8;
+}
 
 [data-theme="dark"] .fnp-label-picker {
     background: var(--fn-surface-container, #1e1e2e);

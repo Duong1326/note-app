@@ -237,6 +237,12 @@ async function submitEnableLock(event) {
 
         closeLockModal('enableLockModal');
         showToast('Đã khoá ghi chú thành công', 'success');
+
+        // On the full-page edit route, reload so the topbar lock icon updates.
+        if (typeof window.__onNoteLockChanged === 'function') {
+            window.__onNoteLockChanged('enabled', _enableLockTarget);
+        }
+
     } catch {
         showFieldError('enableLockPasswordError', 'Lỗi kết nối. Vui lòng thử lại.');
     } finally {
@@ -344,6 +350,12 @@ async function submitDisableLock(event) {
 
         closeLockModal('disableLockModal');
         showToast('Đã gỡ khoá ghi chú.', 'success');
+
+        // On the full-page edit route, reload so the topbar lock icon updates.
+        if (typeof window.__onNoteLockChanged === 'function') {
+            window.__onNoteLockChanged('disabled', _disableLockTarget);
+        }
+
     } catch {
         showFieldError('disableLockPasswordError', 'Lỗi kết nối. Vui lòng thử lại.');
     } finally {

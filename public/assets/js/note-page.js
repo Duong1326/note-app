@@ -34,7 +34,19 @@
         // _editingNoteId is a `let` at module scope in note-modal.js.
         // Setting it via window allows the auto-save dispatcher to read it.
         window._editingNoteId = noteId;   // null for create, number for edit
-        window._editLockToken = null;
+
+        // If a lock token was pre-stored by shared-notes.js (shared editor clicked a
+        // locked card → entered password → sessionStorage saved the token → navigated here),
+        // consume it immediately so we don't re-prompt on the edit page.
+        let _preStoredToken = null;
+        if (noteId) {
+            try {
+                const key = `fn_lock_token_${noteId}`;
+                _preStoredToken = sessionStorage.getItem(key) || null;
+                if (_preStoredToken) sessionStorage.removeItem(key); // single-use
+            } catch (_) { /* private browsing / quota */ }
+        }
+        window._editLockToken = _preStoredToken;
 
         // Seed _existingAttachments (from note-attachments.js)
         if (typeof _existingAttachments !== 'undefined') {
@@ -168,19 +180,65 @@
         };
 
 
-        // ── 11. Locked notes: require unlock before editing ─────────────────────
-        if (isOwner && isLocked && !isCreateMode) {
-            const editor = contentEditor;
-            if (editor)     editor.contentEditable = 'false';
-            if (titleInput) titleInput.readOnly = true;
+        // ── 11. Locked notes: require unlock before editing ─────────────────
+        //
+        // isNoteLocked() reads `.note-col[data-note-id]` DOM cards (dashboard).
+        // On the full-page edit route, no such card exists in the DOM,
+        // so we inject a hidden sentinel element to make isNoteLocked() work.
+        //
+        const sharePermission = window.__FNP_SHARE_PERMISSION ?? null; // 'edit'|'view'|null
+        const canEdit = isOwner || sharePermission === 'edit';
 
-            if (typeof requireUnlock === 'function') {
-                requireUnlock(noteId, (token) => {
-                    window._editLockToken = token;
-                    if (editor)     editor.contentEditable = 'true';
-                    if (titleInput) { titleInput.readOnly = false; titleInput.focus(); }
-                });
+        if (isLocked && !isCreateMode) {
+            // Inject sentinel so requireUnlock/isNoteLocked() can detect the lock state.
+            if (noteId && !document.querySelector(`.note-col[data-note-id="${noteId}"]`)) {
+                const sentinel = document.createElement('div');
+                sentinel.className = 'note-col';
+                sentinel.dataset.noteId = String(noteId);
+                sentinel.dataset.locked = '1';
+                sentinel.style.display = 'none';
+                document.body.appendChild(sentinel);
             }
+        }
+
+        // Require unlock for edit-capable users (owner or shared-edit) when the note is locked.
+        // View-only users: if they arrived via dashboard unlock they already have _preStoredToken;
+        // if they somehow access the URL directly, the editor is read-only by Blade template anyway.
+        if (isLocked && !isCreateMode) {
+            const editor = contentEditor;
+
+            if (_preStoredToken) {
+                // Token verified on dashboard → open immediately.
+                // For edit-capable users: enable editing. For view-only: stays read-only (Blade sets that).
+                if (canEdit) {
+                    if (editor)     editor.contentEditable = 'true';
+                    if (titleInput) titleInput.readOnly = false;
+                }
+            } else if (canEdit) {
+                // No pre-stored token and user can edit → lock the editor and prompt.
+                if (editor)     editor.contentEditable = 'false';
+                if (titleInput) titleInput.readOnly = true;
+
+                if (typeof requireUnlock === 'function') {
+                    requireUnlock(noteId, (token) => {
+                        window._editLockToken = token;
+                        if (editor)     editor.contentEditable = 'true';
+                        if (titleInput) { titleInput.readOnly = false; titleInput.focus(); }
+                    });
+                }
+            }
+            // else: view-only user without token → editor is read-only by default (Blade), no action needed.
+        }
+
+
+        // ── Hook: reload page after lock state changes (enable/disable) ────────
+        // This keeps the topbar lock icon in sync without a manual page reload.
+        if (!isCreateMode) {
+            window.__onNoteLockChanged = function (action, changedNoteId) {
+                if (String(changedNoteId) !== String(noteId)) return;
+                // Small delay so the success toast is visible before reload
+                setTimeout(() => window.location.reload(), 1200);
+            };
         }
 
         // ── 12. Realtime sync on the edit page ─────────────────────────────────

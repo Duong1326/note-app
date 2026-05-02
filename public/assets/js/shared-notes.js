@@ -5,16 +5,45 @@
  */
 
 // ── Presence & auto-save state ───────────────────────────────────
-let _presenceChannel    = null;
-let _sharedSaveTimer    = null;
+let _presenceChannel = null;
+let _sharedSaveTimer = null;
 const _SHARED_SAVE_DELAY = 1500;  // ms debounce for shared auto-save
 
 // ── Lock-aware entry point ───────────────────────────────────────
+/**
+ * Called when a shared-note card is clicked.
+ *
+ * Rules:
+ *  - Unlocked note → navigate immediately.
+ *  - Locked note   → ALWAYS prompt for password first, regardless of permission level.
+ *    After unlock, token is stored in sessionStorage so the edit page doesn't re-prompt.
+ *    View-only users will enter in read-only mode; edit users can modify content.
+ */
 function openSharedNoteOrUnlock(noteId, permission, isLocked) {
-    // Navigate to the full-page editor (same as owner editing)
-    // The controller already handles shared-user authorization
-    window.location.href = `/notes/${noteId}/edit`;
+    const editUrl = `/notes/${noteId}/edit`;
+
+    if (!isLocked) {
+        // Note is not locked → navigate directly
+        window.location.href = editUrl;
+        return;
+    }
+
+    // Note is locked → prompt for password before navigating (all permission levels).
+    if (typeof openUnlockModal === 'function') {
+        openUnlockModal(noteId, (token) => {
+            if (token) {
+                try {
+                    sessionStorage.setItem(`fn_lock_token_${noteId}`, token);
+                } catch (_) { /* quota errors – ignore */ }
+            }
+            window.location.href = editUrl;
+        });
+    } else {
+        // Fallback: navigate directly (server enforces CheckNoteToken on mutation routes)
+        window.location.href = editUrl;
+    }
 }
+
 
 // ── Open modal — fetch + populate ───────────────────────────────
 /**
@@ -302,7 +331,7 @@ function _escapeAttr(str) {
 
 // ── Auto-save for shared editors ─────────────────────────────────
 function _setupSharedAutoSave(modal, noteId, lockToken) {
-    const titleEl   = modal.querySelector('.sn-title');
+    const titleEl = modal.querySelector('.sn-title');
     const contentEl = modal.querySelector('.sn-content');
 
     const handler = () => {
@@ -326,7 +355,7 @@ async function _doSharedAutoSave(modal, noteId, lockToken) {
     if (!modal.classList.contains('show')) return; // modal closed
 
     const contentEl = modal.querySelector('.sn-content');
-    const content   = contentEl?.innerHTML.trim() || '';
+    const content = contentEl?.innerHTML.trim() || '';
 
     // Show saving indicator
     const saveBtn = modal.querySelector('.sn-save-btn');

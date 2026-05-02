@@ -76,7 +76,7 @@
                                             <li>
                                                 <a class="dropdown-item d-flex align-items-center gap-2 py-2"
                                                     href="{{ route('notes.edit', $note->id) }}"
-                                                    onclick="event.preventDefault(); requireUnlock('{{ $note->id }}', () => window.location.href = '{{ route('notes.edit', $note->id) }}')">
+                                                    onclick="event.preventDefault(); requireUnlock('{{ $note->id }}', (tok) => { if(tok){try{sessionStorage.setItem('fn_lock_token_{{ $note->id }}',tok);}catch(e){}} window.location.href='{{ route('notes.edit', $note->id) }}'; })">
                                                     <span class="material-symbols-outlined fn-icon-sm">edit</span>
                                                     Chỉnh sửa
                                                 </a>

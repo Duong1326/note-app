@@ -147,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Click-to-edit: clicking anywhere on a note card → navigate to full-page editor
+    // If the note is locked, requireUnlock will prompt for password first (on the dashboard).
     document.addEventListener('click', e => {
         const card = e.target.closest('.fn-note-card');
         if (!card) return;
@@ -158,8 +159,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const noteId = col?.dataset.noteId;
         if (!noteId) return;
 
-        // Navigate to the full-page editor
-        window.location.href = `/notes/${noteId}/edit`;
+        const editUrl = `/notes/${noteId}/edit`;
+
+        // requireUnlock checks data-locked on the col; if not locked it calls callback(null) immediately.
+        if (typeof requireUnlock === 'function') {
+            requireUnlock(noteId, (token) => {
+                // Store token so the edit page can pick it up without re-prompting.
+                if (token) {
+                    try { sessionStorage.setItem(`fn_lock_token_${noteId}`, token); } catch (_) {}
+                }
+                window.location.href = editUrl;
+            });
+        } else {
+            window.location.href = editUrl;
+        }
     });
 });
 

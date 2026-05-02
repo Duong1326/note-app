@@ -51,6 +51,44 @@
                     <span class="material-symbols-outlined" style="font-size: 18px;">share</span>
                     Chia sẻ
                 </button>
+                {{-- Lock management dropdown (owner only) --}}
+                <div class="dropdown">
+                    <button type="button" class="btn btn-sm d-flex align-items-center gap-1"
+                            style="background:transparent; border: 1px solid var(--fn-outline-variant); border-radius: 8px; padding: 5px 10px; color: var(--fn-on-surface-variant); transition: background 0.2s;"
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                            title="{{ $note->is_locked ? 'Quản lý khoá' : 'Khoá ghi chú' }}">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">{{ $note->is_locked ? 'lock' : 'lock_open' }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end fn-dropdown-menu shadow-sm border-0 rounded-3">
+                        @if($note->is_locked)
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                                   href="javascript:void(0)"
+                                   onclick="openChangeLockModal({{ $note->id }})">
+                                    <span class="material-symbols-outlined fn-icon-sm">key</span>
+                                    Đổi mật khẩu khoá
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-warning"
+                                   href="javascript:void(0)"
+                                   onclick="openDisableLockModal({{ $note->id }})">
+                                    <span class="material-symbols-outlined fn-icon-sm">no_encryption</span>
+                                    Gỡ khoá
+                                </a>
+                            </li>
+                        @else
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                                   href="javascript:void(0)"
+                                   onclick="openEnableLockModal({{ $note->id }})">
+                                    <span class="material-symbols-outlined fn-icon-sm">lock</span>
+                                    Khoá bằng mật khẩu
+                                </a>
+                            </li>
+                        @endif
+                    </ul>
+                </div>
                 @endif
                 <span class="fnp-shortcut-hint">
                 </span>
@@ -61,6 +99,7 @@
             @endif
         </div>
     </div>
+
 
     {{-- ── Editor container ─────────────────────────────── --}}
     <div class="fnp-editor-wrap">
@@ -189,6 +228,7 @@
     </div>
 </div>
 
+@include('components::note-lock-modals')
 @include('components::note-share-modal')
 
 @endsection
@@ -233,9 +273,10 @@
     window.__FNP_NOTE_CONTENT = @json($note?->content ?? '');
     window.__FNP_LABEL_IDS    = @json($note ? $note->labels->pluck('id') : []);
     window.__FNP_ATTACHMENTS  = @json($fnpAttachments);
-    window.__FNP_IS_OWNER     = {{ $isOwner ? 'true' : 'false' }};
-    window.__FNP_LOCKED       = {{ ($note?->is_locked) ? 'true' : 'false' }};
-    window.__FNP_ALL_LABELS   = @json($labels->map(fn($l) => ['id' => $l->id, 'name' => $l->name]));
+    window.__FNP_IS_OWNER        = {{ $isOwner ? 'true' : 'false' }};
+    window.__FNP_LOCKED          = {{ ($note?->is_locked) ? 'true' : 'false' }};
+    window.__FNP_SHARE_PERMISSION = @json($sharePermission);  // 'edit'|'view'|null
+    window.__FNP_ALL_LABELS      = @json($labels->map(fn($l) => ['id' => $l->id, 'name' => $l->name]));
     window.__FNP_CAN_EDIT_LABELS = {{ ($isOwner || $sharePermission === 'edit') ? 'true' : 'false' }};
 </script>
 
