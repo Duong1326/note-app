@@ -14,6 +14,28 @@ use App\Http\Controllers\ProfileController;
 
 Route::get('/', [AuthController::class, 'redirectHome'])->name('home');
 
+// Public health check endpoint
+Route::get('/health', function () {
+    $status = 'ok';
+    $checks = [];
+
+    // Check database connectivity
+    try {
+        \DB::connection()->getPdo();
+        $checks['database'] = 'ok';
+    } catch (\Exception $e) {
+        $checks['database'] = 'error';
+        $status = 'degraded';
+    }
+
+    return response()->json([
+        'status'    => $status,
+        'timestamp' => now()->toIso8601String(),
+        'app'       => config('app.name'),
+        'env'       => config('app.env'),
+        'checks'    => $checks,
+    ], $status === 'ok' ? 200 : 503);
+})->name('health');
 
 //guest
 Route::middleware('guest')->group(function () {
