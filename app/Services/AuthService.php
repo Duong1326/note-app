@@ -37,12 +37,6 @@ class AuthService
                 new VerificationCodeMail($otp, $data['name'])
             );
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Lỗi gửi mail đăng ký: ' . $e->getMessage(), [
-                'class' => get_class($e),
-                'file'  => $e->getFile(),
-                'line'  => $e->getLine(),
-            ]);
-            $detail = config('app.debug') ? ' [DEBUG: ' . get_class($e) . ': ' . $e->getMessage() . ']' : '';
             throw ValidationException::withMessages([
                 'email' => ['Hệ thống đang gặp sự cố khi gửi email. Vui lòng thử lại sau.' . $detail],
             ]);
@@ -118,8 +112,8 @@ class AuthService
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Lỗi gửi lại mail OTP: ' . $e->getMessage(), [
                 'class' => get_class($e),
-                'file'  => $e->getFile(),
-                'line'  => $e->getLine(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ]);
             $detail = config('app.debug') ? ' [DEBUG: ' . get_class($e) . ': ' . $e->getMessage() . ']' : '';
             throw ValidationException::withMessages([
