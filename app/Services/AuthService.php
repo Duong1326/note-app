@@ -38,7 +38,7 @@ class AuthService
             );
         } catch (\Throwable $e) {
             throw ValidationException::withMessages([
-                'email' => ['Hệ thống đang gặp sự cố khi gửi email. Vui lòng thử lại sau.' . $detail],
+                'email' => ['Hệ thống đang gặp sự cố khi gửi email. Vui lòng thử lại sau.'],
             ]);
         }
     }
