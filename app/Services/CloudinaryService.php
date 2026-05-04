@@ -32,31 +32,31 @@ class CloudinaryService
             $uploadApi = new UploadApi($this->cloudinary->configuration);
 
             $result = $uploadApi->upload($file->getRealPath(), [
-                'folder'         => 'notes/' . $noteId,
-                'resource_type'  => 'image',
+                'folder' => 'notes/' . $noteId,
+                'resource_type' => 'image',
                 'transformation' => [
                     [
-                        'width'        => 2048,
-                        'crop'         => 'limit',          // Giới hạn max width, không phóng to ảnh nhỏ
-                        'quality'      => 'auto',
+                        'width' => 2048,
+                        'crop' => 'limit',          // Giới hạn max width, không phóng to ảnh nhỏ
+                        'quality' => 'auto',
                         'fetch_format' => 'auto',
                     ],
                 ],
-                'eager'          => [
+                'eager' => [
                     ['width' => 400, 'height' => 400, 'crop' => 'fill', 'quality' => 'auto', 'fetch_format' => 'auto'],
                 ],
-                'eager_async'    => true,                   // Tạo thumbnail async, không chặn upload
+                'eager_async' => true,                   // Tạo thumbnail async, không chặn upload
             ]);
 
             return [
-                'public_id'  => $result['public_id'],
+                'public_id' => $result['public_id'],
                 'secure_url' => $result['secure_url'],
-                'bytes'      => $result['bytes'] ?? 0,
-                'format'     => $result['format'] ?? '',
+                'bytes' => $result['bytes'] ?? 0,
+                'format' => $result['format'] ?? '',
             ];
         } catch (Exception $e) {
-            Log::error('Cloudinary upload failed: ' . $e->getMessage());
-            throw new Exception('Image upload failed. Please try again.');
+            Log::error('Lỗi khi tải ảnh: ' . $e->getMessage());
+            throw new Exception('Không thể tải ảnh lên lúc này. Vui lòng thử lại sau.');
         }
     }
 
@@ -75,29 +75,29 @@ class CloudinaryService
             $uploadApi = new UploadApi($this->cloudinary->configuration);
 
             $result = $uploadApi->upload($file->getRealPath(), [
-                'folder'          => 'avatars/' . $userId,
-                'resource_type'   => 'image',
-                'overwrite'       => true,
+                'folder' => 'avatars/' . $userId,
+                'resource_type' => 'image',
+                'overwrite' => true,
                 // Nén và crop ngay lúc upload → file lưu trữ nhỏ hơn, URL trả về đã tối ưu
-                'transformation'  => [
+                'transformation' => [
                     [
-                        'width'        => 400,
-                        'height'       => 400,
-                        'crop'         => 'fill',
-                        'gravity'      => 'face',
-                        'quality'      => 'auto',
+                        'width' => 400,
+                        'height' => 400,
+                        'crop' => 'fill',
+                        'gravity' => 'face',
+                        'quality' => 'auto',
                         'fetch_format' => 'auto',
                     ],
                 ],
             ]);
 
             return [
-                'public_id'  => $result['public_id'],
+                'public_id' => $result['public_id'],
                 'secure_url' => $result['secure_url'],
             ];
         } catch (Exception $e) {
-            Log::error('Cloudinary avatar upload failed: ' . $e->getMessage());
-            throw new Exception('Avatar upload failed. Please try again.');
+            Log::error('Lỗi khi tải ảnh lên: ' . $e->getMessage());
+            throw new Exception('Không thể tải ảnh lên lúc này. Vui lòng thử lại sau.');
         }
     }
 

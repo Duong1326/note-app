@@ -20,13 +20,13 @@
     document.addEventListener('DOMContentLoaded', () => {
 
         // ── 1. Read Blade-injected globals ─────────────────────────────────────
-        const noteId      = window.__FNP_EDIT_NOTE_ID ?? null;  // null = create mode
-        const title       = window.__FNP_NOTE_TITLE   ?? '';
-        const content     = window.__FNP_NOTE_CONTENT ?? '';
-        const labelIds    = window.__FNP_LABEL_IDS    ?? [];
-        const attachments = window.__FNP_ATTACHMENTS  ?? [];
-        const isOwner     = window.__FNP_IS_OWNER     ?? false;
-        const isLocked    = window.__FNP_LOCKED       ?? false;
+        const noteId = window.__FNP_EDIT_NOTE_ID ?? null;  // null = create mode
+        const title = window.__FNP_NOTE_TITLE ?? '';
+        const content = window.__FNP_NOTE_CONTENT ?? '';
+        const labelIds = window.__FNP_LABEL_IDS ?? [];
+        const attachments = window.__FNP_ATTACHMENTS ?? [];
+        const isOwner = window.__FNP_IS_OWNER ?? false;
+        const isLocked = window.__FNP_LOCKED ?? false;
 
         const isCreateMode = noteId === null;
 
@@ -101,7 +101,7 @@
                     const node = sel.focusNode;
                     if (node && node.nodeType === Node.TEXT_NODE) {
                         const text = node.textContent;
-                        const pos  = sel.focusOffset;
+                        const pos = sel.focusOffset;
                         if (pos > 0 && text[pos - 1] === '/') {
                             if (typeof showSlashMenu === 'function') showSlashMenu();
                         }
@@ -166,8 +166,8 @@
 
         window.closeNewNoteModal = function () {
             // Identical teardown as original closeNewNoteModal
-            if (typeof autoSaveCancel      === 'function') autoSaveCancel();
-            if (typeof closeImgPicker      === 'function') closeImgPicker();
+            if (typeof autoSaveCancel === 'function') autoSaveCancel();
+            if (typeof closeImgPicker === 'function') closeImgPicker();
             if (typeof closeSlashImgPicker === 'function') closeSlashImgPicker();
 
             if (isCreateMode && _createdNoteId) {
@@ -211,18 +211,18 @@
                 // Token verified on dashboard → open immediately.
                 // For edit-capable users: enable editing. For view-only: stays read-only (Blade sets that).
                 if (canEdit) {
-                    if (editor)     editor.contentEditable = 'true';
+                    if (editor) editor.contentEditable = 'true';
                     if (titleInput) titleInput.readOnly = false;
                 }
             } else if (canEdit) {
                 // No pre-stored token and user can edit → lock the editor and prompt.
-                if (editor)     editor.contentEditable = 'false';
+                if (editor) editor.contentEditable = 'false';
                 if (titleInput) titleInput.readOnly = true;
 
                 if (typeof requireUnlock === 'function') {
                     requireUnlock(noteId, (token) => {
                         window._editLockToken = token;
-                        if (editor)     editor.contentEditable = 'true';
+                        if (editor) editor.contentEditable = 'true';
                         if (titleInput) { titleInput.readOnly = false; titleInput.focus(); }
                     });
                 }
@@ -344,7 +344,7 @@
 
         console.log('[FNP] Applying remote update from', data.updated_by?.name, '| noteId:', data.note_id);
 
-        const titleInput   = document.getElementById('modalNoteTitle');
+        const titleInput = document.getElementById('modalNoteTitle');
         const contentEditor = document.getElementById('modalNoteContent');
 
         // Cập nhật tiêu đề
