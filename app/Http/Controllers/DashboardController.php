@@ -17,16 +17,6 @@ class DashboardController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $notesQuery = $user->notes();
-
-        if ($request->filled('q')) {
-            $q = $request->q;
-            $notesQuery->where(function ($query) use ($q) {
-                $query->where('title', 'like', "%{$q}%")
-                    ->orWhere('content', 'like', "%{$q}%");
-            });
-        }
-
         $isSearch = $request->filled('q');
 
         $notesQuery = $user->notes()->with(['labels', 'attachments', 'shares']);

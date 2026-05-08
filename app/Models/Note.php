@@ -99,30 +99,63 @@ class Note extends Model
     /**
      * Full-text keyword search on title and content.
      *
-     * Uses MySQL FULLTEXT MATCH...AGAINST for queries ≥ 3 chars
+     * Uses MySQL FULLTEXT MATCH...AGAINST when at least one word meets
+     * the InnoDB ft_min_word_len (default 3). Falls back to a LIKE-based
+     * search when all words are too short for FULLTEXT to index them.
+     *
+     * For multi-word queries the LIKE fallback applies AND logic — every
+     * word must appear in either title or content.
+     *
      * (requires the ft_notes_search index added in the 2026_04_29 migration).
-     * Falls back to LIKE for very short queries.
      */
     public function scopeSearch(Builder $query, string $keyword): Builder
     {
         $clean = trim($keyword);
 
-        // FULLTEXT requires at least 3 meaningful characters
-        if (mb_strlen($clean) >= 3) {
-            // IN BOOLEAN MODE allows partial-word matches with a trailing *
-            $safeKeyword = str_replace(['*', '+', '-', '~', '<', '>', '(', ')', '"', '@', ' '], ' ', $clean);
-            $ftQuery     = '+' . implode('* +', array_filter(explode(' ', $safeKeyword))) . '*';
-
-            return $query->whereRaw(
-                'MATCH(title, content) AGAINST(? IN BOOLEAN MODE)',
-                [$ftQuery]
-            );
+        if ($clean === '') {
+            return $query;
         }
 
-        // Fallback: LIKE for very short queries (1-2 chars)
-        return $query->where(function (Builder $q) use ($clean) {
-            $q->where('title', 'like', "%{$clean}%")
-              ->orWhere('content', 'like', "%{$clean}%");
+        // Split into individual words (handles multiple spaces)
+        $words = array_values(array_filter(preg_split('/\s+/u', $clean)));
+
+        // InnoDB FULLTEXT default minimum word length is 3 characters.
+        // Only attempt FULLTEXT if at least one word meets this threshold.
+        $ftMinWordLen  = 3;
+        $longWords     = array_filter($words, fn (string $w) => mb_strlen($w) >= $ftMinWordLen);
+
+        if (count($longWords) > 0) {
+            // Build the BOOLEAN MODE query with only words long enough
+            // to be indexed. Short words are silently ignored by MySQL
+            // anyway, so including them would cause zero matches.
+            $safeWords = [];
+            foreach ($longWords as $w) {
+                // Strip special FULLTEXT operators
+                $safe = str_replace(['*', '+', '-', '~', '<', '>', '(', ')', '"', '@'], '', $w);
+                if ($safe !== '') {
+                    $safeWords[] = '+' . $safe . '*';
+                }
+            }
+
+            if (count($safeWords) > 0) {
+                $ftQuery = implode(' ', $safeWords);
+
+                return $query->whereRaw(
+                    'MATCH(title, content) AGAINST(? IN BOOLEAN MODE)',
+                    [$ftQuery]
+                );
+            }
+        }
+
+        // Fallback: LIKE-based search.
+        // Each word must appear in title OR content (AND across words).
+        return $query->where(function (Builder $outer) use ($words) {
+            foreach ($words as $word) {
+                $outer->where(function (Builder $q) use ($word) {
+                    $q->where('title', 'like', '%' . $word . '%')
+                      ->orWhere('content', 'like', '%' . $word . '%');
+                });
+            }
         });
     }
 

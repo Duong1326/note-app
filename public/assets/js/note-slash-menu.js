@@ -106,7 +106,7 @@ function _buildMenuItems(filter) {
     list.innerHTML = filtered.map((cmd, idx) => `
         <div class="fn-slash-item${idx === _slashMenuIndex ? ' active' : ''}"
              data-cmd-id="${cmd.id}"
-             onmousedown="executeSlashCommand('${cmd.id}')">
+             onmousedown="event.preventDefault(); executeSlashCommand('${cmd.id}')">
             <div class="fn-slash-item-icon">
                 <span class="material-symbols-outlined">${cmd.icon}</span>
             </div>
@@ -527,6 +527,9 @@ function _insertHeadingBlock(tag = 'h2') {
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);
+
+    // Restore focus so the user can type immediately
+    editor.focus();
 }
 
 // ═══════════════════════════════════════════════════
@@ -558,6 +561,9 @@ function _insertListBlock(tag = 'ul') {
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);
+
+    // Restore focus so the user can type immediately
+    editor.focus();
 }
 
 // ═══════════════════════════════════════════════════

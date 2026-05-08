@@ -7,6 +7,8 @@
     <title>Đặt lại mật khẩu | {{ config('app.name', 'Fluid Notes') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
 </head>
@@ -58,16 +60,29 @@
 
                         <div class="mb-3">
                             <label for="password" class="form-label fw-medium small">Mật khẩu mới</label>
-                            <input id="password" type="password" name="password" required autofocus class="form-control"
-                                placeholder="Nhập mật khẩu mới">
+                            <div class="auth-pw-wrap">
+                                <input id="password" type="password" name="password" required autofocus
+                                    class="form-control" placeholder="Nhập mật khẩu mới">
+                                <button type="button" class="auth-pw-eye" onclick="toggleAuthPw('password', this)"
+                                    tabindex="-1" aria-label="Hiện mật khẩu">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                </button>
+                            </div>
                             <p class="password-hint">Mật khẩu gồm tối thiểu 6 ký tự</p>
                         </div>
 
                         <div class="mb-3">
                             <label for="password_confirmation" class="form-label fw-medium small">Xác nhận mật
                                 khẩu</label>
-                            <input id="password_confirmation" type="password" name="password_confirmation" required
-                                class="form-control" placeholder="Nhập lại mật khẩu">
+                            <div class="auth-pw-wrap">
+                                <input id="password_confirmation" type="password" name="password_confirmation" required
+                                    class="form-control" placeholder="Nhập lại mật khẩu">
+                                <button type="button" class="auth-pw-eye"
+                                    onclick="toggleAuthPw('password_confirmation', this)" tabindex="-1"
+                                    aria-label="Hiện mật khẩu">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                </button>
+                            </div>
                         </div>
 
                         <button type="submit" class="btn btn-dark btn-auth w-100">
@@ -85,6 +100,16 @@
     </main>
 
     <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+    <script>
+        function toggleAuthPw(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            const icon = btn.querySelector('.material-symbols-outlined');
+            if (icon) icon.textContent = isHidden ? 'visibility_off' : 'visibility';
+        }
+    </script>
 </body>
 
 </html>

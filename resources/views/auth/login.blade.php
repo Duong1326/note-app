@@ -7,6 +7,8 @@
     <title>Đăng nhập | {{ config('app.name', 'Fluid Notes') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
 </head>
@@ -75,8 +77,14 @@
                                 <label for="password" class="form-label fw-medium small mb-0">Mật khẩu</label>
                                 <a href="{{ route('password.request') }}" class="forgot-link">Quên mật khẩu?</a>
                             </div>
-                            <input id="password" type="password" name="password" required class="form-control"
-                                placeholder="Nhập mật khẩu">
+                            <div class="auth-pw-wrap">
+                                <input id="password" type="password" name="password" required class="form-control"
+                                    placeholder="Nhập mật khẩu">
+                                <button type="button" class="auth-pw-eye" onclick="toggleAuthPw('password', this)"
+                                    tabindex="-1" aria-label="Hiện mật khẩu">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                </button>
+                            </div>
                         </div>
 
                         <label class="remember-wrapper">
@@ -98,10 +106,17 @@
         </div>
     </main>
 
-<<<<<<< HEAD
     <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
-=======
->>>>>>> 7c33b04fb21603edb1367ea3541a57c2ee6c96c6
+    <script>
+        function toggleAuthPw(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            const icon = btn.querySelector('.material-symbols-outlined');
+            if (icon) icon.textContent = isHidden ? 'visibility_off' : 'visibility';
+        }
+    </script>
 </body>
 
 </html>

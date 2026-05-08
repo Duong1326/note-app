@@ -8,8 +8,6 @@
     transition: opacity var(--fn-transition-fast);
 }
 
-
-
 .note-col[data-locked="1"] .fn-note-card::after {
     content: '';
     position: absolute;
@@ -40,11 +38,6 @@
 .fn-lock-icon-wrap .material-symbols-outlined {
     font-size: 22px;
     color: var(--fn-on-primary);
-}
-
-.fn-lock-icon-wrap.fn-lock-change {
-    background: #7c3aed;
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
 }
 
 .fn-lock-icon-wrap.fn-lock-danger {
