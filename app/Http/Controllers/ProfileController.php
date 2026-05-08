@@ -6,6 +6,7 @@ use App\Services\CloudinaryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -77,6 +78,40 @@ class ProfileController extends Controller
         return response()->json([
             'success'    => true,
             'avatar_url' => $user->avatarUrl(),
+        ]);
+    }
+
+    // ──────────────────────────────────────────────
+    // Change account password
+    // ──────────────────────────────────────────────
+
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'current_password' => ['required', 'string'],
+            'password'         => ['required', 'string', 'min:6', 'confirmed'],
+        ], [
+            'current_password.required' => 'Vui lòng nhập mật khẩu hiện tại.',
+            'password.required'         => 'Vui lòng nhập mật khẩu mới.',
+            'password.min'              => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            'password.confirmed'        => 'Xác nhận mật khẩu không khớp.',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'errors' => ['current_password' => ['Mật khẩu hiện tại không đúng.']],
+            ], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đổi mật khẩu thành công!',
         ]);
     }
 }

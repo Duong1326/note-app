@@ -348,6 +348,11 @@
     transform: scale(0.97);
 }
 
+.fn-btn-primary--sm {
+    padding: 0.625rem 1.5rem;
+    font-size: 0.8125rem;
+}
+
 .fn-btn-ghost {
     padding: 0.75rem 1.5rem;
     background: transparent;
@@ -364,6 +369,82 @@
     color: var(--fn-on-surface);
 }
 
+/* ── Collapsible Password Change Panel ─────── */
+.fn-security-row--expandable {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.fn-pw-collapse {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s ease,
+                margin-top 0.3s ease;
+    margin-top: 0;
+}
+
+.fn-pw-collapse.fn-pw-collapse--open {
+    max-height: 600px;
+    opacity: 1;
+    margin-top: 1.5rem;
+}
+
+.fn-pw-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    background: var(--fn-surface);
+    border: 1px solid var(--fn-outline-variant);
+    border-radius: 0.75rem;
+}
+
+.fn-pw-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.fn-pw-input-wrap {
+    position: relative;
+}
+
+.fn-pw-input-wrap .fn-form-input {
+    padding-right: 3rem;
+}
+
+.fn-pw-eye {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--fn-on-surface-variant);
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.fn-pw-eye:hover {
+    color: var(--fn-primary);
+}
+
+.fn-pw-eye .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.fn-pw-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
 /* ── Responsive ─────────────────────────────── */
 @media (max-width: 767.98px) {
     .fn-profile-header h1 {
@@ -377,5 +458,19 @@
     .fn-security-row {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .fn-pw-form {
+        padding: 1rem;
+    }
+
+    .fn-pw-actions {
+        flex-direction: column;
+    }
+
+    .fn-pw-actions .fn-btn-ghost,
+    .fn-pw-actions .fn-btn-primary--sm {
+        width: 100%;
+        text-align: center;
     }
 }

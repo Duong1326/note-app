@@ -87,12 +87,75 @@
 
                     <div class="d-flex flex-column gap-4">
                         {{-- Password --}}
-                        <div class="fn-security-row">
-                            <div>
-                                <h4 class="fn-security-label">Mật khẩu</h4>
-                                <p class="fn-security-desc">Giữ tài khoản của bạn an toàn với mật khẩu mạnh.</p>
+                        <div class="fn-security-row fn-security-row--expandable">
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div>
+                                    <h4 class="fn-security-label">Mật khẩu</h4>
+                                    <p class="fn-security-desc">Giữ tài khoản của bạn an toàn với mật khẩu mạnh.</p>
+                                </div>
+                                <button type="button" class="fn-btn-outline" id="btnTogglePassword">
+                                    <span class="material-symbols-outlined"
+                                        style="font-size:18px;vertical-align:middle;margin-right:4px">lock_reset</span>
+                                    Đổi mật khẩu
+                                </button>
                             </div>
-                            <a href="{{ route('password.request') }}" class="fn-btn-outline">Đổi mật khẩu</a>
+
+                            {{-- Collapsible password form --}}
+                            <div class="fn-pw-collapse" id="passwordCollapsePanel">
+                                <form id="changePasswordForm" class="fn-pw-form" autocomplete="off">
+                                    @csrf
+                                    <div class="fn-pw-field">
+                                        <label class="fn-form-label" for="currentPassword">Mật khẩu hiện tại</label>
+                                        <div class="fn-pw-input-wrap">
+                                            <input type="password" id="currentPassword" name="current_password"
+                                                class="fn-form-input" placeholder="Nhập mật khẩu hiện tại" required
+                                                autocomplete="current-password">
+                                            <button type="button" class="fn-pw-eye"
+                                                onclick="toggleProfilePw('currentPassword', this)" tabindex="-1">
+                                                <span class="material-symbols-outlined">visibility_off</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="fn-pw-field">
+                                        <label class="fn-form-label" for="newPassword">Mật khẩu mới</label>
+                                        <div class="fn-pw-input-wrap">
+                                            <input type="password" id="newPassword" name="password" class="fn-form-input"
+                                                placeholder="Tối thiểu 6 ký tự" required minlength="6"
+                                                autocomplete="new-password">
+                                            <button type="button" class="fn-pw-eye"
+                                                onclick="toggleProfilePw('newPassword', this)" tabindex="-1">
+                                                <span class="material-symbols-outlined">visibility_off</span>
+                                            </button>
+                                        </div>
+                                        <p class="fn-form-hint">
+                                            <span class="material-symbols-outlined">info</span>
+                                            Mật khẩu gồm tối thiểu 6 ký tự
+                                        </p>
+                                    </div>
+
+                                    <div class="fn-pw-field">
+                                        <label class="fn-form-label" for="confirmPassword">Xác nhận mật khẩu mới</label>
+                                        <div class="fn-pw-input-wrap">
+                                            <input type="password" id="confirmPassword" name="password_confirmation"
+                                                class="fn-form-input" placeholder="Nhập lại mật khẩu mới" required
+                                                autocomplete="new-password">
+                                            <button type="button" class="fn-pw-eye"
+                                                onclick="toggleProfilePw('confirmPassword', this)" tabindex="-1">
+                                                <span class="material-symbols-outlined">visibility_off</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="fn-pw-actions">
+                                        <button type="button" class="fn-btn-ghost" id="btnCancelPassword">Hủy</button>
+                                        <button type="submit" class="fn-btn-primary fn-btn-primary--sm"
+                                            id="btnSubmitPassword">
+                                            Cập nhật mật khẩu
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -101,6 +101,7 @@ Route::middleware(['auth', \App\Http\Middleware\PreventBackHistory::class])->gro
     // Profile
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
 
     // Note Sharing

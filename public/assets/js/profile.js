@@ -244,3 +244,103 @@ function setHeaderAvatar(url) {
         current.replaceWith(img);
     }
 }
+
+// ═════════════════════════════════════════════════
+// Password Change Panel – toggle, submit, eye
+// ═════════════════════════════════════════════════
+
+function toggleProfilePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    const icon = btn.querySelector('.material-symbols-outlined');
+    if (icon) icon.textContent = isHidden ? 'visibility' : 'visibility_off';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleBtn   = document.getElementById('btnTogglePassword');
+    const cancelBtn   = document.getElementById('btnCancelPassword');
+    const panel       = document.getElementById('passwordCollapsePanel');
+    const pwForm      = document.getElementById('changePasswordForm');
+
+    if (!toggleBtn || !panel) return;
+
+    // Toggle open/close
+    toggleBtn.addEventListener('click', () => {
+        const isOpen = panel.classList.contains('fn-pw-collapse--open');
+        if (isOpen) {
+            closePanel();
+        } else {
+            panel.classList.add('fn-pw-collapse--open');
+            toggleBtn.querySelector('.material-symbols-outlined').textContent = 'lock_open';
+            // Focus first input after animation
+            setTimeout(() => {
+                document.getElementById('currentPassword')?.focus();
+            }, 300);
+        }
+    });
+
+    // Cancel button
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => closePanel());
+    }
+
+    function closePanel() {
+        panel.classList.remove('fn-pw-collapse--open');
+        toggleBtn.querySelector('.material-symbols-outlined').textContent = 'lock_reset';
+        if (pwForm) pwForm.reset();
+        // Reset eye icons
+        panel.querySelectorAll('.fn-pw-eye .material-symbols-outlined').forEach(icon => {
+            icon.textContent = 'visibility_off';
+        });
+        panel.querySelectorAll('.fn-form-input').forEach(input => {
+            input.type = 'password';
+        });
+    }
+
+    // AJAX submit
+    if (pwForm) {
+        pwForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('btnSubmitPassword');
+            const originalHTML = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Đang xử lý…';
+
+            try {
+                const formData = new URLSearchParams(new FormData(pwForm));
+
+                const res = await fetch('/profile/password', {
+                    method: 'PUT',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                    },
+                    body: formData,
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    const msg = data.errors
+                        ? Object.values(data.errors).flat()[0]
+                        : (data.message || 'Có lỗi xảy ra');
+                    showToast(msg, 'error');
+                    return;
+                }
+
+                showToast(data.message || 'Đổi mật khẩu thành công!', 'success');
+                closePanel();
+            } catch {
+                showToast('Lỗi kết nối, vui lòng thử lại', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHTML;
+            }
+        });
+    }
+});
+
