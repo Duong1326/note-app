@@ -53,10 +53,12 @@ async function togglePinAjax(noteId, currentlyPinned) {
             const headers = token ? { 'X-Note-Token': token } : {};
             const res = await apiFetch(url, 'POST', null, headers);
             if (!res.ok) throw new Error('Failed to toggle pin state');
-            const { is_pinned: isPinned } = await res.json();
+            const data = await res.json();
+            const isPinned = data.is_pinned;
+            const updatedAt = data.updated_at;
             const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
             if (col) {
-                patchPinCard(col, noteId, isPinned);
+                patchPinCard(col, noteId, isPinned, updatedAt);
                 moveCardAfterPin(col, isPinned);
             }
         } catch (err) {

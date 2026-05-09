@@ -169,6 +169,7 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--fn-on-surface-variant);
+    padding-right: 20px;
 }
 
 .fn-note-labels {
@@ -259,6 +260,17 @@
     flex-shrink: 0;
     order: 99;
     margin-left: auto;
+}
+
+/* ── List View: Compact Thumbnail ────────────── */
+.fn-view-list .fn-note-thumb {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    flex-shrink: 0;
+    order: -1;
 }
 
 .fn-view-list .fn-note-card-header {
@@ -472,6 +484,13 @@
     .fn-view-list .fn-note-card-header {
         width: auto;
         flex: 1;
+    }
+
+    .fn-view-list .fn-note-thumb {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 0.375rem;
     }
 }
 

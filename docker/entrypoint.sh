@@ -80,7 +80,7 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-echo "Application is ready! Visit http://localhost:8080"
+echo "Application is ready! Visit http://localhost"
 
 # Start queue worker in background
 echo "Starting queue worker..."

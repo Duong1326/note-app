@@ -86,7 +86,7 @@ function patchNoteCard(noteId, note) {
 
 }
 
-function patchPinCard(col, noteId, isPinned) {
+function patchPinCard(col, noteId, isPinned, updatedAt) {
     const pinLink = col.querySelector('.dropdown-menu li:nth-child(2) a');
     if (pinLink) {
         const icon = pinLink.querySelector('.material-symbols-outlined');
@@ -100,6 +100,13 @@ function patchPinCard(col, noteId, isPinned) {
 
         pinLink.setAttribute('onclick', `togglePinAjax(${noteId}, ${isPinned})`);
     }
+
+    // Cập nhật thời gian hiển thị trên card
+    if (updatedAt) {
+        const dateEl = col.querySelector('.fn-note-date');
+        if (dateEl) dateEl.textContent = updatedAt;
+    }
+
     const meta = col.querySelector('.fn-note-meta');
     const starEl = meta.querySelector('.fn-pin-star');
     if (isPinned && !starEl) {

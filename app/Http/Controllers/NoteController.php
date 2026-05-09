@@ -142,10 +142,14 @@ class NoteController extends Controller
             'Bạn không có quyền ghim ghi chú này.'
         );
 
-        $this->noteService->pin($note);
+        $note = $this->noteService->pin($note);
 
         if (request()->expectsJson()) {
-            return response()->json(['success' => true, 'is_pinned' => true]);
+            return response()->json([
+                'success'    => true,
+                'is_pinned'  => true,
+                'updated_at' => $note->updated_at->diffForHumans(),
+            ]);
         }
 
         return back();
@@ -159,10 +163,14 @@ class NoteController extends Controller
             'Bạn không có quyền bỏ ghim ghi chú này.'
         );
 
-        $this->noteService->unpin($note);
+        $note = $this->noteService->unpin($note);
 
         if (request()->expectsJson()) {
-            return response()->json(['success' => true, 'is_pinned' => false]);
+            return response()->json([
+                'success'    => true,
+                'is_pinned'  => false,
+                'updated_at' => $note->updated_at->diffForHumans(),
+            ]);
         }
 
         return back();

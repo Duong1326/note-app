@@ -106,8 +106,9 @@ class NoteService
     public function pin(Note $note): Note
     {
         $note->update([
-            'is_pinned' => true,
-            'pinned_at' => now(),
+            'is_pinned'  => true,
+            'pinned_at'  => now(),
+            'updated_at' => now(),
         ]);
 
         return $note;
@@ -116,8 +117,9 @@ class NoteService
     public function unpin(Note $note): Note
     {
         $note->update([
-            'is_pinned' => false,
-            'pinned_at' => null,
+            'is_pinned'  => false,
+            'pinned_at'  => null,
+            'updated_at' => now(),
         ]);
 
         return $note;
