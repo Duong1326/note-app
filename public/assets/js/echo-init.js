@@ -61,6 +61,9 @@ function _subscribeToUserChannel() {
     if (!userId) return;
 
     window.EchoInstance.private(`user.${userId}`)
+        .listen('.note.created', (data) => {
+            _handleNoteCreated(data);
+        })
         .listen('.note.shared', (data) => {
             _handleNoteShared(data);
         })
@@ -81,6 +84,52 @@ function _subscribeToUserChannel() {
 }
 
 /* ── Event Handlers ────────────────────────────────── */
+function _handleNoteCreated(data) {
+    const note       = data.note;
+    const wsId       = data.workspace_id;
+    const createdBy  = data.created_by;
+
+    // Only inject card when the user is on the dashboard for the SAME workspace
+    const container = document.getElementById('notesContainer');
+    if (!container) return;
+    if (window.__activeWorkspaceId && String(window.__activeWorkspaceId) !== String(wsId)) return;
+
+    // Toast notification
+    const notification = {
+        id: Date.now(),
+        type: 'share',
+        icon: 'note_add',
+        title: 'Ghi chú mới',
+        message: `<strong>${createdBy.name}</strong> đã tạo "${_truncate(note.title || 'Không có tiêu đề', 30)}"`,
+        avatarUrl: createdBy.avatar_url,
+        noteId: note.id,
+        time: new Date(),
+        unread: true,
+    };
+    _addNotification(notification);
+    _showRealtimeToast(notification);
+
+    // Inject card into DOM (skip if card already exists)
+    if (container.querySelector(`[data-note-id="${note.id}"]`)) return;
+
+    if (typeof buildNoteCardHtml === 'function') {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = buildNoteCardHtml(note);
+        const col = tmp.firstElementChild;
+        if (col) {
+            col.classList.add('fn-animate-in');
+            // Insert after pinned cards (pinned notes always come first)
+            const firstUnpinned = container.querySelector('.note-col:not([data-pinned])') ||
+                                  container.querySelector('.note-col');
+            if (firstUnpinned) {
+                container.insertBefore(col, firstUnpinned);
+            } else {
+                container.insertAdjacentElement('afterbegin', col);
+            }
+        }
+    }
+}
+
 function _handleNoteDeleted(data) {
     // Show toast notification
     const notification = {
@@ -95,6 +144,17 @@ function _handleNoteDeleted(data) {
     };
     _addNotification(notification);
     _showRealtimeToast(notification);
+
+    // Remove from main workspace notes container (owner/member dashboard)
+    const ownerCol = document.querySelector(
+        `#notesContainer .note-col[data-note-id="${data.note_id}"]`
+    );
+    if (ownerCol) {
+        ownerCol.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+        ownerCol.style.opacity = '0';
+        ownerCol.style.transform = 'scale(0.85)';
+        setTimeout(() => ownerCol.remove(), 380);
+    }
 
     // Remove from shared notes container with fade-out animation
     const sharedCol = document.querySelector(
@@ -177,16 +237,23 @@ function _handleNoteUpdated(data) {
         ? (attachments[0].thumbnail_url || attachments[0].url)
         : null;
 
-    // ── Update card in DOM (owner view: #notesContainer) ───────────
-    const ownerCol = document.querySelector(`#notesContainer .note-col[data-note-id="${data.note_id}"]`);
-    if (ownerCol) {
-        const titleEl = ownerCol.querySelector('.fn-note-title');
-        if (titleEl) titleEl.textContent = data.note_title;
-        const excerptEl = ownerCol.querySelector('.fn-note-excerpt');
-        if (excerptEl) excerptEl.textContent = excerpt;
-        const dateEl = ownerCol.querySelector('.fn-note-date');
-        if (dateEl) dateEl.textContent = 'Vừa cập nhật';
-        _updateCardThumbnail(ownerCol, thumbUrl);
+    // ── Update card in DOM (owner/member workspace view: #notesContainer) ───
+    // Only update if the user is currently viewing the same workspace
+    const activeWsId = window.__activeWorkspaceId;
+    const noteWsId   = data.workspace_id;
+    const sameWorkspace = !activeWsId || !noteWsId || String(activeWsId) === String(noteWsId);
+
+    if (sameWorkspace) {
+        const ownerCol = document.querySelector(`#notesContainer .note-col[data-note-id="${data.note_id}"]`);
+        if (ownerCol) {
+            const titleEl = ownerCol.querySelector('.fn-note-title');
+            if (titleEl) titleEl.textContent = data.note_title;
+            const excerptEl = ownerCol.querySelector('.fn-note-excerpt');
+            if (excerptEl) excerptEl.textContent = excerpt;
+            const dateEl = ownerCol.querySelector('.fn-note-date');
+            if (dateEl) dateEl.textContent = 'Vừa cập nhật';
+            _updateCardThumbnail(ownerCol, thumbUrl);
+        }
     }
 
     // ── Update card in DOM (shared user view: #sharedNotesContainer) ──

@@ -10,6 +10,33 @@
  */
 
 // ═══════════════════════════════════════════════════
+// Permission pre-check before opening note editor
+// ═══════════════════════════════════════════════════
+
+/**
+ * Checks /notes/{id}/can-edit (JSON, lightweight).
+ * On 403 → shows a toast popup on the current screen.
+ * On 200 → navigates to the note editor.
+ */
+window.openNoteOrToast = async function (noteId, editUrl) {
+    try {
+        const res = await apiFetch('/notes/' + noteId + '/can-edit', 'GET');
+        if (res.ok) {
+            try { sessionStorage.setItem('fn_return_url', window.location.href); } catch (_) {}
+            window.location.href = editUrl;
+        } else {
+            let msg = 'Bạn không có quyền truy cập ghi chú này.';
+            try { const d = await res.json(); msg = d.message || msg; } catch (_) {}
+            if (typeof showToast === 'function') showToast(msg, 'error');
+        }
+    } catch (err) {
+        // Network error — navigate anyway and let server handle it
+        try { sessionStorage.setItem('fn_return_url', window.location.href); } catch (_) {}
+        window.location.href = editUrl;
+    }
+};
+
+// ═══════════════════════════════════════════════════
 // View Toggle (grid / list)
 // ═══════════════════════════════════════════════════
 
@@ -165,15 +192,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // requireUnlock checks data-locked on the col; if not locked it calls callback(null) immediately.
         if (typeof requireUnlock === 'function') {
-            requireUnlock(noteId, (token) => {
+            requireUnlock(noteId, async (token) => {
                 // Store token so the edit page can pick it up without re-prompting.
                 if (token) {
                     try { sessionStorage.setItem(`fn_lock_token_${noteId}`, token); } catch (_) {}
                 }
-                window.location.href = editUrl;
+                await openNoteOrToast(noteId, editUrl);
             });
         } else {
-            window.location.href = editUrl;
+            openNoteOrToast(noteId, editUrl);
         }
     });
 });

@@ -15,6 +15,7 @@ class Note extends Model
 
     protected $fillable = [
         'user_id',
+        'workspace_id',
         'title',
         'content',
         'is_pinned',
@@ -42,6 +43,12 @@ class Note extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /** The workspace this note belongs to */
+    public function workspace(): BelongsTo
+    {
+        return $this->belongsTo(Workspace::class, 'workspace_id');
     }
 
     /** Labels attached to this note */

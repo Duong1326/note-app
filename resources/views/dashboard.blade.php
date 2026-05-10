@@ -10,13 +10,39 @@
             <div class="row align-items-end justify-content-between g-4">
                 <div class="col-12 col-md-8">
                     <h2 class="fn-welcome-title">Chào mừng trở lại, {{ Auth::user()->name }}</h2>
-                    <p class="fn-welcome-sub">Sẵn sàng ghi lại ý tưởng của bạn?</p>
+                    <p class="fn-welcome-sub">
+                        @if(isset($isSharedView) && $isSharedView)
+                            <span class="fn-ws-badge">
+                                <span class="material-symbols-outlined">group</span>
+                                Ghi chú được chia sẻ với tôi
+                            </span>
+                        @elseif(isset($activeWorkspace))
+                            <span class="fn-ws-badge">
+                                <span class="material-symbols-outlined">folder</span>
+                                {{ $activeWorkspace->name }}
+                                @if(isset($workspaceShare))
+                                    &middot; {{ $workspaceShare->permission === 'edit' ? 'Chỉnh sửa' : 'Chỉ đọc' }}
+                                @endif
+                            </span>
+                        @else
+                            Sẵn sàng ghi lại ý tưởng của bạn?
+                        @endif
+                    </p>
                 </div>
                 <div class="col-12 col-md-4 text-md-end">
-                    <a href="{{ route('notes.create') }}" class="fn-btn-new-note">
-                        <span class="material-symbols-outlined">add</span>
-                        Ghi chú mới
-                    </a>
+                    @if(isset($canCreateNote) && $canCreateNote)
+                        <a href="{{ route('notes.create') }}" class="fn-btn-new-note">
+                            <span class="material-symbols-outlined">add</span>
+                            Ghi chú mới
+                        </a>
+                    @else
+                        <span class="fn-btn-new-note fn-btn-disabled"
+                              title="Bạn chỉ có quyền đọc trong workspace này"
+                              style="opacity:0.45; cursor:not-allowed; pointer-events:none;">
+                            <span class="material-symbols-outlined">add</span>
+                            Ghi chú mới
+                        </span>
+                    @endif
                 </div>
             </div>
         </section>
@@ -29,7 +55,9 @@
                 <div class="d-flex align-items-center justify-content-between mb-4">
                     <div class="d-flex align-items-center gap-3">
                         <h3 class="fn-section-title">
-                            @if(isset($searchQuery) && $searchQuery)
+                            @if(isset($isSharedView) && $isSharedView)
+                                Ghi chú được chia sẻ
+                            @elseif(isset($searchQuery) && $searchQuery)
                                 Kết quả tìm kiếm cho "{{ $searchQuery }}"
                             @else
                                 Ghi chú gần đây
@@ -49,7 +77,62 @@
                 </div>
 
                 {{-- Notes Grid / List --}}
-                @if($recentNotes->count() > 0)
+                @if(isset($isSharedView) && $isSharedView)
+                    {{-- ── Shared-with-me view ── --}}
+                    @if($sharedNotes->count() > 0)
+                        <div class="row g-3" id="notesContainer">
+                            @foreach($sharedNotes as $share)
+                                @php $note = $share->note; @endphp
+                                <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-animate-in fn-shared-note-col"
+                                     data-note-id="{{ $note->id }}"
+                                     data-share-id="{{ $share->id }}"
+                                     data-permission="{{ $share->permission }}"
+                                     data-locked="{{ $note->is_locked ? '1' : '0' }}">
+                                    <div class="fn-note-card fn-shared-card"
+                                         onclick="openSharedNoteOrUnlock({{ $note->id }}, '{{ $share->permission }}', {{ $note->is_locked ? 'true' : 'false' }})"
+                                         style="cursor:pointer;">
+                                        @if($note->attachments->count() > 0)
+                                            <img class="fn-note-thumb"
+                                                src="{{ $note->attachments->first()->thumbnailUrl(400) }}"
+                                                alt="Note image" loading="lazy" decoding="async">
+                                        @endif
+                                        <div class="fn-shared-owner">
+                                            <div class="fn-shared-owner-avatar">
+                                                @if($note->user->avatarUrl())
+                                                    <img src="{{ $note->user->avatarUrl() }}" alt="{{ $note->user->name }}">
+                                                @else
+                                                    {{ strtoupper(substr($note->user->name, 0, 2)) }}
+                                                @endif
+                                            </div>
+                                            <span class="fn-shared-owner-name">{{ $note->user->name }}</span>
+                                            <span class="fn-perm-badge {{ $share->permission }}">{{ $share->permission === 'edit' ? 'Chỉnh sửa' : 'Chỉ đọc' }}</span>
+                                        </div>
+                                        <div class="fn-note-card-header">
+                                            <h4 class="fn-note-title">{{ $note->title }}</h4>
+                                        </div>
+                                        @if($note->labels->count() > 0)
+                                            <div class="fn-note-labels">
+                                                @foreach($note->labels->take(3) as $label)
+                                                    <span class="badge rounded-pill fn-label-badge">{{ $label->name }}</span>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                        <p class="fn-note-excerpt">{{ Str::limit(strip_tags($note->content ?? ''), 120) }}</p>
+                                        <div class="fn-note-meta">
+                                            <span class="fn-note-date">{{ $note->updated_at->diffForHumans() }}</span>
+                                            <span class="material-symbols-outlined fn-share-badge" title="Được chia sẻ">group</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-5 text-muted fn-empty-state">
+                            <span class="material-symbols-outlined d-block mb-3">group</span>
+                            <p class="small opacity-75">Chưa có ghi chú nào được chia sẻ với bạn.</p>
+                        </div>
+                    @endif
+                @elseif($recentNotes->count() > 0)
                     <div class="row g-3" id="notesContainer">
                         @foreach($recentNotes as $note)
                 <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-animate-in note-col"
@@ -76,7 +159,7 @@
                                             <li>
                                                 <a class="dropdown-item d-flex align-items-center gap-2 py-2"
                                                     href="{{ route('notes.edit', $note->id) }}"
-                                                    onclick="event.preventDefault(); requireUnlock('{{ $note->id }}', (tok) => { if(tok){try{sessionStorage.setItem('fn_lock_token_{{ $note->id }}',tok);}catch(e){}} window.location.href='{{ route('notes.edit', $note->id) }}'; })">
+                                                    onclick="event.preventDefault(); requireUnlock('{{ $note->id }}', async (tok) => { if(tok){try{sessionStorage.setItem('fn_lock_token_{{ $note->id }}',tok);}catch(e){}} await openNoteOrToast('{{ $note->id }}', '{{ route('notes.edit', $note->id) }}'); })">
                                                     <span class="material-symbols-outlined fn-icon-sm">edit</span>
                                                     Chỉnh sửa
                                                 </a>
@@ -214,78 +297,6 @@
             </div>
         </div>
 
-        {{-- ═══════════════════════════════════════════
-             SHARED WITH ME SECTION
-        ═══════════════════════════════════════════ --}}
-        <div class="fn-shared-section fn-animate-in" id="sharedSection"
-             style="{{ $sharedNotes->count() === 0 ? 'display:none;' : '' }}">
-        <div class="d-flex align-items-center gap-2 mb-4">
-            <h3 class="fn-section-title">Được chia sẻ với tôi</h3>
-            <span class="fn-shared-badge" id="sharedCount">{{ $sharedNotes->count() }}</span>
-        </div>
-
-        <div class="row g-3" id="sharedNotesContainer">
-            @foreach($sharedNotes as $share)
-                @php $note = $share->note; @endphp
-                <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-animate-in fn-shared-note-col"
-                     data-note-id="{{ $note->id }}"
-                     data-share-id="{{ $share->id }}"
-                     data-permission="{{ $share->permission }}"
-                     data-locked="{{ $note->is_locked ? '1' : '0' }}">
-                    <div class="fn-note-card fn-shared-card"
-                         onclick="openSharedNoteOrUnlock({{ $note->id }}, '{{ $share->permission }}', {{ $note->is_locked ? 'true' : 'false' }})"
-                         style="cursor:pointer;">
-
-                        {{-- Thumbnail --}}
-                        @if($note->attachments->count() > 0)
-                            <img class="fn-note-thumb"
-                                src="{{ $note->attachments->first()->thumbnailUrl(400) }}"
-                                alt="Note image"
-                                loading="lazy"
-                                decoding="async">
-                        @endif
-
-                        {{-- Owner attribution --}}
-                        <div class="fn-shared-owner">
-                            <div class="fn-shared-owner-avatar">
-                                @if($note->user->avatarUrl())
-                                    <img src="{{ $note->user->avatarUrl() }}" alt="{{ $note->user->name }}">
-                                @else
-                                    {{ strtoupper(substr($note->user->name, 0, 2)) }}
-                                @endif
-                            </div>
-                            <span class="fn-shared-owner-name">{{ $note->user->name }}</span>
-                            <span class="fn-perm-badge {{ $share->permission }}">{{ $share->permission === 'edit' ? 'Chỉnh sửa' : 'Chỉ đọc' }}</span>
-                        </div>
-
-                        {{-- Title --}}
-                        <div class="fn-note-card-header">
-                            <h4 class="fn-note-title">{{ $note->title }}</h4>
-                        </div>
-
-                        {{-- Labels --}}
-                        @if($note->labels->count() > 0)
-                            <div class="fn-note-labels">
-                                @foreach($note->labels->take(3) as $label)
-                                    <span class="badge rounded-pill fn-label-badge">{{ $label->name }}</span>
-                                @endforeach
-                            </div>
-                        @endif
-
-                        {{-- Excerpt --}}
-                        <p class="fn-note-excerpt">{{ Str::limit(strip_tags(preg_replace('/<div[^>]*class="fn-content-image-block"[^>]*>[\s\S]*?<\/div>|<div[^>]*class="fn-content-divider"[^>]*>[\s\S]*?<\/div>/i', '', $note->content ?? '')), 120) }}</p>
-
-                        {{-- Meta --}}
-                        <div class="fn-note-meta">
-                            <span class="fn-note-date">{{ $note->updated_at->diffForHumans() }}</span>
-                            <span class="material-symbols-outlined fn-share-badge" title="Ghi chú được chia sẻ">group</span>
-                        </div>
-
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </div>{{-- end fn-shared-section --}}
 
 </div>{{-- end fn-dashboard --}}
 
@@ -369,6 +380,8 @@
         window.FN_LOAD_MORE_URL = '{{ route("dashboard.load.more") }}';
         window.FN_NEXT_CURSOR = @json($nextCursor);
         window.FN_HAS_MORE = @json($hasMoreNotes);
+        window.__activeWorkspaceId = @json($activeWorkspace?->id ?? null);
+        window.__canCreateNote = @json($canCreateNote ?? false);
 
         // bfcache guard + dedup (safety net for fresh loads)
         (function () {

@@ -27,6 +27,7 @@ class NoteUpdated implements ShouldBroadcastNow
     /**
      * Broadcast to the note's presence channel AND to each shared user's
      * private channel (so they see updates even if not on the note page).
+     * Also broadcasts to all workspace members when the note belongs to a workspace.
      */
     public function broadcastOn(): array
     {
@@ -34,13 +35,41 @@ class NoteUpdated implements ShouldBroadcastNow
             new PrivateChannel('note.' . $this->note->id),
         ];
 
-        // Also notify each shared user on their personal channel
+        // Collect unique user IDs to notify
+        $notifiedIds = [];
+
+        // 1. Note-level shared users
         foreach ($this->note->shares as $share) {
-            $channels[] = new PrivateChannel('user.' . $share->shared_with_user_id);
+            $uid = $share->shared_with_user_id;
+            if (!in_array($uid, $notifiedIds)) {
+                $notifiedIds[] = $uid;
+                $channels[] = new PrivateChannel('user.' . $uid);
+            }
         }
 
-        // Notify the owner too (if updated by a shared user)
-        if ($this->updatedBy->id !== $this->note->user_id) {
+        // 2. Workspace-level members (shared workspace)
+        if ($this->note->workspace_id) {
+            $workspace = $this->note->workspace ?? \App\Models\Workspace::with('shares')->find($this->note->workspace_id);
+            if ($workspace) {
+                // Workspace owner
+                $ownerId = $workspace->user_id;
+                if ($ownerId !== $this->updatedBy->id && !in_array($ownerId, $notifiedIds)) {
+                    $notifiedIds[] = $ownerId;
+                    $channels[] = new PrivateChannel('user.' . $ownerId);
+                }
+                // Workspace share members
+                foreach ($workspace->shares as $ws) {
+                    $uid = $ws->shared_with_user_id;
+                    if ($uid !== $this->updatedBy->id && !in_array($uid, $notifiedIds)) {
+                        $notifiedIds[] = $uid;
+                        $channels[] = new PrivateChannel('user.' . $uid);
+                    }
+                }
+            }
+        }
+
+        // 3. Notify the note owner (if updated by someone else and not yet added)
+        if ($this->updatedBy->id !== $this->note->user_id && !in_array($this->note->user_id, $notifiedIds)) {
             $channels[] = new PrivateChannel('user.' . $this->note->user_id);
         }
 
@@ -61,6 +90,7 @@ class NoteUpdated implements ShouldBroadcastNow
 
         return [
             'note_id'      => $this->note->id,
+            'workspace_id' => $this->note->workspace_id,
             'note_title'   => $this->note->title ?: 'Ghi chú không có tiêu đề',
             'note_content' => $this->note->content ?? '',
             'note_excerpt' => mb_substr($rawContent, 0, 120),

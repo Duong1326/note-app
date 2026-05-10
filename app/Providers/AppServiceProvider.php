@@ -34,7 +34,35 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.app', function ($view) {
             if (auth()->check()) {
-                $view->with('sidebarLabels', auth()->user()->labels()->orderBy('name')->get());
+                $user = auth()->user();
+                $view->with('sidebarLabels', $user->labels()->orderBy('name')->get());
+
+                // ── Workspace data for sidebar ──
+                $defaultWs = $user->ensureDefaultWorkspace();
+
+                $ownedWorkspaces = $user->workspaces()
+                    ->withCount('notes')
+                    ->orderByDesc('is_default')
+                    ->orderBy('name')
+                    ->get();
+
+                $sharedWorkspaces = $user->sharedWorkspaces()
+                    ->with(['workspace' => fn ($q) => $q->withCount('notes'), 'workspace.user:id,name,avatar_url'])
+                    ->get();
+
+                // Determine active workspace
+                $activeWsId = session('active_workspace_id', $defaultWs->id);
+                // Validate the active workspace still exists and is accessible
+                $validOwned = $ownedWorkspaces->pluck('id')->toArray();
+                $validShared = $sharedWorkspaces->pluck('workspace_id')->toArray();
+                if (!in_array($activeWsId, array_merge($validOwned, $validShared))) {
+                    $activeWsId = $defaultWs->id;
+                    session(['active_workspace_id' => $activeWsId]);
+                }
+
+                $view->with('sidebarWorkspaces', $ownedWorkspaces);
+                $view->with('sidebarSharedWorkspaces', $sharedWorkspaces);
+                $view->with('activeWorkspaceId', $activeWsId);
             }
         });
     }

@@ -58,6 +58,37 @@ class User extends Authenticatable
         return $this->hasMany(NoteShare::class, 'shared_with_user_id');
     }
 
+    /** Workspaces owned by this user */
+    public function workspaces(): HasMany
+    {
+        return $this->hasMany(Workspace::class, 'user_id');
+    }
+
+    /** Workspaces shared WITH this user (as a recipient) */
+    public function sharedWorkspaces(): HasMany
+    {
+        return $this->hasMany(WorkspaceShare::class, 'shared_with_user_id');
+    }
+
+    /**
+     * Ensure the user has a default workspace named "Chung".
+     * Creates one automatically if missing.
+     */
+    public function ensureDefaultWorkspace(): Workspace
+    {
+        $default = $this->workspaces()->where('is_default', true)->first();
+
+        if (!$default) {
+            $default = $this->workspaces()->create([
+                'name'       => 'Chung',
+                'description'=> 'Workspace mặc định',
+                'is_default' => true,
+            ]);
+        }
+
+        return $default;
+    }
+
     /** User preferences (theme, font_size, note_color) */
     public function preference(): HasOne
     {

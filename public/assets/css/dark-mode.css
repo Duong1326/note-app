@@ -113,6 +113,88 @@
     background: rgba(180, 197, 255, 0.08);
 }
 
+/* ── Workspace Switcher ─────────────────────── */
+[data-theme="dark"] .fn-ws-active-btn {
+    background: var(--fn-surface-container-high);
+    border-color: var(--fn-outline-variant);
+    color: var(--fn-on-surface);
+}
+
+[data-theme="dark"] .fn-ws-active-btn:hover {
+    background: var(--fn-surface-container-highest);
+    border-color: rgba(180, 197, 255, 0.3);
+}
+
+[data-theme="dark"] .fn-ws-dropdown {
+    background: var(--fn-surface-container-high);
+    border-color: var(--fn-outline-variant);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .fn-ws-dropdown-section + .fn-ws-dropdown-section {
+    border-top-color: var(--fn-outline-variant);
+}
+
+[data-theme="dark"] .fn-ws-item:hover {
+    background: rgba(180, 197, 255, 0.06);
+}
+
+[data-theme="dark"] .fn-ws-item.active {
+    background: rgba(37, 99, 235, 0.18);
+}
+
+[data-theme="dark"] .fn-ws-item-count {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .fn-ws-item-actions button:hover {
+    background: rgba(180, 197, 255, 0.1);
+}
+
+[data-theme="dark"] .fn-ws-add-section {
+    border-top-color: var(--fn-outline-variant);
+}
+
+[data-theme="dark"] .fn-ws-add-btn {
+    border-color: rgba(180, 197, 255, 0.15);
+}
+
+[data-theme="dark"] .fn-ws-add-btn:hover {
+    background: rgba(37, 99, 235, 0.1);
+    border-color: rgba(37, 99, 235, 0.3);
+}
+
+[data-theme="dark"] .fn-ws-perm-badge {
+    background: rgba(180, 197, 255, 0.15);
+}
+
+[data-theme="dark"] .fn-ws-divider {
+    border-top-color: var(--fn-outline-variant);
+}
+
+[data-theme="dark"] .fn-ws-lock-status {
+    background: var(--fn-surface-container);
+}
+
+[data-theme="dark"] .fn-ws-share-item {
+    background: var(--fn-surface-container);
+}
+
+[data-theme="dark"] .fn-ws-share-perm-select {
+    background: var(--fn-surface-container-lowest);
+    border-color: var(--fn-outline-variant);
+    color: var(--fn-on-surface);
+}
+
+[data-theme="dark"] .fn-ws-error {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+[data-theme="dark"] .fn-ws-badge {
+    background: rgba(180, 197, 255, 0.12);
+    color: var(--fn-primary);
+}
+
 /* ── Header ──────────────────────────────────── */
 [data-theme="dark"] .fn-header {
     background: rgba(11, 19, 38, 0.85);

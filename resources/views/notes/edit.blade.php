@@ -16,7 +16,8 @@
     {{-- ── Top bar ──────────────────────────────────────── --}}
     <div class="fnp-topbar">
         {{-- Back breadcrumb --}}
-        <a href="{{ route('dashboard') }}" class="fnp-back-btn" title="Quay lại dashboard">
+        <a href="{{ route('dashboard') }}" class="fnp-back-btn" title="Quay lại dashboard"
+           onclick="event.preventDefault(); var u=sessionStorage.getItem('fn_return_url')||'{{ route('dashboard') }}'; try{sessionStorage.removeItem('fn_return_url');}catch(e){} window.location.href=u;">
             <span class="material-symbols-outlined">arrow_back</span>
             <span class="fnp-back-label">Trang chủ</span>
         </a>

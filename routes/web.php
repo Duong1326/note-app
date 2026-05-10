@@ -11,6 +11,9 @@ use App\Http\Controllers\NoteLockController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NoteShareController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WorkspaceController;
+use App\Http\Controllers\WorkspaceLockController;
+use App\Http\Controllers\WorkspaceShareController;
 
 Route::get('/', [AuthController::class, 'redirectHome'])->name('home');
 
@@ -78,6 +81,9 @@ Route::middleware(['auth', \App\Http\Middleware\PreventBackHistory::class])->gro
     // Full-page note editor view (read-only route, no note.token needed)
     Route::get('/notes/{note}/edit', [NoteController::class, 'edit'])->name('notes.edit');
 
+    // Lightweight permission pre-check (returns JSON 200 or 403, no page navigation)
+    Route::get('/notes/{note}/can-edit', [NoteController::class, 'canEdit'])->name('notes.canEdit');
+
     // Mutation routes that require a valid unlock token for locked notes
     Route::middleware('note.token')->group(function () {
         Route::put('/notes/{note}',    [NoteController::class, 'update'])->name('notes.update');
@@ -112,4 +118,21 @@ Route::middleware(['auth', \App\Http\Middleware\PreventBackHistory::class])->gro
     Route::post('/notes/{note}/shares', [NoteShareController::class, 'store'])->name('notes.shares.store');
     Route::put('/notes/{note}/shares/{share}', [NoteShareController::class, 'update'])->name('notes.shares.update');
     Route::delete('/notes/{note}/shares/{share}', [NoteShareController::class, 'destroy'])->name('notes.shares.destroy');
+
+    // ── Workspace Management ──
+    Route::resource('workspaces', WorkspaceController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::post('/workspaces/{workspace}/switch', [WorkspaceController::class, 'switchTo'])->name('workspaces.switch');
+
+    // Workspace lock management
+    Route::post('/workspaces/{workspace}/lock/verify', [WorkspaceLockController::class, 'verify'])->name('workspaces.lock.verify');
+    Route::post('/workspaces/{workspace}/lock/enable', [WorkspaceLockController::class, 'enable'])->name('workspaces.lock.enable');
+    Route::put('/workspaces/{workspace}/lock/password', [WorkspaceLockController::class, 'changePassword'])->name('workspaces.lock.change');
+    Route::delete('/workspaces/{workspace}/lock', [WorkspaceLockController::class, 'disable'])->name('workspaces.lock.disable');
+
+    // Workspace sharing
+    Route::get('/shared-workspaces', [WorkspaceShareController::class, 'sharedWithMe'])->name('workspaces.shared');
+    Route::get('/workspaces/{workspace}/shares', [WorkspaceShareController::class, 'index'])->name('workspaces.shares.index');
+    Route::post('/workspaces/{workspace}/shares', [WorkspaceShareController::class, 'store'])->name('workspaces.shares.store');
+    Route::put('/workspaces/{workspace}/shares/{share}', [WorkspaceShareController::class, 'update'])->name('workspaces.shares.update');
+    Route::delete('/workspaces/{workspace}/shares/{share}', [WorkspaceShareController::class, 'destroy'])->name('workspaces.shares.destroy');
 });

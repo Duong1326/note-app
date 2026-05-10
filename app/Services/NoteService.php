@@ -19,10 +19,16 @@ class NoteService
     {
         try {
             $note = DB::transaction(function () use ($user, $data) {
+                // Assign to active workspace (or default)
+                $workspaceId = $data['workspace_id']
+                    ?? session('active_workspace_id')
+                    ?? $user->ensureDefaultWorkspace()->id;
+
                 $note = $user->notes()->create([
-                    'title'     => $data['title'],
-                    'content'   => $data['content'] ?? null,
-                    'is_pinned' => $data['is_pinned'] ?? false,
+                    'title'        => $data['title'],
+                    'content'      => $data['content'] ?? null,
+                    'is_pinned'    => $data['is_pinned'] ?? false,
+                    'workspace_id' => $workspaceId,
                 ]);
 
                 if (!empty($data['label_ids'])) {
@@ -40,18 +46,40 @@ class NoteService
     }
 
     /**
-     * Update an existing note. Checks ownership or edit-share permission.
+     * Check if a user has workspace-level edit permission for the note's workspace.
+     */
+    private function hasWorkspaceEditPermission(Note $note, int $userId): bool
+    {
+        if (!$note->workspace_id) return false;
+
+        $workspace = \App\Models\Workspace::find($note->workspace_id);
+        if (!$workspace) return false;
+
+        // Workspace owner has full edit permission over all notes inside
+        if ($workspace->user_id === $userId) return true;
+
+        // Check if user has an edit-level workspace share
+        return (bool) $workspace->shares()
+            ->where('shared_with_user_id', $userId)
+            ->where('permission', 'edit')
+            ->exists();
+    }
+
+    /**
+     * Update an existing note. Checks ownership, note-level edit share,
+     * or workspace-level edit share.
      */
     public function update(Note $note, array $data, int $updatedByUserId): Note
     {
         try {
             $isOwner = $note->user_id === $updatedByUserId;
-            $hasEditPermission = !$isOwner && $note->shares()
+            $hasNoteEditPerm = !$isOwner && $note->shares()
                 ->where('shared_with_user_id', $updatedByUserId)
                 ->where('permission', 'edit')
                 ->exists();
+            $hasWsEditPerm = !$isOwner && $this->hasWorkspaceEditPermission($note, $updatedByUserId);
 
-            if (!$isOwner && !$hasEditPermission) {
+            if (!$isOwner && !$hasNoteEditPerm && !$hasWsEditPerm) {
                 throw new Exception('Bạn không có quyền chỉnh sửa ghi chú này.');
             }
 
@@ -87,11 +115,14 @@ class NoteService
     }
 
     /**
-     * Delete a note. Only the owner may delete.
+     * Delete a note. Owner or workspace edit member may delete.
      */
     public function delete(Note $note, int $requestingUserId): void
     {
-        if ($note->user_id !== $requestingUserId) {
+        $isOwner      = $note->user_id === $requestingUserId;
+        $hasWsEditPerm = !$isOwner && $this->hasWorkspaceEditPermission($note, $requestingUserId);
+
+        if (!$isOwner && !$hasWsEditPerm) {
             throw new Exception('Bạn không có quyền xóa ghi chú này.');
         }
 

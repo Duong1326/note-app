@@ -307,6 +307,37 @@
     white-space: nowrap;
 }
 
+/* ── List View: Shared note cards ────────────── */
+.fn-view-list .fn-shared-note-col {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    padding: 0 !important;
+}
+
+.fn-view-list .fn-shared-card .fn-shared-owner {
+    flex-shrink: 0;
+    margin-bottom: 0;
+    gap: 0.375rem;
+    align-items: center;
+}
+
+.fn-view-list .fn-shared-card .fn-shared-owner-name {
+    display: none;
+}
+
+.fn-view-list .fn-shared-card .fn-shared-owner-avatar {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    font-size: 0.5625rem;
+}
+
+.fn-view-list .fn-shared-card .fn-perm-badge {
+    font-size: 0.5625rem;
+    padding: 0.1rem 0.3rem;
+}
+
 /* ── Avatar (small, for cards) ───────────────── */
 .fn-avatar-sm {
     width: 24px;
