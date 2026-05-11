@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\WorkspaceLocked;
 use App\Models\Workspace;
 use App\Services\WorkspaceService;
 use Illuminate\Http\JsonResponse;
@@ -40,6 +41,11 @@ class WorkspaceLockController extends Controller
         // Set active workspace in session so the next page load shows its notes
         session(['active_workspace_id' => $workspace->id]);
 
+        // Store a persistent verify timestamp.
+        // DashboardController compares this against workspace->updated_at to
+        // decide whether re-verification is needed (stays valid until password changes).
+        session(['ws_verified_ts_' . $workspace->id => now()->timestamp]);
+
         return response()->json(['success' => true, 'token' => $token]);
     }
 
@@ -64,6 +70,9 @@ class WorkspaceLockController extends Controller
         }
 
         $this->workspaceService->setPassword($workspace, $request->input('password'));
+
+        // Broadcast to all members so they are immediately prompted
+        broadcast(new WorkspaceLocked($workspace->fresh(), $request->user()));
 
         return response()->json([
             'success' => true,
@@ -101,6 +110,9 @@ class WorkspaceLockController extends Controller
 
         $this->workspaceService->setPassword($workspace, $request->input('password'));
         $token = $this->generateToken($workspace->id);
+
+        // Broadcast to all members so they are immediately prompted
+        broadcast(new WorkspaceLocked($workspace->fresh(), $request->user()));
 
         return response()->json([
             'success' => true,

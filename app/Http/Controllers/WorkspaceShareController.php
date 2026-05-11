@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\WorkspaceShared;
+use App\Events\WorkspaceSharePermissionChanged;
+use App\Events\WorkspaceShareRevoked;
 use App\Http\Requests\Workspace\ShareWorkspaceRequest;
 use App\Models\User;
 use App\Models\Workspace;
@@ -54,6 +57,11 @@ class WorkspaceShareController extends Controller
                 continue;
             }
 
+            $isNew = !WorkspaceShare::where([
+                'workspace_id'        => $workspace->id,
+                'shared_with_user_id' => $recipient->id,
+            ])->exists();
+
             $share = WorkspaceShare::updateOrCreate(
                 [
                     'workspace_id'         => $workspace->id,
@@ -64,6 +72,11 @@ class WorkspaceShareController extends Controller
                     'permission' => $permission,
                 ]
             );
+
+            // Broadcast real-time notification only for brand-new shares
+            if ($isNew) {
+                broadcast(new WorkspaceShared($share->fresh(['workspace', 'workspace.user']), $request->user()));
+            }
 
             $created[] = [
                 'id'         => $share->id,
@@ -97,7 +110,11 @@ class WorkspaceShareController extends Controller
 
         $request->validate(['permission' => ['required', 'in:read,edit']]);
 
+        $oldPermission = $share->permission;
         $share->update(['permission' => $request->input('permission')]);
+
+        // Broadcast to the affected user so their UI updates instantly
+        broadcast(new WorkspaceSharePermissionChanged($share->fresh(), $request->user(), $oldPermission));
 
         return response()->json([
             'success'    => true,
@@ -115,7 +132,16 @@ class WorkspaceShareController extends Controller
         $this->authorizeOwner($request, $workspace);
         abort_if($share->workspace_id !== $workspace->id, 404);
 
+        $revokedUserId = $share->shared_with_user_id;
         $share->delete();
+
+        // Broadcast revocation so the affected user's sidebar updates immediately
+        broadcast(new WorkspaceShareRevoked(
+            $workspace->id,
+            $workspace->name,
+            $revokedUserId,
+            $request->user()
+        ));
 
         return response()->json([
             'success' => true,

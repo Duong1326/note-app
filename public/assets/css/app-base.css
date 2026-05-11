@@ -156,3 +156,11 @@ input[type="checkbox"] {
 .fn-animate-in:nth-child(4) {
     animation-delay: 0.2s;
 }
+
+/* ── Global: always hide modal overlays until JS shows them ─── */
+/* Prevents workspace/note modals rendering as raw HTML on pages */
+/* that don't load note-create.css (e.g. profile page)           */
+.fn-modal-overlay {
+    opacity: 0;
+    visibility: hidden;
+}

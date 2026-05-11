@@ -44,115 +44,159 @@
 
     {{-- Sidebar Navigation --}}
     <aside class="fn-sidebar" id="sidebar">
-        <a href="{{ route('dashboard') }}" class="fn-sidebar-brand" style="text-decoration:none;color:inherit;cursor:pointer;"
-           onclick="event.preventDefault(); event.stopPropagation(); if(typeof toggleWorkspaceDropdown==='function') toggleWorkspaceDropdown();">
-            <h1>Fluid Notes</h1>
-            <p>Workspace</p>
-        </a>
 
         @auth
-            {{-- ── Workspace Switcher ── --}}
-            <div class="fn-ws-switcher" id="workspaceSwitcher">
-                <button class="fn-ws-active-btn" onclick="toggleWorkspaceDropdown()" id="wsActiveBtn" style="display:none;">
-                    <div class="fn-ws-active-info">
-                        <span class="material-symbols-outlined fn-ws-icon">{{ request()->get('view') === 'shared' ? 'group' : 'folder' }}</span>
-                        <span class="fn-ws-active-name" id="wsActiveName">
-                            @if(request()->get('view') === 'shared')
-                                Chia sẻ với tôi
-                            @elseif(isset($sidebarWorkspaces))
-                                @php
-                                    $activeWs = $sidebarWorkspaces->firstWhere('id', $activeWorkspaceId);
-                                    if (!$activeWs && isset($sidebarSharedWorkspaces)) {
-                                        $sharedWs = $sidebarSharedWorkspaces->firstWhere('workspace_id', $activeWorkspaceId);
-                                        $activeWs = $sharedWs?->workspace;
-                                    }
-                                @endphp
-                                {{ $activeWs?->name ?? 'Chung' }}
-                            @else
-                                Chung
-                            @endif
-                        </span>
-                    </div>
-                    <span class="material-symbols-outlined fn-ws-chevron" id="wsChevron">expand_more</span>
-                </button>
+            {{-- Fluid Notes Branding --}}
+            <div class="fn-sidebar-brand" style="pointer-events:none;">
+                <h1>Fluid Notes</h1>
+            </div>
 
+            {{-- Workspace Header --}}
+            @php
+                $__activeWsInHdr = null;
+                if (isset($sidebarWorkspaces)) {
+                    $__activeWsInHdr = $sidebarWorkspaces->firstWhere('id', $activeWorkspaceId);
+                    if (!$__activeWsInHdr && isset($sidebarSharedWorkspaces)) {
+                        $__shWs = $sidebarSharedWorkspaces->firstWhere('workspace_id', $activeWorkspaceId);
+                        $__activeWsInHdr = $__shWs?->workspace;
+                    }
+                }
+                $__wsDispName = match (true) {
+                    request()->get('view') === 'shared' => 'Chia sẻ với tôi',
+                    $__activeWsInHdr && $__activeWsInHdr->is_default => Auth::user()->name . "'s Space",
+                    $__activeWsInHdr !== null => $__activeWsInHdr->name,
+                    default => Auth::user()->name . "'s Space",
+                };
+                $__wsInit = strtoupper(substr($__wsDispName, 0, 1));
+            @endphp
+
+            <div class="fn-ws-header" onclick="toggleWorkspaceDropdown()">
+                <span class="fn-ws-header-name" id="wsActiveName">{{ $__wsDispName }}</span>
+                <span class="material-symbols-outlined fn-ws-header-chevron" id="wsChevron">unfold_more</span>
+            </div>
+
+            <div class="fn-ws-switcher" id="workspaceSwitcher">
                 <div class="fn-ws-dropdown d-none" id="wsDropdown">
-                    {{-- Owned Workspaces --}}
-                    <div class="fn-ws-dropdown-section">
-                        <div class="fn-ws-dropdown-label">WORKSPACE CỦA TÔI</div>
-                        <div class="fn-ws-list" id="wsOwnedList">
-                            @if(isset($sidebarWorkspaces))
-                                @foreach($sidebarWorkspaces as $ws)
-                                    @if($ws->is_default) @continue @endif
-                                    <div class="fn-ws-item {{ ($ws->id == $activeWorkspaceId && request()->get('view') !== 'shared') ? 'active' : '' }}"
-                                         data-ws-id="{{ $ws->id }}"
-                                         data-ws-name="{{ $ws->name }}"
-                                         data-ws-default="{{ $ws->is_default ? '1' : '0' }}"
-                                         data-ws-locked="{{ $ws->is_locked ? '1' : '0' }}">
-                                        <div class="fn-ws-item-info" onclick="switchWorkspace({{ $ws->id }}, '{{ addslashes($ws->name) }}')">
-                                            <span class="material-symbols-outlined fn-ws-item-icon">
-                                                {{ $ws->is_locked ? 'lock' : 'folder' }}
-                                            </span>
-                                            <span class="fn-ws-item-name">{{ $ws->name }}</span>
-                                            <span class="fn-ws-item-count">{{ $ws->notes_count }}</span>
-                                        </div>
-                                        <div class="fn-ws-item-actions">
-                                            <button onclick="openWorkspaceSettings({{ $ws->id }})" title="Cài đặt">
-                                                <span class="material-symbols-outlined">settings</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @endif
+
+                    {{-- Info block --}}
+                    <div class="fn-ws-dropdown-info">
+                        <div class="fn-ws-dropdown-info-body">
+                            <div class="fn-ws-dropdown-info-name">{{ $__wsDispName }}</div>
+                            <div class="fn-ws-dropdown-info-meta">Free Plan</div>
                         </div>
                     </div>
 
-                    {{-- Shared Workspaces --}}
-                    @if(isset($sidebarSharedWorkspaces) && $sidebarSharedWorkspaces->count() > 0)
-                        <div class="fn-ws-dropdown-section">
-                            <div class="fn-ws-dropdown-label">ĐƯỢC CHIA SẺ</div>
-                            <div class="fn-ws-list" id="wsSharedList">
-                                @foreach($sidebarSharedWorkspaces as $share)
-                                    @php $sws = $share->workspace; @endphp
-                                    <div class="fn-ws-item fn-ws-shared {{ $sws->id == $activeWorkspaceId ? 'active' : '' }}"
-                                         data-ws-id="{{ $sws->id }}"
-                                         data-ws-name="{{ $sws->name }}"
-                                         data-ws-locked="{{ $sws->is_locked ? '1' : '0' }}">
-                                        <div class="fn-ws-item-info" onclick="switchWorkspace({{ $sws->id }}, '{{ addslashes($sws->name) }}')">
-                                            <span class="material-symbols-outlined fn-ws-item-icon">
-                                                {{ $sws->is_locked ? 'lock' : 'group_work' }}
-                                            </span>
-                                            <span class="fn-ws-item-name">{{ $sws->name }}</span>
-                                            <span class="fn-ws-item-count">{{ $sws->notes_count }}</span>
-                                        </div>
-                                        <span class="fn-ws-perm-badge">{{ $share->permission === 'edit' ? 'Sửa' : 'Đọc' }}</span>
-                                    </div>
-                                @endforeach
-                            </div>
+                    {{-- Pill buttons (only for owned non-default) --}}
+                    @php
+                        $__ownedActive = isset($sidebarWorkspaces) ? $sidebarWorkspaces->firstWhere('id', $activeWorkspaceId) : null;
+                    @endphp
+                    @if($__ownedActive && !$__ownedActive->is_default)
+                        <div class="fn-ws-pill-row">
+                            <button class="fn-ws-pill-btn" onclick="openWorkspaceSettings({{ $__ownedActive->id }})">
+                                <span class="material-symbols-outlined">settings</span>
+                                Settings
+                            </button>
                         </div>
                     @endif
 
-                    {{-- Chia sẻ với tôi --}}
-                    <div class="fn-ws-dropdown-section fn-ws-shared-me-section">
-                        <div class="fn-ws-item fn-ws-shared-me-item {{ request()->get('view') === 'shared' ? 'active' : '' }}"
-                             onclick="switchToSharedView()">
-                            <div class="fn-ws-item-info">
-                                <span class="material-symbols-outlined fn-ws-item-icon">group</span>
-                                <span class="fn-ws-item-name">Chia sẻ với tôi</span>
-                            </div>
-                        </div>
+                    <hr class="fn-ws-sep">
+
+                    {{-- Account row --}}
+                    <div class="fn-ws-account-row">
+                        <span class="fn-ws-account-email">{{ Auth::user()->email }}</span>
                     </div>
 
-                    {{-- Add Workspace Button --}}
-                    <div class="fn-ws-add-section">
-                        <button class="fn-ws-add-btn" onclick="openCreateWorkspaceModal()">
-                            <span class="material-symbols-outlined">add</span>
-                            Tạo workspace mới
-                        </button>
+                    {{-- Default (personal) workspace --}}
+                    @if(isset($sidebarWorkspaces))
+                        @php $__defWs = $sidebarWorkspaces->firstWhere('is_default', true); @endphp
+                        @if($__defWs)
+                            <div class="fn-ws-item {{ ($__defWs->id == $activeWorkspaceId && request()->get('view') !== 'shared') ? 'active' : '' }}"
+                                data-ws-id="{{ $__defWs->id }}" data-ws-name="{{ Auth::user()->name }}'s Space" data-ws-default="1"
+                                data-ws-locked="{{ $__defWs->is_locked ? '1' : '0' }}">
+                                <div class="fn-ws-item-info"
+                                    onclick="switchWorkspace({{ $__defWs->id }}, '{{ addslashes(Auth::user()->name) }}\'s Space')">
+                                    <span class="fn-ws-item-name">{{ Auth::user()->name }}'s Space</span>
+                                </div>
+                                @if($__defWs->id == $activeWorkspaceId && request()->get('view') !== 'shared')
+                                    <span class="material-symbols-outlined fn-ws-item-check">check</span>
+                                @endif
+                            </div>
+                        @endif
+                    @endif
+
+                    {{-- Other owned workspaces --}}
+                    <div id="wsOwnedList">
+                        @if(isset($sidebarWorkspaces))
+                            @foreach($sidebarWorkspaces as $ws)
+                                @if($ws->is_default) @continue @endif
+                                <div class="fn-ws-item {{ ($ws->id == $activeWorkspaceId && request()->get('view') !== 'shared') ? 'active' : '' }}"
+                                    data-ws-id="{{ $ws->id }}" data-ws-name="{{ $ws->name }}" data-ws-default="0"
+                                    data-ws-locked="{{ $ws->is_locked ? '1' : '0' }}">
+                                    <div class="fn-ws-item-info"
+                                        onclick="switchWorkspace({{ $ws->id }}, '{{ addslashes($ws->name) }}')">
+                                        <span class="fn-ws-item-name">{{ $ws->name }}</span>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:2px;">
+                                        @if($ws->id == $activeWorkspaceId && request()->get('view') !== 'shared')
+                                            <span class="material-symbols-outlined fn-ws-item-check">check</span>
+                                        @endif
+                                        <div class="fn-ws-item-actions">
+                                            <button onclick="openWorkspaceSettings({{ $ws->id }})" title="Settings">
+                                                <span class="material-symbols-outlined">more_horiz</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
+
+                    {{-- Shared workspaces --}}
+                    @if(isset($sidebarSharedWorkspaces) && $sidebarSharedWorkspaces->count() > 0)
+                        <hr class="fn-ws-sep" style="margin:0.25rem 0;">
+                        <div id="wsSharedList">
+                            @foreach($sidebarSharedWorkspaces as $share)
+                                @php $sws = $share->workspace; @endphp
+                                <div class="fn-ws-item fn-ws-shared {{ $sws->id == $activeWorkspaceId ? 'active' : '' }}"
+                                    data-ws-id="{{ $sws->id }}" data-ws-name="{{ $sws->name }}"
+                                    data-ws-locked="{{ $sws->is_locked ? '1' : '0' }}">
+                                    <div class="fn-ws-item-info"
+                                        onclick="switchWorkspace({{ $sws->id }}, '{{ addslashes($sws->name) }}')">
+                                        <span class="fn-ws-item-name">{{ $sws->name }}</span>
+                                        <span class="fn-ws-perm-badge">{{ $share->permission === 'edit' ? 'Sửa' : 'Đọc' }}</span>
+                                    </div>
+                                    @if($sws->id == $activeWorkspaceId)
+                                        <span class="material-symbols-outlined fn-ws-item-check">check</span>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    {{-- Shared-with-me --}}
+                    <div class="fn-ws-item fn-ws-shared-me-item {{ request()->get('view') === 'shared' ? 'active' : '' }}"
+                        onclick="switchToSharedView()">
+                        <div class="fn-ws-item-info">
+                            <span class="material-symbols-outlined fn-ws-item-icon">group</span>
+                            <span class="fn-ws-item-name">Chia sẻ với tôi</span>
+                        </div>
+                        @if(request()->get('view') === 'shared')
+                            <span class="material-symbols-outlined fn-ws-item-check">check</span>
+                        @endif
+                    </div>
+
+                    {{-- New workspace --}}
+                    <hr class="fn-ws-sep" style="margin:0.25rem 0;">
+                    <button class="fn-ws-new-btn" onclick="openCreateWorkspaceModal()">
+                        <span class="material-symbols-outlined">add</span>
+                        New workspace
+                    </button>
+
                 </div>
             </div>
+        @endauth
 
+        @auth
             <div class="fn-sidebar-labels">
                 <div class="fn-sidebar-labels-header">
                     <h3>NHÃN</h3>
@@ -226,12 +270,11 @@
                 {{-- Live search: no form submit, AJAX debounce 300ms --}}
                 <div class="fn-search-box">
                     <span class="material-symbols-outlined">search</span>
-                    <input type="text" class="fn-search-input" placeholder="Tìm kiếm ghi chú..."
-                        id="globalSearch" autocomplete="off"
-                        value="{{ request('q') }}">
+                    <input type="text" class="fn-search-input" placeholder="Tìm kiếm ghi chú..." id="globalSearch"
+                        autocomplete="off" value="{{ request('q') }}">
                     <button type="button" class="fn-search-clear" id="searchClearBtn"
-                        style="display:{{ request('q') ? 'flex' : 'none' }};"
-                        title="Xóa tìm kiếm" onclick="clearLiveSearch()">
+                        style="display:{{ request('q') ? 'flex' : 'none' }};" title="Xóa tìm kiếm"
+                        onclick="clearLiveSearch()">
                         <span class="material-symbols-outlined fn-icon-sm">close</span>
                     </button>
                     <span class="fn-search-spinner" id="searchSpinner" style="display:none;"></span>
@@ -302,9 +345,19 @@
     </main>
 
     {{-- FAB (Mobile) --}}
-    <a href="{{ route('notes.create') }}" class="fn-fab" title="Ghi chú mới">
-        <span class="material-symbols-outlined">add</span>
-    </a>
+    @auth
+        @if(isset($layoutCanCreateNote) && $layoutCanCreateNote && request()->get('view') !== 'shared')
+            <a href="{{ route('notes.create') }}" class="fn-fab" title="Ghi chú mới">
+                <span class="material-symbols-outlined">add</span>
+            </a>
+        @elseif(!isset($layoutCanCreateNote) || !$layoutCanCreateNote)
+            {{-- Locked workspace: FAB shown but disabled --}}
+            <span class="fn-fab fn-fab-disabled" title="Bạn không có quyền tạo ghi chú trong workspace này"
+                style="opacity:0.4; cursor:not-allowed; pointer-events:none;">
+                <span class="material-symbols-outlined">add</span>
+            </span>
+        @endif
+    @endauth
 
     {{-- Static JS: Bootstrap + Core helpers --}}
     <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
@@ -340,8 +393,58 @@
             window.__appUrl = '{{ rtrim(config("app.url"), "/") }}';
             window.__appDebug = {{ config('app.debug') ? 'true' : 'false' }};
             window.FN_SEARCH_URL = '{{ route("dashboard.search") }}';
+            // Active workspace for real-time lock enforcement
+            window.__activeWorkspaceId = {{ session('active_workspace_id', 'null') }};
         </script>
         <script src="{{ asset('assets/js/echo-init.js') }}"></script>
+
+        {{-- ── Global WorkspaceLocked real-time listener ───────────────
+             Works on EVERY page. When the owner locks the active workspace,
+             all members (on any page) immediately see a password prompt.
+             NOTE: We register a hook that echo-init.js will call after
+             EchoInstance is created, to avoid the race condition where this
+             script runs before Echo is initialised.
+        ─────────────────────────────────────────────────────────────── --}}
+        <script>
+        // Register a post-init hook that echo-init.js calls after creating EchoInstance
+        window.__echoPostInitHooks = window.__echoPostInitHooks || [];
+        window.__echoPostInitHooks.push(function (echoInstance) {
+            var activeWsId = window.__activeWorkspaceId;
+            if (!activeWsId) return;
+
+            echoInstance.private('user.' + window.__userId)
+                .listen('.workspace.locked', function (data) {
+                    var lockedWsId = parseInt(data.workspace_id);
+
+                    // Only react if the locked workspace is the one the user is in
+                    if (lockedWsId !== parseInt(activeWsId)) return;
+
+                    // Clear cached sessionStorage unlock token
+                    try { sessionStorage.removeItem('fn_ws_token_' + lockedWsId); } catch (e) {}
+
+                    // Hide page content to prevent seeing locked notes
+                    var mainContent = document.querySelector('.fn-main-content, .fn-dashboard-content, main');
+                    if (mainContent) mainContent.style.visibility = 'hidden';
+
+                    // Toast notification
+                    if (typeof showToast === 'function') {
+                        showToast('Workspace vừa được khoá. Vui lòng nhập mật khẩu để tiếp tục.', 'warning');
+                    }
+
+                    // Show verify modal immediately (blocks UI)
+                    var wsName = data.workspace_name || 'Workspace';
+                    if (typeof openWsVerifyModal === 'function') {
+                        openWsVerifyModal(lockedWsId, wsName, function () {
+                            window.location.href = '/dashboard';
+                        });
+                        // Prevent dismissing without verifying
+                        window.closeWsVerifyModal = function () {};
+                    } else {
+                        window.location.href = '/dashboard';
+                    }
+                });
+        });
+        </script>
     @endauth
 
     @stack('scripts')

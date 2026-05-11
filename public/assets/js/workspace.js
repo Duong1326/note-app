@@ -32,10 +32,10 @@
     // Close dropdown on outside click
     document.addEventListener('click', function (e) {
         var switcher = document.getElementById('workspaceSwitcher');
-        var brand = document.querySelector('.fn-sidebar-brand');
+        var header = document.querySelector('.fn-ws-header');
         var isInsideSwitcher = switcher && switcher.contains(e.target);
-        var isInsideBrand = brand && brand.contains(e.target);
-        if (!isInsideSwitcher && !isInsideBrand) {
+        var isInsideHeader = header && header.contains(e.target);
+        if (!isInsideSwitcher && !isInsideHeader) {
             var dropdown = document.getElementById('wsDropdown');
             if (dropdown) dropdown.classList.add('d-none');
             if (switcher) switcher.classList.remove('open');
@@ -284,6 +284,16 @@
             if (data.success) {
                 closeWorkspaceSettings();
                 if (typeof showToast === 'function') showToast(data.message, 'success');
+
+                // Clear the lock-verify token for the deleted workspace
+                try { sessionStorage.removeItem('fn_ws_token_' + _currentWsId); } catch (e) {}
+
+                // Update active workspace ID in JS so the next page load is correct
+                if (data.redirect_workspace_id) {
+                    window.__activeWorkspaceId = data.redirect_workspace_id;
+                }
+
+                // Redirect — session is already reset to default on the server
                 window.location.href = '/dashboard';
             } else {
                 if (typeof showToast === 'function') showToast(data.message, 'error');

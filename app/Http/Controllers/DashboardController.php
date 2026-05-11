@@ -47,16 +47,25 @@ class DashboardController extends Controller
 
         // Check if user owns this workspace or has shared access
         $activeWorkspace = \App\Models\Workspace::find($activeWsId);
-        $isWorkspaceOwner = $activeWorkspace && $activeWorkspace->user_id === $user->id;
+
+        // ── Guard: session points to a workspace that no longer exists ──
+        // (e.g. the owner deleted it while this user was inside)
+        if (!$activeWorkspace) {
+            $activeWsId = $defaultWs->id;
+            $activeWorkspace = $defaultWs;
+            session(['active_workspace_id' => $activeWsId]);
+        }
+
+        $isWorkspaceOwner = $activeWorkspace->user_id === $user->id;
         $workspaceShare = null;
 
-        if (!$isWorkspaceOwner && $activeWorkspace) {
+        if (!$isWorkspaceOwner) {
             $workspaceShare = $activeWorkspace->shares()
                 ->where('shared_with_user_id', $user->id)
                 ->first();
 
             if (!$workspaceShare) {
-                // Fallback to default workspace
+                // User has no access to this workspace — fall back to default
                 $activeWsId = $defaultWs->id;
                 $activeWorkspace = $defaultWs;
                 $isWorkspaceOwner = true;
@@ -97,21 +106,36 @@ class DashboardController extends Controller
         $canCreateNote = $isWorkspaceOwner
             || ($workspaceShare && $workspaceShare->permission === 'edit');
 
+        // ── Workspace lock gate ──────────────────────────────────────────
+        // If the workspace is password-protected, require verification unless
+        // the user has a valid session verify timestamp that is NEWER than
+        // the workspace's updated_at (which changes each time the lock
+        // password is set or changed).
+        $requiresPasswordVerify = false;
+        if ($activeWorkspace->isPasswordProtected()) {
+            $verifyTs  = session('ws_verified_ts_' . $activeWorkspace->id, 0);
+            $lockTs    = $activeWorkspace->updated_at->timestamp;
+            if ($verifyTs < $lockTs) {
+                $requiresPasswordVerify = true;
+            }
+        }
+
         return response(view('dashboard', [
-            'recentNotes'      => $recentNotes,
-            'sharedNotes'      => $user->sharedNotes()
+            'recentNotes'            => $recentNotes,
+            'sharedNotes'            => $user->sharedNotes()
                 ->with(['note.labels', 'note.attachments', 'note.user:id,name,avatar_url'])
                 ->latest()
                 ->get(),
-            'labels'           => $user->labels()->orderBy('name')->get(),
-            'searchQuery'      => $request->q,
-            'nextCursor'       => $nextCursor,
-            'hasMoreNotes'     => $hasMoreNotes,
-            'activeWorkspace'  => $activeWorkspace,
-            'isWorkspaceOwner' => $isWorkspaceOwner,
-            'workspaceShare'   => $workspaceShare,
-            'canCreateNote'    => $canCreateNote,
-            'isSharedView'     => false,
+            'labels'                 => $user->labels()->orderBy('name')->get(),
+            'searchQuery'            => $request->q,
+            'nextCursor'             => $nextCursor,
+            'hasMoreNotes'           => $hasMoreNotes,
+            'activeWorkspace'        => $activeWorkspace,
+            'isWorkspaceOwner'       => $isWorkspaceOwner,
+            'workspaceShare'         => $workspaceShare,
+            'canCreateNote'          => $canCreateNote,
+            'isSharedView'           => false,
+            'requiresPasswordVerify' => $requiresPasswordVerify,
         ]))->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 

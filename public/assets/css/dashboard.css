@@ -533,11 +533,6 @@
     .fn-welcome-title {
         font-size: 1.5rem;
     }
-
-    .fn-btn-new-note {
-        width: 100%;
-        justify-content: center;
-    }
 }
 
 /* ── Load More Button ────────────────────────── */

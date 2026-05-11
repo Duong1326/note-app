@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\WorkspaceDeleted;
 use App\Http\Requests\Workspace\StoreWorkspaceRequest;
 use App\Http\Requests\Workspace\UpdateWorkspaceRequest;
 use App\Models\Workspace;
@@ -107,12 +108,36 @@ class WorkspaceController extends Controller
      */
     public function destroy(Request $request, Workspace $workspace): JsonResponse
     {
+        $user = $request->user();
+
+        // Collect shared user IDs BEFORE the workspace (and its shares) are deleted
+        $sharedUserIds = $workspace->shares()->pluck('shared_with_user_id')->toArray();
+        $wsId   = $workspace->id;
+        $wsName = $workspace->name;
+
         try {
-            $this->workspaceService->delete($workspace, $request->user()->id);
+            $this->workspaceService->delete($workspace, $user->id);
+
+            // Broadcast to all shared members so they redirect to their own workspace
+            if (!empty($sharedUserIds)) {
+                broadcast(new WorkspaceDeleted($wsId, $wsName, $user, $sharedUserIds));
+            }
+
+            // Reset session to the user's default workspace so the next
+            // dashboard load never tries to query the now-deleted workspace.
+            $defaultWs = $user->workspaces()->where('is_default', true)->first();
+            if ($defaultWs) {
+                session(['active_workspace_id' => $defaultWs->id]);
+            } else {
+                session()->forget('active_workspace_id');
+            }
+            // Also clear the lock-verify token for the deleted workspace
+            session()->forget('ws_verified_ts_' . $wsId);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Đã xóa workspace thành công.',
+                'success'              => true,
+                'message'              => 'Đã xóa workspace thành công.',
+                'redirect_workspace_id'=> $defaultWs?->id,
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -137,6 +162,13 @@ class WorkspaceController extends Controller
             ->exists();
 
         abort_if(!$isOwner && !$isShared, 403, 'Bạn không có quyền truy cập workspace này.');
+
+        // Clear verify token of the workspace being LEFT so the user
+        // must re-verify if they switch back to a locked workspace later.
+        $prevWsId = session('active_workspace_id');
+        if ($prevWsId && $prevWsId !== $workspace->id) {
+            session()->forget('ws_verified_ts_' . $prevWsId);
+        }
 
         // Store active workspace in session
         session(['active_workspace_id' => $workspace->id]);

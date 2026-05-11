@@ -60,9 +60,22 @@ class AppServiceProvider extends ServiceProvider
                     session(['active_workspace_id' => $activeWsId]);
                 }
 
+                // Determine if the user can create notes in the active workspace
+                $activeWs = \App\Models\Workspace::find($activeWsId);
+                $isOwner  = $activeWs && $activeWs->user_id === $user->id;
+                $wsShare  = null;
+                if (!$isOwner && $activeWs) {
+                    $wsShare = $activeWs->shares()
+                        ->where('shared_with_user_id', $user->id)
+                        ->first();
+                }
+                $layoutCanCreate = $isOwner
+                    || ($wsShare && $wsShare->permission === 'edit');
+
                 $view->with('sidebarWorkspaces', $ownedWorkspaces);
                 $view->with('sidebarSharedWorkspaces', $sharedWorkspaces);
                 $view->with('activeWorkspaceId', $activeWsId);
+                $view->with('layoutCanCreateNote', $layoutCanCreate);
             }
         });
     }

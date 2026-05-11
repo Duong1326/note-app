@@ -7,36 +7,59 @@
 
         {{-- Welcome Section --}}
         <section class="fn-welcome fn-animate-in">
-            <div class="row align-items-end justify-content-between g-4">
-                <div class="col-12 col-md-8">
-                    <h2 class="fn-welcome-title">Chào mừng trở lại, {{ Auth::user()->name }}</h2>
-                    <p class="fn-welcome-sub">
-                        @if(isset($isSharedView) && $isSharedView)
-                            <span class="fn-ws-badge">
-                                <span class="material-symbols-outlined">group</span>
-                                Ghi chú được chia sẻ với tôi
-                            </span>
-                        @elseif(isset($activeWorkspace))
-                            <span class="fn-ws-badge">
-                                <span class="material-symbols-outlined">folder</span>
-                                {{ $activeWorkspace->name }}
-                                @if(isset($workspaceShare))
-                                    &middot; {{ $workspaceShare->permission === 'edit' ? 'Chỉnh sửa' : 'Chỉ đọc' }}
+            <div class="fn-ws-page-header">
+                {{-- Left: text greeting + workspace name --}}
+                <div class="fn-ws-page-header-left">
+                    @if(isset($isSharedView) && $isSharedView)
+                        <div class="fn-ws-page-info">
+                            <h2 class="fn-ws-page-name">Chia sẻ với tôi</h2>
+                            <span class="fn-ws-page-greeting">Ghi chú được người khác chia sẻ với bạn</span>
+                        </div>
+                    @elseif(isset($activeWorkspace))
+                        <div class="fn-ws-page-info">
+                            <h2 class="fn-ws-page-name">
+                                @if($activeWorkspace->is_default)
+                                    {{ Auth::user()->name }}'s Space
+                                @else
+                                    {{ $activeWorkspace->name }}
                                 @endif
-                            </span>
-                        @else
-                            Sẵn sàng ghi lại ý tưởng của bạn?
-                        @endif
-                    </p>
+                            </h2>
+                            @if(isset($workspaceShare))
+                                <span class="fn-ws-page-perm-badge {{ $workspaceShare->permission }}">
+                                    <span class="material-symbols-outlined">{{ $workspaceShare->permission === 'edit' ? 'edit' : 'visibility' }}</span>
+                                    {{ $workspaceShare->permission === 'edit' ? 'Chỉnh sửa' : 'Chỉ đọc' }}
+                                </span>
+                            @else
+                                <span class="fn-ws-page-meta">Workspace của tôi</span>
+                            @endif
+                        </div>
+                    @else
+                        <div class="fn-ws-page-info">
+                            <h2 class="fn-ws-page-name">{{ Auth::user()->name }}'s Space</h2>
+                            <span class="fn-ws-page-greeting">Workspace của tôi</span>
+                        </div>
+                    @endif
                 </div>
-                <div class="col-12 col-md-4 text-md-end">
+
+                {{-- Right: actions --}}
+                <div class="fn-ws-page-header-right">
+                    {{-- Settings button: only for owned workspace (not shared view) --}}
+                    @if(!(isset($isSharedView) && $isSharedView) && !isset($workspaceShare) && isset($activeWorkspace))
+                        <button type="button" class="fn-ws-page-settings-btn"
+                                onclick="openWorkspaceSettings({{ $activeWorkspace->id }})"
+                                title="Cài đặt workspace">
+                            <span class="material-symbols-outlined">settings</span>
+                            <span class="fn-ws-page-settings-label">Cài đặt</span>
+                        </button>
+                    @endif
+
                     @if(isset($canCreateNote) && $canCreateNote)
-                        <a href="{{ route('notes.create') }}" class="fn-btn-new-note">
+                        <a href="{{ route('notes.create') }}" class="fn-btn-new-note d-none d-lg-inline-flex">
                             <span class="material-symbols-outlined">add</span>
                             Ghi chú mới
                         </a>
                     @else
-                        <span class="fn-btn-new-note fn-btn-disabled"
+                        <span class="fn-btn-new-note fn-btn-disabled d-none d-lg-inline-flex"
                               title="Bạn chỉ có quyền đọc trong workspace này"
                               style="opacity:0.45; cursor:not-allowed; pointer-events:none;">
                             <span class="material-symbols-outlined">add</span>
@@ -412,4 +435,30 @@
     <script src="{{ asset('assets/js/labels.js') }}"></script>
     <script src="{{ asset('assets/js/shared-notes.js') }}"></script>
     <script src="{{ asset('assets/js/live-search.js') }}"></script>
+
+    {{-- ── Workspace Lock Gate ─────────────────────────────────────── --}}
+    @if(isset($requiresPasswordVerify) && $requiresPasswordVerify && isset($activeWorkspace))
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Auto-open verify modal — user must enter password before seeing notes
+        var wsId   = {{ $activeWorkspace->id }};
+        var wsName = @json($activeWorkspace->is_default ? Auth::user()->name . "'s Space" : $activeWorkspace->name);
+
+        // Hide note content area until verified
+        var noteSection = document.querySelector('.fn-notes-section');
+        if (noteSection) noteSection.style.visibility = 'hidden';
+
+        openWsVerifyModal(wsId, wsName, function () {
+            // After verify, reload page — DashboardController will read the flash key
+            window.location.href = '/dashboard';
+        });
+
+        // Override close button so user can't dismiss without verifying
+        window.closeWsVerifyModal = function () {
+            // Do nothing — must verify to access this workspace
+        };
+    });
+    </script>
+    @endif
+
 @endpush

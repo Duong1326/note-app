@@ -53,6 +53,15 @@ function initEcho() {
     });
 
     _subscribeToUserChannel();
+
+    // Run any post-init hooks registered by other scripts (e.g. app.blade.php)
+    if (Array.isArray(window.__echoPostInitHooks)) {
+        window.__echoPostInitHooks.forEach(fn => {
+            try { fn(window.EchoInstance); } catch (e) {
+                console.warn('[Echo] postInitHook error:', e);
+            }
+        });
+    }
 }
 
 /* ── Subscribe to private user channel ─────────────── */
@@ -78,6 +87,18 @@ function _subscribeToUserChannel() {
         })
         .listen('.note.deleted', (data) => {
             _handleNoteDeleted(data);
+        })
+        .listen('.workspace.share_permission_changed', (data) => {
+            _handleWsPermissionChanged(data);
+        })
+        .listen('.workspace.shared', (data) => {
+            _handleWorkspaceShared(data);
+        })
+        .listen('.workspace.deleted', (data) => {
+            _handleWorkspaceDeleted(data);
+        })
+        .listen('.workspace.share_revoked', (data) => {
+            _handleWorkspaceShareRevoked(data);
         });
 
     console.log(`[Echo] Subscribed to private channel: user.${userId}`);
@@ -324,6 +345,7 @@ function _updateCardThumbnail(col, url) {
 }
 
 function _handlePermissionChanged(data) {
+    // Note-level share permission change
     const permLabel = data.new_permission === 'edit' ? 'chỉnh sửa' : 'chỉ đọc';
     const notification = {
         id: Date.now(),
@@ -338,6 +360,50 @@ function _handlePermissionChanged(data) {
 
     _addNotification(notification);
     _showRealtimeToast(notification);
+}
+
+/**
+ * Workspace-level share permission changed.
+ * Updates: sidebar permission badge, "New Note" button visibility,
+ * and the page header meta text — all without a full reload.
+ */
+function _handleWsPermissionChanged(data) {
+    const wsId      = parseInt(data.workspace_id);
+    const newPerm   = data.new_permission; // 'edit' | 'read'
+    const permLabel = newPerm === 'edit' ? 'Sửa' : 'Đọc';
+    const permText  = newPerm === 'edit' ? 'chỉnh sửa' : 'chỉ đọc';
+
+    // 1. Toast & notification
+    const notification = {
+        id: Date.now(),
+        type: 'permission',
+        icon: 'admin_panel_settings',
+        title: 'Quyền workspace thay đổi',
+        message: `<strong>${data.changed_by}</strong> đã đổi quyền của bạn thành <strong>${permText}</strong> trong workspace "${_truncate(data.workspace_name, 30)}"`,
+        time: new Date(),
+        unread: true,
+    };
+    _addNotification(notification);
+    _showRealtimeToast(notification);
+
+    // Only update UI if this is the currently active workspace
+    if (parseInt(window.__activeWorkspaceId) !== wsId) return;
+
+    // 2. Update permission badge in sidebar
+    const sidebarItem = document.querySelector(`.fn-ws-item[data-ws-id="${wsId}"] .fn-ws-perm-badge`);
+    if (sidebarItem) sidebarItem.textContent = permLabel;
+
+    // 3. Show/hide the "New Note" button based on new permission
+    const newNoteBtn = document.querySelector('.fn-btn-new-note');
+    if (newNoteBtn) {
+        newNoteBtn.style.display = newPerm === 'edit' ? '' : 'none';
+    }
+
+    // 4. Update the dashboard header meta (e.g. "Chỉnh sửa" vs "Chỉ đọc")
+    const pageMeta = document.querySelector('.fn-ws-page-meta');
+    if (pageMeta) {
+        pageMeta.textContent = newPerm === 'edit' ? 'Quyền chỉnh sửa' : 'Quyền chỉ đọc';
+    }
 }
 
 function _handleShareRevoked(data) {
@@ -362,6 +428,215 @@ function _handleShareRevoked(data) {
         sharedCard.style.opacity = '0';
         sharedCard.style.transform = 'scale(0.9)';
         setTimeout(() => sharedCard.remove(), 300);
+    }
+}
+
+/* ── Workspace Real-time Handlers ──────────────────── */
+
+/**
+ * Called when the current user is granted access to a new workspace.
+ * Shows a notification modal and adds the workspace to the sidebar.
+ */
+function _handleWorkspaceShared(data) {
+    const wsName = data.workspace_name || 'Workspace';
+    const sharedBy = data.shared_by || {};
+    const permText  = data.permission === 'edit' ? 'chỉnh sửa' : 'chỉ đọc';
+    const permLabel = data.permission === 'edit' ? 'Sửa' : 'Đọc';
+
+    // 1. Notification entry
+    const notification = {
+        id: Date.now(),
+        type: 'share',
+        icon: 'folder_shared',
+        title: 'Workspace mới được chia sẻ',
+        message: `<strong>${sharedBy.name}</strong> đã chia sẻ workspace "${_truncate(wsName, 30)}" với bạn (${permText})`,
+        avatarUrl: sharedBy.avatar_url,
+        time: new Date(),
+        unread: true,
+    };
+    _addNotification(notification);
+    _showRealtimeToast(notification);
+    _playNotificationSound();
+
+    // 2. Inject workspace item into sidebar #wsSharedList
+    _injectSharedWorkspaceSidebarItem(data);
+
+    // 3. Show a dedicated modal so the user can immediately switch to it
+    _showWorkspaceSharedModal(data);
+}
+
+/**
+ * Inject a new shared workspace item into the sidebar dropdown.
+ */
+function _injectSharedWorkspaceSidebarItem(data) {
+    const wsId    = data.workspace_id;
+    const wsName  = data.workspace_name;
+    const perm    = data.permission;
+    const permLbl = perm === 'edit' ? 'Sửa' : 'Đọc';
+    const isLocked = data.workspace && data.workspace.is_locked ? '1' : '0';
+
+    // Don't duplicate
+    if (document.querySelector(`.fn-ws-item[data-ws-id="${wsId}"]`)) return;
+
+    let list = document.getElementById('wsSharedList');
+    if (!list) {
+        // The shared section might not exist yet — create the separator + container
+        const switcher = document.getElementById('workspaceSwitcher');
+        const wsDropdown = document.getElementById('wsDropdown');
+        if (!wsDropdown) return;
+
+        // Find the shared-with-me item to insert before it
+        const sharedMeItem = wsDropdown.querySelector('.fn-ws-shared-me-item');
+        if (sharedMeItem) {
+            const sep = document.createElement('hr');
+            sep.className = 'fn-ws-sep';
+            sep.style.cssText = 'margin:0.25rem 0;';
+            wsDropdown.insertBefore(sep, sharedMeItem);
+
+            list = document.createElement('div');
+            list.id = 'wsSharedList';
+            wsDropdown.insertBefore(list, sharedMeItem);
+        }
+    }
+    if (!list) return;
+
+    const el = document.createElement('div');
+    el.className = 'fn-ws-item fn-ws-shared fn-animate-in';
+    el.dataset.wsId = wsId;
+    el.dataset.wsName = wsName;
+    el.dataset.wsLocked = isLocked;
+    el.innerHTML =
+        `<div class="fn-ws-item-info" onclick="switchWorkspace(${wsId}, '${wsName.replace(/'/g, "\\'")}')">` +
+            `<span class="fn-ws-item-name">${_escHtml(wsName)}</span>` +
+            `<span class="fn-ws-perm-badge">${_escHtml(permLbl)}</span>` +
+        `</div>`;
+    list.appendChild(el);
+}
+
+/**
+ * Show a modal informing the user they have been added to a workspace.
+ */
+function _showWorkspaceSharedModal(data) {
+    const wsId   = data.workspace_id;
+    const wsName = data.workspace_name || 'Workspace';
+    const perm   = data.permission === 'edit' ? 'Chỉnh sửa' : 'Chỉ đọc';
+    const sharedBy = data.shared_by || {};
+
+    // Remove any pre-existing instance
+    const existing = document.getElementById('wsSharedNotifyModal');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'wsSharedNotifyModal';
+    overlay.className = 'fn-modal-overlay show';
+    overlay.style.cssText = 'z-index:9999;';
+    overlay.innerHTML = `
+        <div class="fn-modal-card" style="max-width:420px;">
+            <div class="fn-modal-header" style="border-bottom:1px solid var(--fn-outline-variant);">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="fn-modal-icon" style="background:var(--fn-primary-container);">
+                        <span class="material-symbols-outlined" style="color:var(--fn-primary);">folder_shared</span>
+                    </div>
+                    <div>
+                        <h2 class="fn-modal-title">Workspace mới!</h2>
+                        <small style="font-size:12px;color:var(--fn-on-surface-variant);">Được chia sẻ bởi ${_escHtml(sharedBy.name || '')}</small>
+                    </div>
+                </div>
+                <button type="button" class="fn-modal-close" onclick="document.getElementById('wsSharedNotifyModal').remove(); document.body.style.overflow='';">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="fn-modal-body" style="padding:1.5rem;">
+                <p style="margin:0 0 0.75rem;font-size:0.9375rem;">
+                    <strong>${_escHtml(sharedBy.name || '')}</strong> đã chia sẻ workspace
+                    <strong>"${_escHtml(wsName)}"</strong> với bạn.
+                </p>
+                <p style="margin:0;font-size:0.875rem;color:var(--fn-on-surface-variant);">Quyền của bạn: <strong>${_escHtml(perm)}</strong></p>
+            </div>
+            <div class="fn-modal-footer" style="padding:1rem 1.5rem;">
+                <div class="fn-modal-actions">
+                    <button type="button" class="fn-modal-btn-cancel"
+                        onclick="document.getElementById('wsSharedNotifyModal').remove(); document.body.style.overflow='';">Để sau</button>
+                    <button type="button" class="fn-modal-btn-save"
+                        onclick="document.getElementById('wsSharedNotifyModal').remove(); document.body.style.overflow=''; switchWorkspace(${wsId}, '${wsName.replace(/'/g, "\\'")}')">Truy cập ngay</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Called when the current user's shared workspace is deleted by the owner.
+ * If they are currently inside that workspace, redirect them out.
+ */
+function _handleWorkspaceDeleted(data) {
+    const wsId   = parseInt(data.workspace_id);
+    const wsName = data.workspace_name || 'Workspace';
+
+    // 1. Notification
+    const notification = {
+        id: Date.now(),
+        type: 'revoke',
+        icon: 'folder_delete',
+        title: 'Workspace đã bị xóa',
+        message: `<strong>${data.deleted_by.name}</strong> đã xóa workspace "${_truncate(wsName, 30)}"`,
+        time: new Date(),
+        unread: true,
+    };
+    _addNotification(notification);
+    _showRealtimeToast(notification);
+
+    // 2. Remove sidebar item
+    const sidebarItem = document.querySelector(`.fn-ws-item[data-ws-id="${wsId}"]`);
+    if (sidebarItem) sidebarItem.remove();
+
+    // 3. If currently inside the deleted workspace, force redirect to personal dashboard
+    if (parseInt(window.__activeWorkspaceId) === wsId) {
+        // Show a blocking notice before redirect
+        if (typeof showToast === 'function') {
+            showToast(`Workspace "${_truncate(wsName, 30)}" đã bị xóa. Đang chuyển về workspace cá nhân...`, 'warning');
+        }
+        setTimeout(() => {
+            window.location.href = '/dashboard';
+        }, 2000);
+    }
+}
+
+/**
+ * Called when the current user's access to a workspace is revoked by the owner.
+ * Removes the workspace from the sidebar and redirects if currently inside it.
+ */
+function _handleWorkspaceShareRevoked(data) {
+    const wsId   = parseInt(data.workspace_id);
+    const wsName = data.workspace_name || 'Workspace';
+
+    // 1. Notification
+    const notification = {
+        id: Date.now(),
+        type: 'revoke',
+        icon: 'no_accounts',
+        title: 'Quyền workspace bị thu hồi',
+        message: `<strong>${data.revoked_by.name}</strong> đã thu hồi quyền truy cập workspace "${_truncate(wsName, 30)}" của bạn`,
+        time: new Date(),
+        unread: true,
+    };
+    _addNotification(notification);
+    _showRealtimeToast(notification);
+
+    // 2. Remove sidebar item
+    const sidebarItem = document.querySelector(`.fn-ws-item[data-ws-id="${wsId}"]`);
+    if (sidebarItem) sidebarItem.remove();
+
+    // 3. If currently inside that workspace, redirect back to personal workspace
+    if (parseInt(window.__activeWorkspaceId) === wsId) {
+        if (typeof showToast === 'function') {
+            showToast(`Quyền truy cập workspace "${_truncate(wsName, 30)}" đã bị thu hồi. Đang chuyển về workspace cá nhân...`, 'warning');
+        }
+        setTimeout(() => {
+            window.location.href = '/dashboard';
+        }, 2000);
     }
 }
 
