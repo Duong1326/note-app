@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NoteCreated;
 use App\Events\NoteDeleted;
 use App\Events\NoteUpdated;
 use App\Models\Note;
+use App\Models\Workspace;
 use App\Services\NoteService;
 use App\Http\Requests\Note\StoreNoteRequest;
 use App\Http\Requests\Note\UpdateNoteRequest;
@@ -46,7 +48,7 @@ class NoteController extends Controller
         $sharePermission = null;
 
         if (!$isOwner && $note->workspace_id) {
-            $workspace = \App\Models\Workspace::find($note->workspace_id);
+            $workspace = Workspace::find($note->workspace_id);
 
             // 1. Workspace owner has full access to all notes inside
             if ($workspace && $workspace->user_id === $user->id) {
@@ -109,11 +111,9 @@ class NoteController extends Controller
         }
 
         // 2. Workspace owner has full access to all notes inside their workspace
-        if ($note->workspace_id) {
-            $workspace = \App\Models\Workspace::find($note->workspace_id);
-            if ($workspace && $workspace->user_id === $user->id) {
-                return response()->json(['allowed' => true]);
-            }
+        $workspace = $note->workspace_id ? Workspace::find($note->workspace_id) : null;
+        if ($workspace && $workspace->user_id === $user->id) {
+            return response()->json(['allowed' => true]);
         }
 
         // 3. Direct note-level share
@@ -125,9 +125,8 @@ class NoteController extends Controller
         }
 
         // 4. Workspace-level share (any permission = can open the note)
-        if ($note->workspace_id) {
-            $hasWsShare = \App\Models\Workspace::find($note->workspace_id)
-                ?->shares()
+        if ($workspace) {
+            $hasWsShare = $workspace->shares()
                 ->where('shared_with_user_id', $user->id)
                 ->exists();
             if ($hasWsShare) {
@@ -142,8 +141,6 @@ class NoteController extends Controller
     }
 
 
-
-
     public function store(StoreNoteRequest $request): JsonResponse|RedirectResponse
     {
         $user = $request->user();
@@ -151,7 +148,7 @@ class NoteController extends Controller
         // Guard: block note creation for read-only workspace members
         $activeWsId = session('active_workspace_id');
         if ($activeWsId) {
-            $workspace = \App\Models\Workspace::find($activeWsId);
+            $workspace = Workspace::find($activeWsId);
             if ($workspace && $workspace->user_id !== $user->id) {
                 $share = $workspace->shares()
                     ->where('shared_with_user_id', $user->id)
@@ -170,7 +167,7 @@ class NoteController extends Controller
 
         // Broadcast to other workspace members so their dashboards update in real-time
         $note->loadMissing(['workspace.shares', 'labels', 'attachments']);
-        \App\Events\NoteCreated::dispatch($note, $user);
+        NoteCreated::dispatch($note, $user);
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -263,13 +260,7 @@ class NoteController extends Controller
 
     public function pin(Note $note): JsonResponse|RedirectResponse
     {
-        $user = request()->user();
-        $isOwner = $note->user_id === $user->id;
-        $hasWsEdit = !$isOwner && $note->workspace_id &&
-            \App\Models\Workspace::find($note->workspace_id)
-                ?->shares()->where('shared_with_user_id', $user->id)->where('permission', 'edit')->exists();
-
-        abort_if(!$isOwner && !$hasWsEdit, 403, 'Bạn không có quyền ghim ghi chú này.');
+        $this->authorizePinAction($note, request()->user(), 'Bạn không có quyền ghim ghi chú này.');
 
         $note = $this->noteService->pin($note);
 
@@ -286,13 +277,7 @@ class NoteController extends Controller
 
     public function unpin(Note $note): JsonResponse|RedirectResponse
     {
-        $user = request()->user();
-        $isOwner = $note->user_id === $user->id;
-        $hasWsEdit = !$isOwner && $note->workspace_id &&
-            \App\Models\Workspace::find($note->workspace_id)
-                ?->shares()->where('shared_with_user_id', $user->id)->where('permission', 'edit')->exists();
-
-        abort_if(!$isOwner && !$hasWsEdit, 403, 'Bạn không có quyền bỏ ghim ghi chú này.');
+        $this->authorizePinAction($note, request()->user(), 'Bạn không có quyền bỏ ghim ghi chú này.');
 
         $note = $this->noteService->unpin($note);
 
@@ -305,5 +290,22 @@ class NoteController extends Controller
         }
 
         return back();
+    }
+
+    // ──────────────────────────────────────────────
+    // Helpers
+    // ──────────────────────────────────────────────
+
+    /**
+     * Shared authorization check for pin/unpin: note owner OR workspace edit member.
+     */
+    private function authorizePinAction(Note $note, $user, string $message): void
+    {
+        $isOwner = $note->user_id === $user->id;
+        $hasWsEdit = !$isOwner && $note->workspace_id &&
+            Workspace::find($note->workspace_id)
+                ?->shares()->where('shared_with_user_id', $user->id)->where('permission', 'edit')->exists();
+
+        abort_if(!$isOwner && !$hasWsEdit, 403, $message);
     }
 }

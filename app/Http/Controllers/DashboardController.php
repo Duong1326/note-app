@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Note;
+use App\Models\Workspace;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -46,7 +48,7 @@ class DashboardController extends Controller
         $activeWsId = session('active_workspace_id', $defaultWs->id);
 
         // Check if user owns this workspace or has shared access
-        $activeWorkspace = \App\Models\Workspace::find($activeWsId);
+        $activeWorkspace = Workspace::find($activeWsId);
 
         // ── Guard: session points to a workspace that no longer exists ──
         // (e.g. the owner deleted it while this user was inside)
@@ -75,14 +77,8 @@ class DashboardController extends Controller
 
         // Build notes query: always show ALL notes inside the workspace,
         // regardless of who created them (owner or any member).
-        if ($isWorkspaceOwner) {
-            $notesQuery = \App\Models\Note::where('workspace_id', $activeWsId)
-                ->with(['labels', 'attachments', 'shares', 'user:id,name,avatar_url']);
-        } else {
-            // Shared workspace: show ALL notes inside it
-            $notesQuery = \App\Models\Note::where('workspace_id', $activeWsId)
-                ->with(['labels', 'attachments', 'shares', 'user:id,name,avatar_url']);
-        }
+        $notesQuery = Note::where('workspace_id', $activeWsId)
+            ->with(['labels', 'attachments', 'shares', 'user:id,name,avatar_url']);
 
 
         if ($isSearch) {
@@ -148,22 +144,19 @@ class DashboardController extends Controller
      */
     public function loadMore(Request $request): JsonResponse
     {
-        $user = $request->user();
         $cursor = $request->input('cursor');
         $activeWsId = session('active_workspace_id');
 
-        // Determine if user owns the workspace or is viewing a shared one
-        $workspace = $activeWsId ? \App\Models\Workspace::find($activeWsId) : null;
-        $isOwner = $workspace && $workspace->user_id === $user->id;
-
         // Always show ALL notes in the workspace (from any creator: owner or members)
-        if ($workspace) {
-            $query = \App\Models\Note::where('workspace_id', $activeWsId)
-                ->with(['labels', 'attachments', 'shares', 'user:id,name,avatar_url'])
-                ->defaultOrder();
-        } else {
+        $workspace = $activeWsId ? Workspace::find($activeWsId) : null;
+
+        if (!$workspace) {
             return response()->json(['notes' => [], 'hasMoreNotes' => false, 'nextCursor' => null]);
         }
+
+        $query = Note::where('workspace_id', $activeWsId)
+            ->with(['labels', 'attachments', 'shares', 'user:id,name,avatar_url'])
+            ->defaultOrder();
 
         if ($cursor) {
             $decoded = base64_decode($cursor, strict: true);
@@ -207,21 +200,19 @@ class DashboardController extends Controller
      */
     public function search(Request $request): JsonResponse
     {
-        $user = $request->user();
         $q    = trim((string) $request->input('q', ''));
         $activeWsId = session('active_workspace_id');
 
-        $workspace = $activeWsId ? \App\Models\Workspace::find($activeWsId) : null;
-        $isOwner = $workspace && $workspace->user_id === $user->id;
-
         // Always query all notes in the workspace regardless of who created them
-        if ($workspace) {
-            $query = \App\Models\Note::where('workspace_id', $activeWsId)
-                ->with(['labels', 'attachments', 'shares', 'user:id,name,avatar_url'])
-                ->defaultOrder();
-        } else {
+        $workspace = $activeWsId ? Workspace::find($activeWsId) : null;
+
+        if (!$workspace) {
             return response()->json(['notes' => [], 'query' => $q, 'total' => 0]);
         }
+
+        $query = Note::where('workspace_id', $activeWsId)
+            ->with(['labels', 'attachments', 'shares', 'user:id,name,avatar_url'])
+            ->defaultOrder();
 
         if ($q !== '') {
             $query->search($q);
@@ -239,21 +230,19 @@ class DashboardController extends Controller
 
     public function filterByLabel(Request $request): JsonResponse
     {
-        $user = $request->user();
         $labelIds = array_filter(array_map('intval', (array) $request->input('label_ids', [])));
         $activeWsId = session('active_workspace_id');
 
-        $workspace = $activeWsId ? \App\Models\Workspace::find($activeWsId) : null;
-        $isOwner = $workspace && $workspace->user_id === $user->id;
-
         // Always query all notes in the workspace regardless of who created them
-        if ($workspace) {
-            $query = \App\Models\Note::where('workspace_id', $activeWsId)
-                ->with(['labels', 'attachments', 'shares', 'user:id,name,avatar_url'])
-                ->defaultOrder();
-        } else {
+        $workspace = $activeWsId ? Workspace::find($activeWsId) : null;
+
+        if (!$workspace) {
             return response()->json(['notes' => []]);
         }
+
+        $query = Note::where('workspace_id', $activeWsId)
+            ->with(['labels', 'attachments', 'shares', 'user:id,name,avatar_url'])
+            ->defaultOrder();
 
         // AND logic: note must have every selected label
         foreach ($labelIds as $labelId) {

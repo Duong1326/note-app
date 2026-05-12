@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -89,13 +88,7 @@ class User extends Authenticatable
         return $default;
     }
 
-    /** User preferences (theme, font_size, note_color) */
-    public function preference(): HasOne
-    {
-        return $this->hasOne(UserPreference::class, 'user_id');
-    }
 
-    // ──────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────
 
