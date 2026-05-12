@@ -4,80 +4,11 @@
 
 @section('content')
     <div class="fn-dashboard">
-
-        {{-- Welcome Section --}}
-        <section class="fn-welcome fn-animate-in">
-            <div class="fn-ws-page-header">
-                {{-- Left: text greeting + workspace name --}}
-                <div class="fn-ws-page-header-left">
-                    @if(isset($isSharedView) && $isSharedView)
-                        <div class="fn-ws-page-info">
-                            <h2 class="fn-ws-page-name">Chia sẻ với tôi</h2>
-                            <span class="fn-ws-page-greeting">Ghi chú được người khác chia sẻ với bạn</span>
-                        </div>
-                    @elseif(isset($activeWorkspace))
-                        <div class="fn-ws-page-info">
-                            <h2 class="fn-ws-page-name">
-                                @if($activeWorkspace->is_default)
-                                    {{ Auth::user()->name }}'s Space
-                                @else
-                                    {{ $activeWorkspace->name }}
-                                @endif
-                            </h2>
-                            @if(isset($workspaceShare))
-                                <span class="fn-ws-page-perm-badge {{ $workspaceShare->permission }}">
-                                    <span class="material-symbols-outlined">{{ $workspaceShare->permission === 'edit' ? 'edit' : 'visibility' }}</span>
-                                    {{ $workspaceShare->permission === 'edit' ? 'Chỉnh sửa' : 'Chỉ đọc' }}
-                                </span>
-                            @else
-                                <span class="fn-ws-page-meta">Workspace của tôi</span>
-                            @endif
-                        </div>
-                    @else
-                        <div class="fn-ws-page-info">
-                            <h2 class="fn-ws-page-name">{{ Auth::user()->name }}'s Space</h2>
-                            <span class="fn-ws-page-greeting">Workspace của tôi</span>
-                        </div>
-                    @endif
-                </div>
-
-                {{-- Right: actions --}}
-                <div class="fn-ws-page-header-right">
-                    {{-- Settings button: only for owned workspace (not shared view) --}}
-                    @if(!(isset($isSharedView) && $isSharedView) && !isset($workspaceShare) && isset($activeWorkspace))
-                        <button type="button" class="fn-ws-page-settings-btn"
-                                onclick="openWorkspaceSettings({{ $activeWorkspace->id }})"
-                                title="Cài đặt workspace">
-                            <span class="material-symbols-outlined">settings</span>
-                            <span class="fn-ws-page-settings-label">Cài đặt</span>
-                        </button>
-                    @endif
-
-                    @if(isset($canCreateNote) && $canCreateNote)
-                        <a href="{{ route('notes.create') }}" class="fn-btn-new-note d-none d-lg-inline-flex">
-                            <span class="material-symbols-outlined">add</span>
-                            Ghi chú mới
-                        </a>
-                    @else
-                        <span class="fn-btn-new-note fn-btn-disabled d-none d-lg-inline-flex"
-                              title="Bạn chỉ có quyền đọc trong workspace này"
-                              style="opacity:0.45; cursor:not-allowed; pointer-events:none;">
-                            <span class="material-symbols-outlined">add</span>
-                            Ghi chú mới
-                        </span>
-                    @endif
-                </div>
-            </div>
-        </section>
-
-        {{-- Recent Notes --}}
         <div class="row g-4">
             <div class="col-12">
-
-                {{-- Section Header --}}
                 <div class="d-flex align-items-center justify-content-between mb-4">
                     <div class="d-flex align-items-center gap-3">
-                        <h3 class="fn-section-title">
+                        <h4 class="fn-sectaion-title">
                             @if(isset($isSharedView) && $isSharedView)
                                 Ghi chú được chia sẻ
                             @elseif(isset($searchQuery) && $searchQuery)
@@ -85,7 +16,7 @@
                             @else
                                 Ghi chú gần đây
                             @endif
-                        </h3>
+                        </h4>
                         <div class="fn-view-toggle">
                             <button type="button" class="fn-toggle-btn active" id="btnGridView"
                                 onclick="setNotesView('grid')" title="Dạng lưới">
@@ -97,7 +28,31 @@
                             </button>
                         </div>
                     </div>
+
+                    {{-- Action buttons: right-aligned, only for own workspace --}}
+                    @if(!(isset($isSharedView) && $isSharedView) && !isset($workspaceShare) && isset($activeWorkspace))
+                        <div class="d-flex align-items-center gap-2">
+                            {{-- Share workspace button (idea from note edit page) --}}
+                            <button type="button"
+                                    class="btn btn-sm d-flex align-items-center gap-1 fn-ws-share-btn"
+                                    onclick="openWsShareModal({{ $activeWorkspace->id }}, '{{ addslashes($activeWorkspace->is_default ? Auth::user()->name . "'s Space" : $activeWorkspace->name) }}', this)"
+                                    title="Chia sẻ workspace">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">share</span>
+                                Chia sẻ
+                            </button>
+
+                            {{-- Settings button --}}
+                            <button type="button" class="fn-ws-page-settings-btn"
+                                    onclick="openWorkspaceSettings({{ $activeWorkspace->id }})"
+                                    title="Cài đặt workspace">
+                                <span class="material-symbols-outlined">settings</span>
+                                <span class="fn-ws-page-settings-label">Cài đặt</span>
+                            </button>
+                        </div>
+                    @endif
+
                 </div>
+
 
                 {{-- Notes Grid / List --}}
                 @if(isset($isSharedView) && $isSharedView)
@@ -155,8 +110,19 @@
                             <p class="small opacity-75">Chưa có ghi chú nào được chia sẻ với bạn.</p>
                         </div>
                     @endif
-                @elseif($recentNotes->count() > 0)
+                @else
+                    {{-- Normal notes view: always show + card first, then notes --}}
                     <div class="row g-3" id="notesContainer">
+
+                        {{-- ── Create Note Card (always first) ── --}}
+                        @if(isset($canCreateNote) && $canCreateNote)
+                            <div class="col-12 col-md-6 col-lg-4 col-xl-3" id="createNoteCard">
+                                <a href="{{ route('notes.create') }}" class="fn-new-note-card" title="Tạo ghi chú mới">
+                                    <span class="fn-new-note-icon material-symbols-outlined">add</span>
+                                </a>
+                            </div>
+                        @endif
+
                         @foreach($recentNotes as $note)
                 <div class="col-12 col-md-6 col-lg-4 col-xl-3 fn-animate-in note-col"
                                 data-note-id="{{ $note->id }}"
@@ -178,15 +144,6 @@
                                         <span class="material-symbols-outlined fn-note-more"
                                             data-bs-toggle="dropdown" aria-expanded="false">more_vert</span>
                                         <ul class="dropdown-menu dropdown-menu-end fn-dropdown-menu shadow-sm border-0 rounded-3">
-                                            {{-- Edit --}}
-                                            <li>
-                                                <a class="dropdown-item d-flex align-items-center gap-2 py-2"
-                                                    href="{{ route('notes.edit', $note->id) }}"
-                                                    onclick="event.preventDefault(); requireUnlock('{{ $note->id }}', async (tok) => { if(tok){try{sessionStorage.setItem('fn_lock_token_{{ $note->id }}',tok);}catch(e){}} await openNoteOrToast('{{ $note->id }}', '{{ route('notes.edit', $note->id) }}'); })">
-                                                    <span class="material-symbols-outlined fn-icon-sm">edit</span>
-                                                    Chỉnh sửa
-                                                </a>
-                                            </li>
                                             {{-- Pin / Unpin --}}
                                             <li>
                                                 <a class="dropdown-item d-flex align-items-center gap-2 py-2"
@@ -197,17 +154,9 @@
                                                     {{ $note->is_pinned ? 'Bỏ ghim' : 'Ghim' }}
                                                 </a>
                                             </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            {{-- Delete --}}
-                                            <li>
-                                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger"
-                                                    href="javascript:void(0)"
-                                                    onclick="deleteNoteAjax({{ $note->id }})">
-                                                    <span class="material-symbols-outlined fn-icon-sm">delete</span>
-                                                    Xóa
-                                                </a>
-                                            </li>
+
                                             <li class="fn-lock-divider"><hr class="dropdown-divider"></li>
+
                                             {{-- Lock management --}}
                                             @if($note->is_locked)
                                                 <li class="fn-lock-menu-item">
@@ -232,18 +181,32 @@
                                                         href="javascript:void(0)"
                                                         onclick="openEnableLockModal({{ $note->id }})">
                                                         <span class="material-symbols-outlined fn-icon-sm">lock</span>
-                                                        Khoá bằng mật khẩu
+                                                        Khoá
                                                     </a>
                                                 </li>
                                             @endif
+
                                             <li><hr class="dropdown-divider"></li>
+
                                             {{-- Share --}}
                                             <li>
                                                 <a class="dropdown-item d-flex align-items-center gap-2 py-2"
                                                     href="javascript:void(0)"
                                                     onclick="openShareModal({{ $note->id }})">
-                                                    <span class="material-symbols-outlined fn-icon-sm" style="color:var(--fn-primary)">share</span>
+                                                    <span class="material-symbols-outlined fn-icon-sm">share</span>
                                                     Chia sẻ
+                                                </a>
+                                            </li>
+
+                                            <li><hr class="dropdown-divider"></li>
+
+                                            {{-- Delete --}}
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger"
+                                                    href="javascript:void(0)"
+                                                    onclick="deleteNoteAjax({{ $note->id }})">
+                                                    <span class="material-symbols-outlined fn-icon-sm">delete</span>
+                                                    Xóa
                                                 </a>
                                             </li>
                                         </ul>
@@ -272,8 +235,7 @@
                                         <span class="fn-note-date">{{ $note->updated_at->diffForHumans() }}</span>
                                         <div class="d-flex align-items-center gap-1">
                                             @if($note->is_pinned)
-                                                <span class="material-symbols-outlined fn-pin-star"
-                                                    style="font-variation-settings:'FILL' 1;">star</span>
+                                                 <span class="material-symbols-outlined fn-icon-sm" style="font-variation-settings:'FILL' 1;">push_pin</span>
                                             @endif
                                             @if($note->is_locked)
                                                 <span class="material-symbols-outlined fn-lock-badge"
@@ -290,15 +252,13 @@
                             </div>
                         @endforeach
                     </div>
-                @else
+                @endif
+
+                {{-- Empty state for search (no + card needed when no results) --}}
+                @if(isset($searchQuery) && $searchQuery && !isset($isSharedView) && $recentNotes->count() === 0)
                     <div class="text-center py-5 text-muted fn-empty-state">
-                        @if(isset($searchQuery) && $searchQuery)
-                            <span class="material-symbols-outlined d-block mb-3">search_off</span>
-                            <p class="small opacity-75">Không tìm thấy kết quả cho "{{ $searchQuery }}".</p>
-                        @else
-                            <span class="material-symbols-outlined d-block mb-3">note_add</span>
-                            <p class="small opacity-75">Bạn chưa tạo ghi chú nào.<br>Hãy bắt đầu bằng cách tạo ghi chú đầu tiên!</p>
-                        @endif
+                        <span class="material-symbols-outlined d-block mb-3">search_off</span>
+                        <p class="small opacity-75">Không tìm thấy kết quả cho "{{ $searchQuery }}".</p>
                     </div>
                 @endif
 

@@ -7,6 +7,7 @@
     display: flex;
     align-items: center;
     gap: 0.625rem;
+    border: 1px solid rgba(216, 216, 216, 1);
     padding: 0.5rem 0.625rem;
     margin: 0 0 0.5rem;
     border-radius: 0.625rem;
@@ -82,8 +83,15 @@
 }
 
 @keyframes fn-ws-dropdown-in {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ── Dropdown: Workspace Info Header ─────────── */
@@ -339,7 +347,7 @@
     padding: 0.25rem 0;
 }
 
-.fn-ws-dropdown-section + .fn-ws-dropdown-section {
+.fn-ws-dropdown-section+.fn-ws-dropdown-section {
     border-top: 1px solid rgba(195, 198, 215, 0.15);
 }
 
@@ -385,7 +393,9 @@
 }
 
 /* ── Workspace Switcher (old active-btn kept hidden) */
-.fn-ws-active-btn { display: none !important; }
+.fn-ws-active-btn {
+    display: none !important;
+}
 
 .fn-ws-active-btn {
     width: 100%;
@@ -454,15 +464,22 @@
 }
 
 @keyframes fn-ws-dropdown-in {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .fn-ws-dropdown-section {
     padding: 0.5rem 0;
 }
 
-.fn-ws-dropdown-section + .fn-ws-dropdown-section {
+.fn-ws-dropdown-section+.fn-ws-dropdown-section {
     border-top: 1px solid rgba(195, 198, 215, 0.15);
 }
 
@@ -1022,11 +1039,25 @@
 }
 
 @media (max-width: 575.98px) {
-    .fn-ws-page-settings-label { display: none; }
-    .fn-ws-page-settings-btn { padding: 0.45rem 0.5rem; }
-    .fn-ws-page-header { padding: 0.75rem 1rem; }
-    .fn-ws-page-name { font-size: 1rem; }
-    .fn-ws-page-greeting { font-size: 0.6875rem; }
+    .fn-ws-page-settings-label {
+        display: none;
+    }
+
+    .fn-ws-page-settings-btn {
+        padding: 0.45rem 0.5rem;
+    }
+
+    .fn-ws-page-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .fn-ws-page-name {
+        font-size: 1rem;
+    }
+
+    .fn-ws-page-greeting {
+        font-size: 0.6875rem;
+    }
 }
 
 /* Dark mode */

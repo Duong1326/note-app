@@ -160,3 +160,79 @@
         </div>
     </div>
 </div>
+
+{{-- ═══ Workspace Share Popover – mirrors note-share-modal design ═══ --}}
+<div id="wsSharePopover" class="fn-modal-overlay share-popover-mode" style="display:none;" onclick="if(event.target===this) closeWsShareModal()">
+    <div class="fn-modal-card fn-share-modal" id="wsSharePopoverCard">
+
+        {{-- Header --}}
+        <div class="fn-modal-header d-flex align-items-start gap-3 p-4 pb-2">
+            <div class="flex-grow-1">
+                <h3 class="fw-bold mb-0 fs-6">Chia sẻ Workspace</h3>
+                <p class="text-secondary small mb-0 mt-1" id="wsShareModalSubtitle" style="font-size:0.78rem;"></p>
+            </div>
+            <button class="fn-modal-close" onclick="closeWsShareModal()" aria-label="Đóng">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        {{-- Body --}}
+        <div class="fn-modal-body px-4 pb-4 pt-3">
+
+            {{-- Add recipients form --}}
+            <form id="wsShareForm" onsubmit="submitWsShareFromModal(event)" novalidate>
+
+                {{-- Email chip input --}}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small text-secondary">
+                        Thêm người nhận
+                    </label>
+                    <div class="fn-email-chip-container" id="wsEmailChipContainer" onclick="wssFocusEmailInput()">
+                        {{-- Chips injected by JS --}}
+                        <input type="text" id="wsShareModalEmail" class="fn-email-chip-input"
+                            placeholder="email@example.com" autocomplete="off" inputmode="email">
+                    </div>
+                    <p class="text-danger small mt-1 mb-0 d-none" id="wsShareEmailError"></p>
+                </div>
+
+                {{-- Permission radio --}}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small text-secondary">Quyền truy cập</label>
+                    <div class="d-flex gap-3">
+                        <label class="d-flex align-items-center gap-2" style="cursor:pointer">
+                            <input type="radio" name="wsSharePermission" id="wsPermRead" value="read" checked
+                                class="form-check-input mt-0" style="flex-shrink:0">
+                            <span class="d-block small fw-semibold">Chỉ đọc</span>
+                        </label>
+                        <label class="d-flex align-items-center gap-2" style="cursor:pointer">
+                            <input type="radio" name="wsSharePermission" id="wsPermEdit" value="edit"
+                                class="form-check-input mt-0" style="flex-shrink:0">
+                            <span class="d-block small fw-semibold">Chỉnh sửa</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-share-primary d-inline-flex align-items-center gap-1 px-4"
+                        id="wsShareSubmitBtn">
+                        <span class="material-symbols-outlined fn-icon-sm">person_add</span>
+                        Chia sẻ
+                    </button>
+                </div>
+            </form>
+
+            {{-- Existing recipients --}}
+            <div id="wsShareRecipientsSection" class="mt-4 d-none">
+                <hr class="my-3">
+                <p class="small fw-semibold text-secondary mb-2">
+                    <span class="material-symbols-outlined fn-icon-sm align-middle">group</span>
+                    Đã chia sẻ với
+                </p>
+                <div class="fn-share-recipient-list" id="wsShareModalList">
+                    {{-- Populated by JS --}}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

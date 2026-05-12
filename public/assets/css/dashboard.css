@@ -51,7 +51,271 @@
     transform: scale(0.95);
 }
 
+/* ── Workspace Share Popover ─────────────────── */
+.fn-ws-share-popover {
+    position: fixed;
+    z-index: 1080;
+    width: 380px;
+    background: var(--fn-surface-container-lowest);
+    border: 1px solid var(--fn-outline-variant, rgba(0, 0, 0, 0.1));
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.08);
+    transform-origin: top right;
+    transform: scale(0.94);
+    opacity: 0;
+    transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.18s ease;
+    overflow: hidden;
+}
+
+.fn-ws-share-popover.fn-ws-share-popover-open {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.fn-ws-share-popover-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.125rem 0.875rem;
+    border-bottom: 1px solid var(--fn-outline-variant, rgba(0, 0, 0, 0.07));
+}
+
+.fn-ws-share-popover-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--fn-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fn-ws-share-popover-icon .material-symbols-outlined {
+    font-size: 20px;
+    color: #fff;
+}
+
+.fn-ws-share-popover-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--fn-on-surface);
+    line-height: 1.3;
+}
+
+.fn-ws-share-popover-subtitle {
+    font-size: 0.75rem;
+    color: var(--fn-on-surface-variant);
+    margin-top: 1px;
+}
+
+.fn-ws-share-popover-close {
+    background: none;
+    border: none;
+    color: var(--fn-on-surface-variant);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    transition: background var(--fn-transition-fast);
+}
+
+.fn-ws-share-popover-close:hover {
+    background: var(--fn-surface-container-high);
+}
+
+.fn-ws-share-popover-close .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.fn-ws-share-popover-body {
+    padding: 1rem 1.125rem;
+}
+
+/* Invite input row */
+.fn-ws-share-invite-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.875rem;
+}
+
+.fn-ws-share-email-input {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--fn-outline-variant, #ccc);
+    border-radius: 0.5rem;
+    background: var(--fn-surface-container-lowest);
+    color: var(--fn-on-surface);
+    font-size: 0.8125rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.fn-ws-share-email-input:focus {
+    border-color: var(--fn-primary);
+}
+
+.fn-ws-share-invite-row .fn-ws-share-perm-select {
+    height: 36px;
+    padding: 0 0.5rem;
+    border: 1px solid var(--fn-outline-variant, #ccc);
+    border-radius: 0.5rem;
+    background: var(--fn-surface-container-lowest);
+    color: var(--fn-on-surface);
+    font-size: 0.75rem;
+    cursor: pointer;
+    outline: none;
+    min-width: 88px;
+}
+
+.fn-ws-share-invite-btn {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 0.5rem;
+    background: var(--fn-primary);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--fn-transition-fast), transform var(--fn-transition-fast);
+}
+
+.fn-ws-share-invite-btn:hover {
+    background: var(--fn-primary-fixed-dim, #b0c4f5);
+}
+
+.fn-ws-share-invite-btn:active {
+    transform: scale(0.93);
+}
+
+.fn-ws-share-invite-btn .material-symbols-outlined {
+    font-size: 18px;
+}
+
+/* Members list */
+.fn-ws-share-members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    max-height: 220px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--fn-outline-variant, #ccc) transparent;
+}
+
+.fn-ws-share-member {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: 0.5rem;
+    background: var(--fn-surface-container-high, #f4f4f5);
+    transition: background 0.15s;
+}
+
+.fn-ws-share-member:hover {
+    background: var(--fn-surface-container-highest, #e8e8ea);
+}
+
+.fn-ws-share-member-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--fn-primary-fixed, #dbe8ff);
+    color: var(--fn-on-primary-fixed, #001849);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.fn-ws-share-member-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.fn-ws-share-member-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--fn-on-surface);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fn-ws-share-member-remove {
+    background: none;
+    border: none;
+    padding: 0.2rem;
+    cursor: pointer;
+    color: var(--fn-outline);
+    display: flex;
+    align-items: center;
+    border-radius: 0.375rem;
+    transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
+}
+
+.fn-ws-share-member-remove:hover {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.08);
+}
+
+.fn-ws-share-member-remove .material-symbols-outlined {
+    font-size: 17px;
+}
+
+.fn-ws-share-loading,
+.fn-ws-share-empty {
+    font-size: 0.8125rem;
+    color: var(--fn-on-surface-variant);
+    opacity: 0.65;
+    padding: 0.5rem 0;
+    text-align: center;
+}
+
+/* ── Workspace Share Button (title bar) ──────── */
+
+.fn-ws-share-btn {
+    background-color: var(--fn-primary-fixed);
+    color: var(--fn-on-primary-fixed);
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    font-family: 'Inter', sans-serif;
+    transition: background var(--fn-transition-fast), box-shadow var(--fn-transition-fast);
+    white-space: nowrap;
+}
+
+.fn-ws-share-btn:hover {
+    background-color: var(--fn-primary-fixed-dim);
+    box-shadow: 0 2px 12px rgba(0, 74, 198, 0.15);
+}
+
+.fn-ws-share-btn:active {
+    transform: scale(0.97);
+}
+
 /* ── Section Headers ─────────────────────────── */
+
 .fn-section-title {
     font-size: 1.25rem;
     font-weight: 700;
@@ -70,6 +334,134 @@
     color: var(--fn-primary);
     text-decoration: underline;
 }
+
+/* ── Create Note Card (+ card in grid) ──────── */
+.fn-new-note-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 160px;
+    background: transparent;
+    border: 2px dashed var(--fn-outline-variant, rgba(0, 74, 198, 0.25));
+    border-radius: 0.75rem;
+    text-decoration: none;
+    color: var(--fn-on-surface-variant);
+    transition: all var(--fn-transition-normal);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.fn-new-note-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 0.75rem;
+    background: var(--fn-primary);
+    opacity: 0;
+    transition: opacity var(--fn-transition-normal);
+}
+
+.fn-new-note-card:hover {
+    border-color: var(--fn-primary);
+    color: var(--fn-primary);
+    box-shadow: 0 4px 24px rgba(0, 74, 198, 0.15);
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+.fn-new-note-card:hover::before {
+    opacity: 0.05;
+}
+
+.fn-new-note-card:active {
+    transform: scale(0.97);
+}
+
+.fn-new-note-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    pointer-events: none;
+}
+
+.fn-new-note-icon {
+    font-size: 2.5rem;
+    font-variation-settings: 'wght' 200;
+    opacity: 0.55;
+    transition: all var(--fn-transition-normal);
+}
+
+.fn-new-note-card:hover .fn-new-note-icon {
+    opacity: 1;
+    transform: scale(1.1) rotate(90deg);
+    font-variation-settings: 'wght' 400;
+}
+
+.fn-new-note-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    opacity: 0.6;
+    transition: opacity var(--fn-transition-normal);
+}
+
+.fn-new-note-card:hover .fn-new-note-label {
+    opacity: 1;
+}
+
+/* Create note card in list view — full-width row, same height as note cards */
+.fn-view-list #createNoteCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    padding: 0 !important;
+}
+
+.fn-view-list .fn-new-note-card {
+    width: 100%;
+    height: 56px;
+    min-height: unset;
+    border-radius: 0.625rem;
+    flex-direction: row;
+    justify-content: center;
+    padding: 0;
+    gap: 0;
+}
+
+.fn-view-list .fn-new-note-card:hover {
+    transform: translateY(-2px);
+}
+
+.fn-view-list .fn-new-note-icon {
+    font-size: 1.25rem;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    opacity: 0.7;
+}
+
+
+
+.fn-view-list .fn-new-note-card::after {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: inherit;
+    opacity: 0.75;
+}
+
+.fn-view-list .fn-new-note-card:hover::after {
+    opacity: 1;
+}
+
 
 /* ── Note Cards ──────────────────────────────── */
 .note-col {
