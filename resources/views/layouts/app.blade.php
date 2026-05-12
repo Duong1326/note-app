@@ -47,9 +47,9 @@
 
         @auth
             {{-- Fluid Notes Branding --}}
-            <div class="fn-sidebar-brand" style="pointer-events:none;">
+            <a href="{{ route('dashboard') }}" class="fn-sidebar-brand" style="text-decoration:none;">
                 <h1>Fluid Notes</h1>
-            </div>
+            </a>
 
             {{-- Workspace Header --}}
             @php

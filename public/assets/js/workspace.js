@@ -478,11 +478,23 @@
         _currentWsId = wsId;
         _wsVerifyCallback = callback;
         document.getElementById('wsVerifyName').textContent = wsName;
-        document.getElementById('wsVerifyPassword').value = '';
+        var pwInput = document.getElementById('wsVerifyPassword');
+        if (pwInput) { pwInput.value = ''; pwInput.type = 'password'; }
+        var icon = document.getElementById('wsVerifyPwIcon');
+        if (icon) icon.textContent = 'visibility';
         var errEl = document.getElementById('wsVerifyError');
         if (errEl) errEl.classList.add('d-none');
         _showModal('wsVerifyModal');
-        setTimeout(function () { document.getElementById('wsVerifyPassword').focus(); }, 200);
+        setTimeout(function () { if (pwInput) pwInput.focus(); }, 200);
+    };
+
+    window.toggleWsVerifyPw = function () {
+        var input = document.getElementById('wsVerifyPassword');
+        var icon = document.getElementById('wsVerifyPwIcon');
+        if (!input) return;
+        var isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        if (icon) icon.textContent = isHidden ? 'visibility_off' : 'visibility';
     };
 
     window.closeWsVerifyModal = function () {

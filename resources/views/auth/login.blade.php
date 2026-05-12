@@ -74,11 +74,17 @@
 
                         <div class="mb-3">
                             <div class="password-header">
-                                <label for=" password" class="form-label fw-medium small mb-0">Mật khẩu</label>
+                                <label for="password" class="form-label fw-medium small mb-0">Mật khẩu</label>
                                 <a href="{{ route('password.request') }}" class="forgot-link">Quên mật khẩu?</a>
                             </div>
-                            <input id="password" type="password" name="password" required class="form-control"
-                                placeholder="Nhập mật khẩu">
+                            <div class="auth-pw-wrap">
+                                <input id="password" type="password" name="password" required class="form-control"
+                                    placeholder="Nhập mật khẩu">
+                                <button type="button" class="auth-pw-eye" onclick="toggleAuthPw('password', this)"
+                                    tabindex="-1" aria-label="Hiện mật khẩu">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                </button>
+                            </div>
                         </div>
 
                         <label class="remember-wrapper">
@@ -100,6 +106,17 @@
         </div>
     </main>
 
+    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+    <script>
+        function toggleAuthPw(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            const icon = btn.querySelector('.material-symbols-outlined');
+            if (icon) icon.textContent = isHidden ? 'visibility_off' : 'visibility';
+        }
+    </script>
 </body>
 
 </html>

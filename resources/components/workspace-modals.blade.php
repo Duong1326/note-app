@@ -123,8 +123,14 @@
         <div class="fn-modal-body">
             <p class="fn-ws-verify-text">Workspace <strong id="wsVerifyName"></strong> đã được khoá. Vui lòng nhập mật khẩu để truy cập.</p>
             <div class="fn-form-group">
-                <input type="password" class="fn-form-input" id="wsVerifyPassword" placeholder="Mật khẩu..."
-                    onkeydown="if(event.key==='Enter') submitWsVerify()">
+                <div class="fn-modal-pw-wrap">
+                    <input type="password" class="fn-form-input" id="wsVerifyPassword" placeholder="Mật khẩu..."
+                        onkeydown="if(event.key==='Enter') submitWsVerify()">
+                    <button type="button" class="fn-modal-pw-eye" onclick="toggleWsVerifyPw()" tabindex="-1"
+                        aria-label="Hiện mật khẩu">
+                        <span class="material-symbols-outlined" id="wsVerifyPwIcon">visibility</span>
+                    </button>
+                </div>
             </div>
             <div class="fn-ws-error d-none" id="wsVerifyError"></div>
         </div>

@@ -33,6 +33,10 @@
     margin-bottom: 0.125rem;
 }
 
+a.fn-sidebar-brand:hover h1 {
+    opacity: 0.75;
+}
+
 .fn-sidebar-brand p {
     font-size: 0.625rem;
     text-transform: uppercase;

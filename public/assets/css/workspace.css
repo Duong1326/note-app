@@ -677,6 +677,39 @@
     margin-top: 0.5rem;
 }
 
+/* ── Password Eye Toggle (modal) ────────────── */
+.fn-modal-pw-wrap {
+    position: relative;
+}
+
+.fn-modal-pw-wrap .fn-form-input {
+    padding-right: 2.75rem;
+}
+
+.fn-modal-pw-eye {
+    position: absolute;
+    top: 50%;
+    right: 0.625rem;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: var(--fn-on-surface-variant);
+    opacity: 0.55;
+    display: flex;
+    align-items: center;
+    transition: opacity 0.2s ease;
+}
+
+.fn-modal-pw-eye:hover {
+    opacity: 1;
+}
+
+.fn-modal-pw-eye .material-symbols-outlined {
+    font-size: 20px;
+}
+
 /* ── Lock Section in Settings ───────────────── */
 .fn-ws-lock-status {
     display: flex;
