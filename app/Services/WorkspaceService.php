@@ -37,10 +37,13 @@ class WorkspaceService
         }
 
         try {
-            $workspace->update(array_filter([
-                'name'        => $data['name'] ?? $workspace->name,
-                'description' => array_key_exists('description', $data) ? $data['description'] : $workspace->description,
-            ], fn ($v) => $v !== null));
+            if (array_key_exists('name', $data)) {
+                $workspace->name = $data['name'];
+            }
+            if (array_key_exists('description', $data)) {
+                $workspace->description = $data['description'];
+            }
+            $workspace->save();
 
             return $workspace->fresh();
         } catch (Exception $e) {

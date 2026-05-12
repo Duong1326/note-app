@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Models\Note;
 use App\Models\User;
+use App\Models\Workspace;
 use Exception;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -52,7 +52,7 @@ class NoteService
     {
         if (!$note->workspace_id) return false;
 
-        $workspace = \App\Models\Workspace::find($note->workspace_id);
+        $workspace = Workspace::find($note->workspace_id);
         if (!$workspace) return false;
 
         // Workspace owner has full edit permission over all notes inside
