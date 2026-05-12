@@ -87,12 +87,14 @@ function patchNoteCard(noteId, note) {
 }
 
 function patchPinCard(col, noteId, isPinned, updatedAt) {
-    const pinLink = col.querySelector('.dropdown-menu li:nth-child(2) a');
+    // Find pin link by its onclick signature (robust against menu reordering)
+    const pinLink = [...col.querySelectorAll('.dropdown-menu a')]
+        .find(a => a.getAttribute('onclick')?.includes('togglePinAjax'));
     if (pinLink) {
         const icon = pinLink.querySelector('.material-symbols-outlined');
         icon.style.fontVariationSettings = isPinned ? "'FILL' 1" : '';
 
-        // Xóa tất cả text node cũ (tránh hiện "Bỏ ghim Ghim" đồng thời)
+        // Remove old text nodes, set new label
         [...pinLink.childNodes]
             .filter(n => n.nodeType === Node.TEXT_NODE)
             .forEach(n => n.remove());
@@ -101,28 +103,25 @@ function patchPinCard(col, noteId, isPinned, updatedAt) {
         pinLink.setAttribute('onclick', `togglePinAjax(${noteId}, ${isPinned})`);
     }
 
-    // Cập nhật thời gian hiển thị trên card
     if (updatedAt) {
         const dateEl = col.querySelector('.fn-note-date');
         if (dateEl) dateEl.textContent = updatedAt;
     }
 
-    const meta = col.querySelector('.fn-note-meta');
-    const starEl = meta.querySelector('.fn-pin-star');
-    if (isPinned && !starEl) {
-        const star = document.createElement('span');
-        star.className = 'material-symbols-outlined fn-pin-star';
-        star.style.fontVariationSettings = "'FILL' 1";
-        star.textContent = 'star';
-        meta.appendChild(star);
-    } else if (!isPinned && starEl) {
-        starEl.remove();
+    const metaIcons = col.querySelector('.fn-note-meta .d-flex');
+    if (!metaIcons) return;
+
+    let pinBadge = metaIcons.querySelector('.fn-pin-badge');
+    if (isPinned && !pinBadge) {
+        const span = document.createElement('span');
+        span.className = 'material-symbols-outlined fn-icon-sm fn-pin-badge';
+        span.style.fontVariationSettings = "'FILL' 1";
+        span.textContent = 'push_pin';
+        metaIcons.prepend(span);
+    } else if (!isPinned && pinBadge) {
+        pinBadge.remove();
     }
 }
-
-// ═══════════════════════════════════════════════════
-// Card HTML Builder
-// ═══════════════════════════════════════════════════
 
 function buildNoteCardHtml(note) {
     const labelIds = JSON.stringify(note.labels?.map(l => l.id) ?? []);
@@ -136,8 +135,8 @@ function buildNoteCardHtml(note) {
         : '';
     const pinFill = note.is_pinned ? ` style="font-variation-settings:'FILL' 1;"` : '';
     const pinText = note.is_pinned ? 'Bỏ ghim' : 'Ghim';
-    const pinStar = note.is_pinned
-        ? `<span class="material-symbols-outlined fn-pin-star" style="font-variation-settings:'FILL' 1;">star</span>`
+    const pinBadge = note.is_pinned
+        ? `<span class="material-symbols-outlined fn-icon-sm fn-pin-badge" style="font-variation-settings:'FILL' 1;">push_pin</span>`
         : '';
     const lockBadge = note.is_locked
         ? `<span class="material-symbols-outlined fn-lock-badge" title="Ghi chú đã khoá">lock</span>`
@@ -217,7 +216,7 @@ function buildNoteCardHtml(note) {
                 <div class="fn-note-meta">
                     <span class="fn-note-date">${note.updated_at ?? 'Vừa xong'}</span>
                     <div class="d-flex align-items-center gap-1">
-                        ${pinStar}
+                        ${pinBadge}
                         ${lockBadge}
                     </div>
                 </div>

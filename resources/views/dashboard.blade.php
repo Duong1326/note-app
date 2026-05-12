@@ -8,7 +8,7 @@
             <div class="col-12">
                 <div class="d-flex align-items-center justify-content-between mb-4">
                     <div class="d-flex align-items-center gap-3">
-                        <h4 class="fn-sectaion-title">
+                        <h4 class="fn-section-title">
                             @if(isset($isSharedView) && $isSharedView)
                                 Ghi chú được chia sẻ
                             @elseif(isset($searchQuery) && $searchQuery)
@@ -235,7 +235,7 @@
                                         <span class="fn-note-date">{{ $note->updated_at->diffForHumans() }}</span>
                                         <div class="d-flex align-items-center gap-1">
                                             @if($note->is_pinned)
-                                                 <span class="material-symbols-outlined fn-icon-sm" style="font-variation-settings:'FILL' 1;">push_pin</span>
+                                                 <span class="material-symbols-outlined fn-icon-sm fn-pin-badge" style="font-variation-settings:'FILL' 1;">push_pin</span>
                                             @endif
                                             @if($note->is_locked)
                                                 <span class="material-symbols-outlined fn-lock-badge"

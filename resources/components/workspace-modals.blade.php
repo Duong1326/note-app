@@ -70,30 +70,7 @@
                 </div>
             </div>
 
-            <hr class="fn-ws-divider">
 
-            {{-- Share Section --}}
-            <div class="fn-ws-settings-section">
-                <h3 class="fn-ws-settings-heading">Chia sẻ</h3>
-                <div class="fn-form-group">
-                    <div class="fn-ws-share-input-row">
-                        <input type="email" class="fn-form-input" id="wsShareEmail" placeholder="Email người dùng..."
-                            autocomplete="off" multiple>
-                        <select class="fn-form-select" id="wsSharePermission">
-                            <option value="read">Chỉ đọc</option>
-                            <option value="edit">Chỉnh sửa</option>
-                        </select>
-                        <button type="button" class="fn-ws-action-btn fn-ws-action-primary" onclick="submitShareWorkspace()">
-                            <span class="material-symbols-outlined">person_add</span>
-                        </button>
-                    </div>
-                </div>
-                <div id="wsSharesList" class="fn-ws-shares-list">
-                    {{-- Dynamically loaded share records --}}
-                </div>
-            </div>
-
-            <hr class="fn-ws-divider">
 
             {{-- Delete Section --}}
             <div class="fn-ws-settings-section" id="wsDeleteSection">
