@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') | {{ config('app.name', 'Fluid Notes') }}</title>
+    <link rel="icon" href="{{ asset('logo.png') }}" type="image/png">
 
     {{-- Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,7 +49,7 @@
         @auth
             {{-- Fluid Notes Branding --}}
             <div class="fn-sidebar-brand" style="pointer-events:none; display: flex; align-items: center; gap: 8px;">
-                <img src="{{ asset('logo.png') }}" alt="Logo" style="height: 32px; width: auto;">
+                <img src="{{ asset('logo.png') }}" alt="Logo" style="height: 40px; width: auto;">
                 <h1 style="margin-bottom: 0;">Fluid Notes</h1>
             </div>
 

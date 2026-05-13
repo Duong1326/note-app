@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Đặt lại mật khẩu | {{ config('app.name', 'Fluid Notes') }}</title>
+    <link rel="icon" href="{{ asset('logo.png') }}" type="image/png">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
     <link rel="stylesheet"
@@ -20,7 +21,7 @@
                 <div class="panel-left-content">
                     <div>
                         <a href="{{ route('home') }}" class="brand-link">
-                            <img src="{{ asset('logo.png') }}" alt="Logo" style="height: 24px; width: auto;">
+                            <img src="{{ asset('logo.png') }}" alt="Logo" style="height: 32px; width: auto;">
                             {{ config('app.name', 'Fluid Notes') }}
                         </a>
                         <div class="hero-section mt-5">
