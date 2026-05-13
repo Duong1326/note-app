@@ -20,6 +20,7 @@
                 <div class="panel-left-content">
                     <div>
                         <a href="{{ route('home') }}" class="brand-link">
+                            <img src="{{ asset('logo.png') }}" alt="Logo" style="height: 24px; width: auto;">
                             {{ config('app.name', 'Fluid Notes') }}
                         </a>
                         <div class="hero-section mt-5">
@@ -39,6 +40,7 @@
                 <div class="form-wrapper">
                     <div class="mobile-brand">
                         <a href="{{ route('home') }}">
+                            <img src="{{ asset('logo.png') }}" alt="Logo" style="height: 24px; width: auto;">
                             {{ config('app.name', 'Fluid Notes') }}
                         </a>
                     </div>

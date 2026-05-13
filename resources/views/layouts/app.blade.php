@@ -47,8 +47,9 @@
 
         @auth
             {{-- Fluid Notes Branding --}}
-            <div class="fn-sidebar-brand" style="pointer-events:none;">
-                <h1>Fluid Notes</h1>
+            <div class="fn-sidebar-brand" style="pointer-events:none; display: flex; align-items: center; gap: 8px;">
+                <img src="{{ asset('logo.png') }}" alt="Logo" style="height: 32px; width: auto;">
+                <h1 style="margin-bottom: 0;">Fluid Notes</h1>
             </div>
 
             {{-- Workspace Header --}}
