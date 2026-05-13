@@ -175,7 +175,8 @@
                 window.location.replace(`/notes/${_createdNoteId}/edit`);
             } else {
                 // After editing → back to dashboard, use replace() to bust bfcache
-                window.location.replace('/dashboard');
+                const returnUrl = isOwner ? '/dashboard' : '/dashboard?view=shared';
+                window.location.replace(returnUrl);
             }
         };
 

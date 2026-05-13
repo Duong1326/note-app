@@ -65,6 +65,9 @@ class WorkspaceController extends Controller
         try {
             $workspace = $this->workspaceService->create($request->user(), $request->validated());
 
+            // Auto-switch to the newly created workspace
+            session(['active_workspace_id' => $workspace->id]);
+
             return response()->json([
                 'success'   => true,
                 'workspace' => $workspace->toListArray(),

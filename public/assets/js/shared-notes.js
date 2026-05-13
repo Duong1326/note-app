@@ -419,11 +419,40 @@ async function refreshSharedNotesSection() {
 }
 
 function _renderSharedCards(sharedNotes) {
-    const container = document.getElementById('sharedNotesContainer');
-    const section = document.getElementById('sharedSection');
-    const countBadge = document.getElementById('sharedCount');
+    const isSharedView = new URLSearchParams(window.location.search).get('view') === 'shared';
+    let container = document.getElementById('sharedNotesContainer');
+
+    if (isSharedView) {
+        container = document.getElementById('notesContainer');
+        // Handle transition from empty state
+        if (!container && sharedNotes.length > 0) {
+            const emptyState = document.querySelector('.fn-empty-state');
+            if (emptyState) {
+                const newContainer = document.createElement('div');
+                newContainer.id = 'notesContainer';
+                newContainer.className = 'row g-3';
+                emptyState.parentNode.replaceChild(newContainer, emptyState);
+                container = newContainer;
+            }
+        }
+    }
 
     if (!container) return;
+
+    if (isSharedView && sharedNotes.length === 0) {
+        if (!document.querySelector('.fn-empty-state')) {
+            container.outerHTML = `
+                <div class="text-center py-5 text-muted fn-empty-state">
+                    <span class="material-symbols-outlined d-block mb-3">group</span>
+                    <p class="small opacity-75">Chưa có ghi chú nào được chia sẻ với bạn.</p>
+                </div>
+            `;
+        }
+        return;
+    }
+
+    const section = document.getElementById('sharedSection');
+    const countBadge = document.getElementById('sharedCount');
 
     if (sharedNotes.length === 0) {
         if (section) section.style.display = 'none';
@@ -443,6 +472,7 @@ function _renderSharedCards(sharedNotes) {
         if (existing.has(noteIdStr)) {
             // Card already in DOM → patch it in-place
             _patchSharedCard(noteIdStr, share.note);
+            existing.delete(noteIdStr);
         } else {
             // New shared note → insert card
             const col = _buildSharedCard(share);
@@ -450,6 +480,12 @@ function _renderSharedCards(sharedNotes) {
             requestAnimationFrame(() => col.classList.add('fn-animate-in'));
         }
     }
+
+    // Remove any cards that are no longer shared with the user
+    existing.forEach(noteIdStr => {
+        const col = container.querySelector(`[data-note-id="${noteIdStr}"]`);
+        if (col) col.remove();
+    });
 }
 
 function _patchSharedCard(noteId, note) {

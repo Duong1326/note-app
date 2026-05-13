@@ -176,8 +176,8 @@
                 if (data.success) {
                     closeCreateWorkspaceModal();
                     if (typeof showToast === 'function') showToast(data.message, 'success');
-                    // Reload to refresh sidebar
-                    window.location.reload();
+                    // Redirect to dashboard — session is already switched to the new workspace
+                    window.location.href = '/dashboard';
                 } else {
                     if (typeof showToast === 'function') showToast(data.message || 'Lỗi khi tạo workspace.', 'error');
                 }

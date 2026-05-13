@@ -16,10 +16,13 @@
         {{-- ── Top bar ──────────────────────────────────────── --}}
         <div class="fnp-topbar">
             {{-- Back breadcrumb --}}
-            <a href="{{ route('dashboard') }}" class="fnp-back-btn" title="Quay lại dashboard"
-                onclick="event.preventDefault(); var u=sessionStorage.getItem('fn_return_url')||'{{ route('dashboard') }}'; try{sessionStorage.removeItem('fn_return_url');}catch(e){} window.location.href=u;">
+            @php
+                $defaultReturnUrl = $isOwner ? route('dashboard') : route('dashboard', ['view' => 'shared']);
+            @endphp
+            <a href="{{ $defaultReturnUrl }}" class="fnp-back-btn" title="Quay lại"
+                onclick="event.preventDefault(); var u=sessionStorage.getItem('fn_return_url')||'{{ $defaultReturnUrl }}'; try{sessionStorage.removeItem('fn_return_url');}catch(e){} window.location.href=u;">
                 <span class="material-symbols-outlined">arrow_back</span>
-                <span class="fnp-back-label">Trang chủ</span>
+                <span class="fnp-back-label">{{ $isOwner ? 'Trang chủ' : 'Ghi chú được chia sẻ' }}</span>
             </a>
 
             <div class="fnp-topbar-center">
