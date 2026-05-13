@@ -236,6 +236,7 @@
     border-bottom: none;
 }
 
+
 .fn-security-label {
     font-size: 0.875rem;
     font-weight: 600;
@@ -439,10 +440,7 @@
 }
 
 .fn-pw-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
+    /* layout handled by Bootstrap utility classes in the template */
 }
 
 /* ── Responsive ─────────────────────────────── */
@@ -455,22 +453,7 @@
         padding: 1.5rem;
     }
 
-    .fn-security-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
     .fn-pw-form {
         padding: 1rem;
-    }
-
-    .fn-pw-actions {
-        flex-direction: column;
-    }
-
-    .fn-pw-actions .fn-btn-ghost,
-    .fn-pw-actions .fn-btn-primary--sm {
-        width: 100%;
-        text-align: center;
     }
 }

@@ -400,51 +400,51 @@
         <script src="{{ asset('assets/js/echo-init.js') }}"></script>
 
         {{-- ── Global WorkspaceLocked real-time listener ───────────────
-             Works on EVERY page. When the owner locks the active workspace,
-             all members (on any page) immediately see a password prompt.
-             NOTE: We register a hook that echo-init.js will call after
-             EchoInstance is created, to avoid the race condition where this
-             script runs before Echo is initialised.
+        Works on EVERY page. When the owner locks the active workspace,
+        all members (on any page) immediately see a password prompt.
+        NOTE: We register a hook that echo-init.js will call after
+        EchoInstance is created, to avoid the race condition where this
+        script runs before Echo is initialised.
         ─────────────────────────────────────────────────────────────── --}}
         <script>
-        // Register a post-init hook that echo-init.js calls after creating EchoInstance
-        window.__echoPostInitHooks = window.__echoPostInitHooks || [];
-        window.__echoPostInitHooks.push(function (echoInstance) {
-            var activeWsId = window.__activeWorkspaceId;
-            if (!activeWsId) return;
+            // Register a post-init hook that echo-init.js calls after creating EchoInstance
+            window.__echoPostInitHooks = window.__echoPostInitHooks || [];
+            window.__echoPostInitHooks.push(function (echoInstance) {
+                var activeWsId = window.__activeWorkspaceId;
+                if (!activeWsId) return;
 
-            echoInstance.private('user.' + window.__userId)
-                .listen('.workspace.locked', function (data) {
-                    var lockedWsId = parseInt(data.workspace_id);
+                echoInstance.private('user.' + window.__userId)
+                    .listen('.workspace.locked', function (data) {
+                        var lockedWsId = parseInt(data.workspace_id);
 
-                    // Only react if the locked workspace is the one the user is in
-                    if (lockedWsId !== parseInt(activeWsId)) return;
+                        // Only react if the locked workspace is the one the user is in
+                        if (lockedWsId !== parseInt(activeWsId)) return;
 
-                    // Clear cached sessionStorage unlock token
-                    try { sessionStorage.removeItem('fn_ws_token_' + lockedWsId); } catch (e) {}
+                        // Clear cached sessionStorage unlock token
+                        try { sessionStorage.removeItem('fn_ws_token_' + lockedWsId); } catch (e) { }
 
-                    // Hide page content to prevent seeing locked notes
-                    var mainContent = document.querySelector('.fn-main-content, .fn-dashboard-content, main');
-                    if (mainContent) mainContent.style.visibility = 'hidden';
+                        // Hide page content to prevent seeing locked notes
+                        var mainContent = document.querySelector('.fn-main-content, .fn-dashboard-content, main');
+                        if (mainContent) mainContent.style.visibility = 'hidden';
 
-                    // Toast notification
-                    if (typeof showToast === 'function') {
-                        showToast('Workspace vừa được khoá. Vui lòng nhập mật khẩu để tiếp tục.', 'warning');
-                    }
+                        // Toast notification
+                        if (typeof showToast === 'function') {
+                            showToast('Workspace vừa được khoá. Vui lòng nhập mật khẩu để tiếp tục.', 'warning');
+                        }
 
-                    // Show verify modal immediately (blocks UI)
-                    var wsName = data.workspace_name || 'Workspace';
-                    if (typeof openWsVerifyModal === 'function') {
-                        openWsVerifyModal(lockedWsId, wsName, function () {
+                        // Show verify modal immediately (blocks UI)
+                        var wsName = data.workspace_name || 'Workspace';
+                        if (typeof openWsVerifyModal === 'function') {
+                            openWsVerifyModal(lockedWsId, wsName, function () {
+                                window.location.href = '/dashboard';
+                            });
+                            // Prevent dismissing without verifying
+                            window.closeWsVerifyModal = function () { };
+                        } else {
                             window.location.href = '/dashboard';
-                        });
-                        // Prevent dismissing without verifying
-                        window.closeWsVerifyModal = function () {};
-                    } else {
-                        window.location.href = '/dashboard';
-                    }
-                });
-        });
+                        }
+                    });
+            });
         </script>
     @endauth
 

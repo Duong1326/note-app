@@ -88,16 +88,18 @@
                     <div class="d-flex flex-column gap-4">
                         {{-- Password --}}
                         <div class="fn-security-row fn-security-row--expandable">
-                            <div class="d-flex align-items-center justify-content-between w-100">
+                            <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between w-100 gap-3">
                                 <div>
                                     <h4 class="fn-security-label">Mật khẩu</h4>
                                     <p class="fn-security-desc">Giữ tài khoản của bạn an toàn với mật khẩu mạnh.</p>
                                 </div>
-                                <button type="button" class="fn-btn-outline" id="btnTogglePassword">
-                                    <span class="material-symbols-outlined"
-                                        style="font-size:18px;vertical-align:middle;margin-right:4px">lock_reset</span>
-                                    Đổi mật khẩu
-                                </button>
+                                <div class="d-grid d-sm-block">
+                                    <button type="button" class="fn-btn-outline" id="btnTogglePassword">
+                                        <span class="material-symbols-outlined"
+                                            style="font-size:18px;vertical-align:middle;margin-right:4px">lock_reset</span>
+                                        Đổi mật khẩu
+                                    </button>
+                                </div>
                             </div>
 
                             {{-- Collapsible password form --}}
@@ -147,7 +149,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="fn-pw-actions">
+                                    <div class="fn-pw-actions d-flex flex-column flex-sm-row justify-content-sm-end gap-2 mt-2">
                                         <button type="button" class="fn-btn-ghost" id="btnCancelPassword">Hủy</button>
                                         <button type="submit" class="fn-btn-primary fn-btn-primary--sm"
                                             id="btnSubmitPassword">
