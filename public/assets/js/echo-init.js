@@ -88,6 +88,9 @@ function _subscribeToUserChannel() {
         .listen('.note.deleted', (data) => {
             _handleNoteDeleted(data);
         })
+        .listen('.note.locked', (data) => {
+            _handleNoteLocked(data);
+        })
         .listen('.workspace.share_permission_changed', (data) => {
             _handleWsPermissionChanged(data);
         })
@@ -346,20 +349,133 @@ function _updateCardThumbnail(col, url) {
 
 function _handlePermissionChanged(data) {
     // Note-level share permission change
-    const permLabel = data.new_permission === 'edit' ? 'chỉnh sửa' : 'chỉ đọc';
+    const noteId = data.note_id;
+    const newPerm = data.new_permission; // 'edit' | 'read'
+    const permLabel = newPerm === 'edit' ? 'chỉnh sửa' : 'chỉ đọc';
     const notification = {
         id: Date.now(),
         type: 'permission',
         icon: 'admin_panel_settings',
         title: 'Quyền truy cập thay đổi',
         message: `<strong>${data.changed_by}</strong> đã đổi quyền của bạn thành <strong>${permLabel}</strong> cho "${_truncate(data.note_title, 30)}"`,
-        noteId: data.note_id,
+        noteId: noteId,
         time: new Date(),
         unread: true,
     };
 
     _addNotification(notification);
     _showRealtimeToast(notification);
+
+    // ── 1. Update shared note card on dashboard ──────────────────────────
+    // Cards may be inside #sharedNotesContainer (normal dashboard)
+    // or #notesContainer (shared-with-me view: dashboard?view=shared)
+    const sharedCol = document.querySelector(`.fn-shared-note-col[data-note-id="${noteId}"]`);
+    if (sharedCol) {
+        // Update the data-permission attribute
+        sharedCol.dataset.permission = newPerm;
+
+        // Update permission badge on the card
+        const permBadge = sharedCol.querySelector('.fn-perm-badge');
+        if (permBadge) {
+            permBadge.textContent = newPerm === 'edit' ? 'Chỉnh sửa' : 'Chỉ đọc';
+            permBadge.className = `fn-perm-badge ${newPerm}`;
+        }
+
+        // Update onclick handler with new permission
+        const card = sharedCol.querySelector('.fn-note-card');
+        if (card) {
+            const isLocked = sharedCol.dataset.locked === '1';
+            card.setAttribute('onclick', `openSharedNoteOrUnlock(${noteId}, '${newPerm}', ${isLocked})`);
+        }
+    }
+
+    // ── 2. Update shared note modal if open for this note ────────────────
+    const sharedModal = document.getElementById('sharedNoteModal');
+    if (sharedModal && sharedModal.classList.contains('show') &&
+        String(sharedModal.dataset.noteId) === String(noteId)) {
+
+        const canEdit = newPerm === 'edit';
+
+        // Update stored permission
+        sharedModal.dataset.permission = newPerm;
+
+        // Toggle title editable
+        const titleEl = sharedModal.querySelector('.sn-title');
+        if (titleEl) {
+            titleEl.readOnly = !canEdit;
+            titleEl.style.opacity = canEdit ? '1' : '0.7';
+        }
+
+        // Toggle content editable
+        const contentEl = sharedModal.querySelector('.sn-content');
+        if (contentEl) {
+            contentEl.contentEditable = canEdit ? 'true' : 'false';
+            contentEl.style.opacity = canEdit ? '1' : '0.7';
+            contentEl.style.cursor = canEdit ? 'text' : 'default';
+            contentEl.style.pointerEvents = canEdit ? '' : 'none';
+        }
+
+        // Update permission badge
+        const permEl = sharedModal.querySelector('.sn-perm-badge');
+        if (permEl) {
+            permEl.textContent = canEdit ? 'Chỉnh sửa' : 'Chỉ đọc';
+            permEl.className = `fn-perm-badge sn-perm-badge ${newPerm} ms-1`;
+        }
+
+        // Show/hide save button
+        const saveBtn = sharedModal.querySelector('.sn-save-btn');
+        if (saveBtn) {
+            saveBtn.style.display = canEdit ? 'inline-flex' : 'none';
+        }
+
+        // Show a brief indicator
+        const ownerEl = sharedModal.querySelector('.sn-owner-badge');
+        if (ownerEl) {
+            const prev = ownerEl.textContent;
+            ownerEl.textContent = `🔑 Quyền đã đổi thành ${permLabel}`;
+            ownerEl.style.color = 'var(--fn-primary, #004ac6)';
+            setTimeout(() => {
+                ownerEl.textContent = prev;
+                ownerEl.style.color = '';
+            }, 3000);
+        }
+    }
+
+    // ── 3. Update full-page edit route if user is editing this note ──────
+    if (typeof window.__FNP_EDIT_NOTE_ID !== 'undefined' &&
+        String(window.__FNP_EDIT_NOTE_ID) === String(noteId)) {
+
+        const canEdit = newPerm === 'edit';
+        const titleInput = document.getElementById('modalNoteTitle');
+        const contentEditor = document.getElementById('modalNoteContent');
+
+        // Update the global permission so other scripts see the new value
+        window.__FNP_SHARE_PERMISSION = newPerm;
+
+        // Update the visual permission badge in the top bar
+        const editBadge = document.querySelector('.fnp-perm-badge');
+        if (editBadge) {
+            editBadge.textContent = canEdit ? 'Chỉnh sửa' : 'Chỉ đọc';
+            editBadge.className = `fnp-perm-badge ${newPerm}`;
+        }
+
+        if (canEdit) {
+            // Upgraded to edit → unlock editor
+            if (contentEditor) contentEditor.contentEditable = 'true';
+            if (titleInput) titleInput.readOnly = false;
+            if (typeof showToast === 'function') {
+                showToast('Bạn đã được nâng cấp quyền chỉnh sửa!', 'success');
+            }
+        } else {
+            // Downgraded to read → lock editor & cancel auto-save
+            if (contentEditor) contentEditor.contentEditable = 'false';
+            if (titleInput) titleInput.readOnly = true;
+            if (typeof autoSaveCancel === 'function') autoSaveCancel();
+            if (typeof showToast === 'function') {
+                showToast('Quyền của bạn đã được đổi thành chỉ đọc.', 'warning');
+            }
+        }
+    }
 }
 
 /**
@@ -407,13 +523,14 @@ function _handleWsPermissionChanged(data) {
 }
 
 function _handleShareRevoked(data) {
+    const noteId = data.note_id;
     const notification = {
         id: Date.now(),
         type: 'revoke',
         icon: 'person_remove',
         title: 'Quyền truy cập bị thu hồi',
         message: `<strong>${data.revoked_by}</strong> đã thu hồi quyền truy cập "${_truncate(data.note_title, 30)}" của bạn`,
-        noteId: data.note_id,
+        noteId: noteId,
         time: new Date(),
         unread: true,
     };
@@ -421,13 +538,147 @@ function _handleShareRevoked(data) {
     _addNotification(notification);
     _showRealtimeToast(notification);
 
-    // Remove the note card from "Shared with me" if visible
-    const sharedCard = document.querySelector(`.fn-shared-note[data-note-id="${data.note_id}"]`);
+    // 1. Remove the note card from "Shared with me" if visible
+    const sharedCard = document.querySelector(`.fn-shared-note-col[data-note-id="${noteId}"]`);
     if (sharedCard) {
         sharedCard.style.transition = 'all 0.3s ease';
         sharedCard.style.opacity = '0';
         sharedCard.style.transform = 'scale(0.9)';
         setTimeout(() => sharedCard.remove(), 300);
+    }
+
+    // 2. If user has the shared note modal open for this note, close it
+    const sharedModal = document.getElementById('sharedNoteModal');
+    if (sharedModal && sharedModal.classList.contains('show') &&
+        String(sharedModal.dataset.noteId) === String(noteId)) {
+        if (typeof closeSharedNoteModal === 'function') closeSharedNoteModal();
+    }
+
+    // 3. If user is currently on the full-page edit route for this note, redirect
+    if (typeof window.__FNP_EDIT_NOTE_ID !== 'undefined' &&
+        String(window.__FNP_EDIT_NOTE_ID) === String(noteId)) {
+        
+        // Cancel any pending auto-save
+        if (typeof autoSaveCancel === 'function') autoSaveCancel();
+        
+        // Redirect back to shared dashboard
+        window.location.replace('/dashboard?view=shared');
+    }
+}
+
+/* ── Note Lock Real-time Handler ───────────────────── */
+
+/**
+ * Called when the note owner enables or changes the lock password.
+ * Shared users currently viewing this note are immediately prompted
+ * to re-enter the password.
+ */
+function _handleNoteLocked(data) {
+    const noteId = data.note_id;
+    const noteTitle = data.note_title || 'Ghi chú';
+    const action = data.action; // 'enabled' | 'changed'
+    const lockedBy = data.locked_by || {};
+
+    // 1. Notification toast
+    const actionText = action === 'changed' ? 'đổi mật khẩu' : 'khoá';
+    const notification = {
+        id: Date.now(),
+        type: 'permission',
+        icon: 'lock',
+        title: action === 'changed' ? 'Mật khẩu ghi chú đã thay đổi' : 'Ghi chú đã được khoá',
+        message: `<strong>${lockedBy.name}</strong> đã ${actionText} ghi chú "${_truncate(noteTitle, 30)}"`,
+        noteId: noteId,
+        time: new Date(),
+        unread: true,
+    };
+    _addNotification(notification);
+    _showRealtimeToast(notification);
+
+    // 2. Update note card lock state on dashboard
+    const col = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
+    if (col) {
+        col.dataset.locked = '1';
+        // Update lock badge if patchLockBadge is available (from note-lock.js)
+        if (typeof patchLockBadge === 'function') patchLockBadge(col, true);
+    }
+
+    // 3. Update shared note card lock state
+    const sharedCol = document.querySelector(`.fn-shared-note-col[data-note-id="${noteId}"]`);
+    if (sharedCol) {
+        sharedCol.dataset.locked = '1';
+        const card = sharedCol.querySelector('.fn-note-card');
+        if (card) {
+            const perm = sharedCol.dataset.permission || 'read';
+            card.setAttribute('onclick', `openSharedNoteOrUnlock(${noteId}, '${perm}', true)`);
+        }
+    }
+
+    // 4. If user is currently on the full-page edit route for this note,
+    //    lock the editor and require password re-entry.
+    if (typeof window.__FNP_EDIT_NOTE_ID !== 'undefined' &&
+        String(window.__FNP_EDIT_NOTE_ID) === String(noteId)) {
+
+        const titleInput = document.getElementById('modalNoteTitle');
+        const contentEditor = document.getElementById('modalNoteContent');
+
+        // Lock the editor immediately
+        if (contentEditor) contentEditor.contentEditable = 'false';
+        if (titleInput) titleInput.readOnly = true;
+
+        // Cancel any pending auto-save
+        if (typeof autoSaveCancel === 'function') autoSaveCancel();
+
+        // Update the sentinel for isNoteLocked() to return true
+        const sentinel = document.querySelector(`.note-col[data-note-id="${noteId}"]`);
+        if (sentinel) sentinel.dataset.locked = '1';
+
+        // Inject sentinel if it doesn't exist (user may have arrived at unlocked note)
+        if (!sentinel) {
+            const s = document.createElement('div');
+            s.className = 'note-col';
+            s.dataset.noteId = String(noteId);
+            s.dataset.locked = '1';
+            s.style.display = 'none';
+            document.body.appendChild(s);
+        }
+
+        // Clear any previously stored lock token
+        if (typeof clearLockToken === 'function') clearLockToken(noteId);
+        window._editLockToken = null;
+        try { sessionStorage.removeItem(`fn_lock_token_${noteId}`); } catch (_) {}
+
+        // Prompt the user to re-enter the password
+        if (typeof requireUnlock === 'function') {
+            requireUnlock(noteId, (token) => {
+                window._editLockToken = token;
+                if (contentEditor) contentEditor.contentEditable = 'true';
+                if (titleInput) { titleInput.readOnly = false; titleInput.focus(); }
+                // Re-enable auto-save
+                if (typeof autoSaveReset === 'function') {
+                    const curTitle = titleInput ? titleInput.value : '';
+                    const curContent = contentEditor ? contentEditor.innerHTML : '';
+                    const curLabels = window.__FNP_LABEL_IDS ?? [];
+                    autoSaveReset(curTitle, curContent, curLabels);
+                }
+            });
+        }
+    }
+
+    // 5. If user has the shared note modal open for this note, close it and prompt
+    const sharedModal = document.getElementById('sharedNoteModal');
+    if (sharedModal && sharedModal.classList.contains('show') &&
+        String(sharedModal.dataset.noteId) === String(noteId)) {
+        if (typeof closeSharedNoteModal === 'function') closeSharedNoteModal();
+        if (typeof showToast === 'function') {
+            showToast(`Ghi chú đã được ${action === 'changed' ? 'đổi mật khẩu' : 'khoá'}. Vui lòng nhập lại mật khẩu.`, 'warning');
+        }
+    }
+
+    // 6. Invoke any registered hooks
+    if (Array.isArray(window.__onNoteLockChangedHooks)) {
+        window.__onNoteLockChangedHooks.forEach(fn => {
+            try { fn(data); } catch (e) { console.warn('[Echo] onNoteLockChanged hook error:', e); }
+        });
     }
 }
 

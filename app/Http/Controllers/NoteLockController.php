@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NoteLocked;
 use App\Http\Requests\Note\ChangeLockPasswordRequest;
 use App\Http\Requests\Note\EnableLockRequest;
 use App\Http\Requests\Note\VerifyLockRequest;
@@ -57,6 +58,9 @@ class NoteLockController extends Controller
 
         $this->noteService->setPassword($note, $request->input('password'));
 
+        // Broadcast to shared users so they are immediately prompted for the password
+        broadcast(new NoteLocked($note->fresh(), $request->user(), 'enabled'))->toOthers();
+
         return response()->json([
             'success' => true,
             'message' => 'Đã khoá ghi chú thành công.',
@@ -86,6 +90,9 @@ class NoteLockController extends Controller
         }
 
         $this->noteService->setPassword($note, $request->input('password'));
+
+        // Broadcast to shared users so they are immediately prompted for the new password
+        broadcast(new NoteLocked($note->fresh(), $request->user(), 'changed'))->toOthers();
 
         // Return a fresh token so the user stays unlocked after changing password
         $token = $this->generateToken($note->id);
