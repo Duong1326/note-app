@@ -201,7 +201,7 @@ class Note extends Model
             'is_pinned'   => $this->is_pinned,
             'is_locked'   => $this->is_locked,
             'updated_at'  => $this->updated_at?->diffForHumans(),
-            'labels'      => $this->labels->map(fn ($l) => ['id' => $l->id, 'name' => $l->name])->values(),
+            'labels'      => $this->labels->filter(fn ($l) => auth()->check() ? $l->user_id === auth()->id() : true)->map(fn ($l) => ['id' => $l->id, 'name' => $l->name])->values(),
             'attachments' => $this->attachments->map(fn ($a) => [
                 'id'            => $a->id,
                 'url'           => $a->secure_url,

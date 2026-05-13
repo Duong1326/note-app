@@ -164,3 +164,10 @@ input[type="checkbox"] {
     opacity: 0;
     visibility: hidden;
 }
+
+/* ── Global Form Resets ──────────────────────── */
+/* Disable default browser password reveal icon (Edge/IE) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}

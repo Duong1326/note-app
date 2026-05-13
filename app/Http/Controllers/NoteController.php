@@ -19,7 +19,8 @@ class NoteController extends Controller
 {
     public function __construct(
         private NoteService $noteService,
-    ) {}
+    ) {
+    }
 
     /**
      * Display the full-page editor for creating a new note.
@@ -28,9 +29,9 @@ class NoteController extends Controller
     public function create(Request $request): View
     {
         return view('notes.edit', [
-            'note'            => null,
-            'labels'          => $request->user()->labels()->orderBy('name')->get(),
-            'isOwner'         => true,
+            'note' => null,
+            'labels' => $request->user()->labels()->orderBy('name')->get(),
+            'isOwner' => true,
             'sharePermission' => null,
         ]);
     }
@@ -90,9 +91,9 @@ class NoteController extends Controller
         $note->load(['labels', 'attachments', 'shares']);
 
         return view('notes.edit', [
-            'note'            => $note,
-            'labels'          => $user->labels()->orderBy('name')->get(),
-            'isOwner'         => $isOwner,
+            'note' => $note,
+            'labels' => $user->labels()->orderBy('name')->get(),
+            'isOwner' => $isOwner,
             'sharePermission' => $sharePermission,
         ]);
     }
@@ -172,7 +173,7 @@ class NoteController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'note'    => $note->toCardArray(),
+                'note' => $note->toCardArray(),
             ]);
         }
 
@@ -182,7 +183,12 @@ class NoteController extends Controller
     public function update(UpdateNoteRequest $request, Note $note): JsonResponse|RedirectResponse
     {
         try {
-            $updated = $this->noteService->update($note, $request->validated(), $request->user()->id);
+            $data = $request->validated();
+            // Always pass label_ids so that unchecking all labels (empty array) works
+            if ($request->has('title')) {
+                $data['label_ids'] = $request->input('label_ids', []);
+            }
+            $updated = $this->noteService->update($note, $data, $request->user()->id);
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -195,12 +201,15 @@ class NoteController extends Controller
 
         // Load note-level shares AND workspace shares so NoteUpdated can broadcast to all members
         $updated->loadMissing(['shares', 'workspace.shares']);
-        NoteUpdated::dispatch($updated, $request->user());
+
+        if ($updated->wasChanged()) {
+            NoteUpdated::dispatch($updated, $request->user());
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'note'    => $updated->toCardArray(),
+                'note' => $updated->toCardArray(),
             ]);
         }
 
@@ -210,7 +219,7 @@ class NoteController extends Controller
     public function destroy(Note $note): JsonResponse|RedirectResponse
     {
         // Capture data before deletion (model will be gone after)
-        $noteId    = $note->id;
+        $noteId = $note->id;
         $noteTitle = $note->title ?: 'Ghi chú không có tiêu đề';
         $deletedBy = request()->user();
 
@@ -266,8 +275,8 @@ class NoteController extends Controller
 
         if (request()->expectsJson()) {
             return response()->json([
-                'success'    => true,
-                'is_pinned'  => true,
+                'success' => true,
+                'is_pinned' => true,
                 'updated_at' => $note->updated_at->diffForHumans(),
             ]);
         }
@@ -283,19 +292,14 @@ class NoteController extends Controller
 
         if (request()->expectsJson()) {
             return response()->json([
-                'success'    => true,
-                'is_pinned'  => false,
+                'success' => true,
+                'is_pinned' => false,
                 'updated_at' => $note->updated_at->diffForHumans(),
             ]);
         }
 
         return back();
     }
-
-    // ──────────────────────────────────────────────
-    // Helpers
-    // ──────────────────────────────────────────────
-
     /**
      * Shared authorization check for pin/unpin: note owner OR workspace edit member.
      */
@@ -304,7 +308,7 @@ class NoteController extends Controller
         $isOwner = $note->user_id === $user->id;
         $hasWsEdit = !$isOwner && $note->workspace_id &&
             Workspace::find($note->workspace_id)
-                ?->shares()->where('shared_with_user_id', $user->id)->where('permission', 'edit')->exists();
+                    ?->shares()->where('shared_with_user_id', $user->id)->where('permission', 'edit')->exists();
 
         abort_if(!$isOwner && !$hasWsEdit, 403, $message);
     }

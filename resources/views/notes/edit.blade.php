@@ -140,7 +140,7 @@
                 {{-- Top Actions (Notion-style, above title) --}}
                 @if($isOwner)
                     <div class="fnp-top-actions">
-                        <button type="button" class="fnp-top-action-btn" id="btnToggleAttachment" title="Thêm ảnh bìa"
+                        <button type="button" class="fnp-top-action-btn {{ ($note && $note->attachments->count() > 0) ? 'd-none' : '' }}" id="btnToggleAttachment" title="Thêm ảnh bìa"
                             onclick="toggleAttachmentSection()">
                             <span class="material-symbols-outlined fn-icon-sm">image</span>
                             Thêm ảnh bìa
@@ -268,7 +268,7 @@
         window.__FNP_EDIT_NOTE_ID = {{ $note?->id ?? 'null' }};
         window.__FNP_NOTE_TITLE = @json($note?->title ?? '');
         window.__FNP_NOTE_CONTENT = @json($note?->content ?? '');
-        window.__FNP_LABEL_IDS = @json($note ? $note->labels->pluck('id') : []);
+        window.__FNP_LABEL_IDS = @json($note ? $note->labels->filter(fn($l) => $l->user_id === auth()->id())->pluck('id') : []);
         window.__FNP_ATTACHMENTS = @json($fnpAttachments);
         window.__FNP_IS_OWNER = {{ $isOwner ? 'true' : 'false' }};
         window.__FNP_LOCKED = {{ ($note?->is_locked) ? 'true' : 'false' }};

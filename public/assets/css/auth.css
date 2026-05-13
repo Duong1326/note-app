@@ -295,6 +295,11 @@ body {
 /*  Password Eye Toggle (auth pages)     */
 /* ══════════════════════════════════════ */
 
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+
 .auth-pw-wrap {
     position: relative;
 }

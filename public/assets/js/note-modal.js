@@ -23,6 +23,7 @@
 function updateModalThumbnail() {
     const preview = document.getElementById('modalThumbPreview');
     const img     = document.getElementById('modalThumbImage');
+    const btnAddCover = document.getElementById('btnToggleAttachment');
     if (!preview || !img) return;
 
     let src = null;
@@ -36,9 +37,11 @@ function updateModalThumbnail() {
     if (src) {
         img.src = src;
         preview.classList.remove('d-none');
+        if (btnAddCover) btnAddCover.classList.add('d-none');
     } else {
         img.src = '';
         preview.classList.add('d-none');
+        if (btnAddCover) btnAddCover.classList.remove('d-none');
     }
 }
 

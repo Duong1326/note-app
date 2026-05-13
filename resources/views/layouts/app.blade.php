@@ -48,10 +48,10 @@
 
         @auth
             {{-- Fluid Notes Branding --}}
-            <div class="fn-sidebar-brand" style="pointer-events:none; display: flex; align-items: center; gap: 8px;">
+            <a href="{{ route('dashboard') }}" class="fn-sidebar-brand" style="text-decoration: none; display: flex; align-items: center; gap: 8px; color: inherit;">
                 <img src="{{ asset('logo.png') }}" alt="Logo" style="height: 40px; width: auto;">
                 <h1 style="margin-bottom: 0;">Fluid Notes</h1>
-            </div>
+            </a>
 
             {{-- Workspace Header --}}
             @php

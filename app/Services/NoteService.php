@@ -83,7 +83,7 @@ class NoteService
                 throw new Exception('Bạn không có quyền chỉnh sửa ghi chú này.');
             }
 
-            $updated = DB::transaction(function () use ($note, $data) {
+            $updated = DB::transaction(function () use ($note, $data, $updatedByUserId) {
                 if (array_key_exists('title', $data)) {
                     $note->title = $data['title'];
                 }
@@ -97,7 +97,25 @@ class NoteService
                 $note->save();
 
                 if (array_key_exists('label_ids', $data)) {
-                    $note->labels()->sync($data['label_ids'] ?? []);
+                    // Current user's labels already attached to this note
+                    $currentUserLabelIds = $note->labels()
+                        ->where('labels.user_id', $updatedByUserId)
+                        ->pluck('labels.id')
+                        ->toArray();
+
+                    $newLabelIds = $data['label_ids'] ?? [];
+
+                    // Detach labels that are no longer selected by this user
+                    $toDetach = array_diff($currentUserLabelIds, $newLabelIds);
+                    if (!empty($toDetach)) {
+                        $note->labels()->detach($toDetach);
+                    }
+
+                    // Attach newly selected labels by this user
+                    $toAttach = array_diff($newLabelIds, $currentUserLabelIds);
+                    if (!empty($toAttach)) {
+                        $note->labels()->attach($toAttach);
+                    }
                 }
 
                 return $note;
