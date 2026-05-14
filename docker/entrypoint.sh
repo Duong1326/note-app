@@ -70,6 +70,9 @@ echo "MySQL is ready!"
 if [ "${SKIP_MIGRATIONS:-false}" != "true" ]; then
     echo "Running migrations..."
     php artisan migrate --force && echo "Migrations applied successfully." || echo "WARNING: Migration step had issues (check logs)."
+    
+    echo "Running database seeders..."
+    php artisan db:seed --force && echo "Database seeded successfully." || echo "WARNING: Database seeding had issues (check logs)."
 else
     echo "Skipping migrations (SKIP_MIGRATIONS=true)..."
 fi
