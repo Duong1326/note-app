@@ -16,7 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ['middleware' => ['web', 'auth']],
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Đăng ký CORS middleware toàn cục (xử lý /broadcasting/auth cross-origin)
+        $middleware->trustProxies(at: [
+            '10.0.0.0/8',       // Class A private
+            '172.16.0.0/12',    // Class B private (Render internal)
+            '192.168.0.0/16',   // Class C private
+        ]);
+
         $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
 
         $middleware->alias([
