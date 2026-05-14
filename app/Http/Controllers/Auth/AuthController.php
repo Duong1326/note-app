@@ -78,6 +78,10 @@ class AuthController extends Controller
 
     public function redirectHome()
     {
-        return redirect()->route('login');
+        if (auth()->check()) {
+            return redirect()->route('dashboard');
+        }
+
+        return view('layouts.welcome');
     }
 }
