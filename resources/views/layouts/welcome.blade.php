@@ -8,15 +8,11 @@
     <meta name="description"
         content="Ghi chú, cộng tác và quản lý ý tưởng của bạn — tất cả ở một nơi. Được xây dựng cho cá nhân và nhóm muốn di chuyển nhanh mà không làm mất đi bối cảnh.">
     <link rel="icon" href="{{ asset('logo.png') }}" type="image/png">
-    {{-- Font loaded locally via system stack (no CDN needed) --}}
     <link rel="stylesheet" href="{{ asset('assets/css/welcome.css') }}">
 </head>
 
 <body>
 
-    <!-- ════════════════════════════════════ -->
-    <!--  HEADER                             -->
-    <!-- ════════════════════════════════════ -->
     <header class="wl-header" id="main-header">
         <nav class="container-xl wl-nav" aria-label="Main navigation">
 
@@ -46,9 +42,6 @@
         </nav>
     </header>
 
-    <!-- ════════════════════════════════════ -->
-    <!--  HERO                               -->
-    <!-- ════════════════════════════════════ -->
     <main>
         <section class="wl-hero" aria-label="Hero">
             <div class="container-xl">
@@ -88,9 +81,6 @@
             </div>
         </section>
 
-        <!-- ════════════════════════════════════ -->
-        <!--  FEATURES                           -->
-        <!-- ════════════════════════════════════ -->
         <section class="wl-features" id="features" aria-label="Tính năng">
             <div class="container-xl">
 
@@ -155,9 +145,6 @@
             </div>
         </section>
 
-        <!-- ════════════════════════════════════ -->
-        <!--  CALL TO ACTION                     -->
-        <!-- ════════════════════════════════════ -->
         <section class="wl-cta-section" aria-label="Kêu gọi hành động">
             <div class="container-xl">
                 <h2 class="wl-section-title">Sẵn sàng để bắt đầu?</h2>
@@ -181,9 +168,6 @@
         </section>
     </main>
 
-    <!-- ════════════════════════════════════ -->
-    <!--  FOOTER                             -->
-    <!-- ════════════════════════════════════ -->
     <footer class="wl-footer" aria-label="Footer">
         <div class="container-xl">
 
