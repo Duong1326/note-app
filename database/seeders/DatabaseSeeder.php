@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'test@gmail.com'],
             [
                 'name' => 'Test',
-                'password' => '123456', // Laravel 11 sẽ tự động hash (do casts 'hashed')
+                'password' => 'Test@123',
                 'email_verified_at' => now(),   // Đã xác thực email để bỏ qua OTP
             ]
         );
