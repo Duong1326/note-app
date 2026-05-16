@@ -341,7 +341,7 @@
         document.getElementById('wsLockModalBody').innerHTML =
             '<div class="fn-form-group">' +
             '<label class="fn-form-label">Mật khẩu mới</label>' +
-            '<input type="password" class="fn-form-input" id="wsLockPwd1" placeholder="Tối thiểu 4 ký tự..." minlength="4">' +
+            '<input type="password" class="fn-form-input" id="wsLockPwd1" placeholder="Tối thiểu 6 ký tự..." minlength="6">' +
             '</div>' +
             '<div class="fn-form-group">' +
             '<label class="fn-form-label">Xác nhận mật khẩu</label>' +
@@ -361,7 +361,7 @@
             '</div>' +
             '<div class="fn-form-group">' +
             '<label class="fn-form-label">Mật khẩu mới</label>' +
-            '<input type="password" class="fn-form-input" id="wsLockPwd1" placeholder="Tối thiểu 4 ký tự..." minlength="4">' +
+            '<input type="password" class="fn-form-input" id="wsLockPwd1" placeholder="Tối thiểu 6 ký tự..." minlength="6">' +
             '</div>' +
             '<div class="fn-form-group">' +
             '<label class="fn-form-label">Xác nhận mật khẩu mới</label>' +
@@ -396,7 +396,7 @@
             var pwd1 = document.getElementById('wsLockPwd1').value;
             var pwd2 = document.getElementById('wsLockPwd2').value;
             if (!pwd1 || pwd1.length < 4) {
-                if (typeof showToast === 'function') showToast('Mật khẩu tối thiểu 4 ký tự.', 'error');
+                if (typeof showToast === 'function') showToast('Mật khẩu tối thiểu 6 ký tự.', 'error');
                 return;
             }
             if (pwd1 !== pwd2) {
@@ -702,14 +702,14 @@
     }
 
     var _wsShareTrigger = null;
-    var _wsEmailChips   = [];   // { email, valid }
+    var _wsEmailChips = [];   // { email, valid }
     var _wsExistingShares = [];
 
     // ── Open / close ────────────────────────────────────────
     window.openWsShareModal = function (wsId, wsName, triggerBtn) {
-        _currentWsId      = wsId;
-        _wsShareTrigger   = triggerBtn || null;
-        _wsEmailChips     = [];
+        _currentWsId = wsId;
+        _wsShareTrigger = triggerBtn || null;
+        _wsEmailChips = [];
         _wsExistingShares = [];
 
         // Reset UI
@@ -736,9 +736,9 @@
             var rect = triggerBtn.getBoundingClientRect();
             if (card) {
                 card.style.position = 'fixed';
-                card.style.top    = (rect.bottom + 8) + 'px';
-                card.style.right  = (window.innerWidth - rect.right) + 'px';
-                card.style.left   = 'auto';
+                card.style.top = (rect.bottom + 8) + 'px';
+                card.style.right = (window.innerWidth - rect.right) + 'px';
+                card.style.left = 'auto';
                 card.style.margin = '0';
                 card.style.transform = 'none';
             }
@@ -845,36 +845,36 @@
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
             body: JSON.stringify({ emails: emails, permission: perm }),
         })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            if (data.success) {
-                if (typeof showToast === 'function') showToast(data.message, 'success');
-                _wsEmailChips = [];
-                _wssRenderChips();
-                _wssLoadRecipients(_currentWsId);
-            } else {
-                var msg = data.message || 'Lỗi khi chia sẻ.';
-                if (data.errors) msg = Object.values(data.errors).flat().join('\n');
-                _wssShowError(msg);
-            }
-        })
-        .finally(function () {
-            if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
-        });
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    if (typeof showToast === 'function') showToast(data.message, 'success');
+                    _wsEmailChips = [];
+                    _wssRenderChips();
+                    _wssLoadRecipients(_currentWsId);
+                } else {
+                    var msg = data.message || 'Lỗi khi chia sẻ.';
+                    if (data.errors) msg = Object.values(data.errors).flat().join('\n');
+                    _wssShowError(msg);
+                }
+            })
+            .finally(function () {
+                if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+            });
     };
 
     // ── Load & render recipients (mirrors renderRecipients in note-share.js) ──
     function _wssLoadRecipients(wsId) {
         fetch('/workspaces/' + wsId + '/shares', { headers: { 'Accept': 'application/json' } })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            if (data.success) {
-                _wsExistingShares = data.shares;
-                _wssRenderRecipients();
-                var section = document.getElementById('wsShareRecipientsSection');
-                if (section) section.classList.toggle('d-none', data.shares.length === 0);
-            }
-        });
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    _wsExistingShares = data.shares;
+                    _wssRenderRecipients();
+                    var section = document.getElementById('wsShareRecipientsSection');
+                    if (section) section.classList.toggle('d-none', data.shares.length === 0);
+                }
+            });
     }
 
     function _wssRenderRecipients() {
@@ -892,15 +892,15 @@
             row.innerHTML =
                 '<div class="fn-share-avatar">' + avatarHtml + '</div>' +
                 '<div class="fn-share-recipient-info">' +
-                    '<div class="fn-share-recipient-name">' + _wssEscapeHtml(s.name) + '</div>' +
-                    '<div class="fn-share-recipient-email">' + _wssEscapeHtml(s.email || '') + '</div>' +
+                '<div class="fn-share-recipient-name">' + _wssEscapeHtml(s.name) + '</div>' +
+                '<div class="fn-share-recipient-email">' + _wssEscapeHtml(s.email || '') + '</div>' +
                 '</div>' +
                 '<select class="fn-share-perm-select" onchange="wssUpdatePerm(' + s.id + ',this.value)">' +
-                    '<option value="read"' + (s.permission === 'read' ? ' selected' : '') + '>Chỉ đọc</option>' +
-                    '<option value="edit"' + (s.permission === 'edit' ? ' selected' : '') + '>Chỉnh sửa</option>' +
+                '<option value="read"' + (s.permission === 'read' ? ' selected' : '') + '>Chỉ đọc</option>' +
+                '<option value="edit"' + (s.permission === 'edit' ? ' selected' : '') + '>Chỉnh sửa</option>' +
                 '</select>' +
                 '<button type="button" class="fn-share-revoke-btn" onclick="wssRevokeShare(' + _currentWsId + ',' + s.id + ')" title="Thu hồi quyền">' +
-                    '<span class="material-symbols-outlined">person_remove</span>' +
+                '<span class="material-symbols-outlined">person_remove</span>' +
                 '</button>';
             list.appendChild(row);
         });
@@ -914,10 +914,10 @@
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
             body: JSON.stringify({ permission: permission }),
         })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            if (data.success && typeof showToast === 'function') showToast(data.message, 'success');
-        });
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success && typeof showToast === 'function') showToast(data.message, 'success');
+            });
     };
 
     window.wssRevokeShare = function (wsId, shareId) {
@@ -927,16 +927,16 @@
             method: 'DELETE',
             headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
         })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            if (data.success) {
-                if (typeof showToast === 'function') showToast(data.message, 'success');
-                _wsExistingShares = _wsExistingShares.filter(function (s) { return s.id !== shareId; });
-                _wssRenderRecipients();
-                var section = document.getElementById('wsShareRecipientsSection');
-                if (section) section.classList.toggle('d-none', _wsExistingShares.length === 0);
-            }
-        });
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    if (typeof showToast === 'function') showToast(data.message, 'success');
+                    _wsExistingShares = _wsExistingShares.filter(function (s) { return s.id !== shareId; });
+                    _wssRenderRecipients();
+                    var section = document.getElementById('wsShareRecipientsSection');
+                    if (section) section.classList.toggle('d-none', _wsExistingShares.length === 0);
+                }
+            });
     };
 
     // ── Chip input key handlers (wired via DOMContentLoaded) ─
@@ -963,7 +963,7 @@
         if (el) el.classList.add('d-none');
     }
     function _wssEscapeHtml(str) {
-        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
 })();
