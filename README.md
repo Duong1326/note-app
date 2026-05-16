@@ -1,4 +1,5 @@
 DANH SÁCH THÀNH VIÊN
+
 1. Nguyễn Đăng Khoa - 52400018
 2. Phan Văn Tây - 52400236
 3. Phan Văn Dương - 52400009
@@ -6,6 +7,7 @@ DANH SÁCH THÀNH VIÊN
 KIẾN TRÚC HỆ THỐNG VÀ TECH STACK
 
 1. Kiến trúc hệ thống:
+
 - Mô hình MVC (Model - View - Controller):
   + Model: Đảm nhiệm tương tác với cơ sở dữ liệu (sử dụng Eloquent ORM của Laravel) để quản lý các thực thể như User, Note.
   + View: Sử dụng Blade Templates để render giao diện động phía server.
@@ -19,6 +21,7 @@ KIẾN TRÚC HỆ THỐNG VÀ TECH STACK
 - Tối ưu hiệu năng Frontend: Áp dụng kỹ thuật Debounce trong thanh tìm kiếm và nhập liệu để hạn chế số lượng request liên tục gửi lên server.
 
 2. Tech Stack (Công nghệ sử dụng):
+
 - Backend:
   + Framework: Laravel (PHP >= 8.1).
   + Tương tác CSDL: Eloquent ORM.
@@ -35,6 +38,7 @@ KIẾN TRÚC HỆ THỐNG VÀ TECH STACK
 HƯỚNG DẪN CÀI ĐẶT VÀ CẤU HÌNH (NOTE APP - LARAVEL)
 
 Yêu cầu hệ thống:
+
 - PHP >= 8.1
 - Composer
 - Node.js & npm
@@ -42,8 +46,6 @@ Yêu cầu hệ thống:
 - Docker (Tùy chọn)
 
 CÁCH 1: CÀI ĐẶT THỦ CÔNG
-
-*Lưu ý: File `.env` đã được nhóm cấu hình sẵn các thông tin cần thiết (Database, SMTP Mail, Cloudinary...), do đó bạn không cần phải thiết lập lại.*
 
 Bước 1: Di chuyển vào thư mục dự án
 cd note-app
@@ -65,7 +67,6 @@ Bước 6: Khởi chạy ứng dụng
 php artisan serve
 Ứng dụng sẽ có thể truy cập tại: http://localhost:8000
 
-
 CÁCH 2: CHẠY BẰNG DOCKER (Nhanh nhất)
 
 Bước 1: Di chuyển vào thư mục dự án
@@ -77,4 +78,4 @@ docker-compose up -d --build
 Bước 3: Chạy migration để tạo bảng cơ sở dữ liệu
 docker-compose exec app php artisan migrate
 
-Ứng dụng sẽ có thể truy cập tại: http://localhost (hoặc http://localhost:80 tùy thiết lập máy)
+Ứng dụng sẽ có thể truy cập tại: http://localhost:7222

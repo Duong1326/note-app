@@ -21,6 +21,7 @@ class RegisterRequest extends FormRequest
                 'string',
                 'confirmed',
                 'min:6',
+                'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*[\W_]).+$/',
             ],
         ];
     }
@@ -28,8 +29,9 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'password.min' => 'Mật khẩu phải có ít nhất 6 số.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
             'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
+            'password.regex' => 'Mật khẩu phải chứa ít nhất một chữ hoa, một chữ thường và một ký tự đặc biệt.',
             'email.unique' => 'Email này đã được sử dụng.',
         ];
     }

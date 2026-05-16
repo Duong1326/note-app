@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\Hash;
 
 class WorkspaceLockController extends Controller
 {
-    public function __construct(private WorkspaceService $workspaceService) {}
+    public function __construct(private WorkspaceService $workspaceService)
+    {
+    }
 
     /**
      * POST /workspaces/{workspace}/lock/verify
@@ -58,8 +60,10 @@ class WorkspaceLockController extends Controller
         $this->authorizeOwner($request, $workspace);
 
         $request->validate([
-            'password'              => ['required', 'string', 'min:4', 'confirmed'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
             'password_confirmation' => ['required'],
+        ], [
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
         ]);
 
         if ($workspace->isPasswordProtected()) {
@@ -89,9 +93,11 @@ class WorkspaceLockController extends Controller
         $this->authorizeOwner($request, $workspace);
 
         $request->validate([
-            'current_password'      => ['required', 'string'],
-            'password'              => ['required', 'string', 'min:4', 'confirmed'],
+            'current_password' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
             'password_confirmation' => ['required'],
+        ], [
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
         ]);
 
         if (!$workspace->isPasswordProtected()) {
@@ -117,7 +123,7 @@ class WorkspaceLockController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Đã đổi mật khẩu thành công.',
-            'token'   => $token,
+            'token' => $token,
         ]);
     }
 
@@ -178,9 +184,9 @@ class WorkspaceLockController extends Controller
 
     private function generateToken(int $workspaceId): string
     {
-        $ttl       = 30 * 60; // 30 minutes
+        $ttl = 30 * 60; // 30 minutes
         $expiresAt = now()->timestamp + $ttl;
-        $payload   = "ws_{$workspaceId}|{$expiresAt}";
+        $payload = "ws_{$workspaceId}|{$expiresAt}";
         $signature = hash_hmac('sha256', $payload, config('app.key'));
 
         return base64_encode("{$payload}|{$signature}");
