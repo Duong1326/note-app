@@ -85,7 +85,8 @@
                                     <span class="material-symbols-outlined">visibility</span>
                                 </button>
                             </div>
-                            <p class="password-hint">Mật khẩu gồm tối thiểu 6 ký tự</p>
+                            <p class="password-hint">Mật khẩu gồm tối thiểu 6 ký tự, chữ hoa, chữ thường, số và ký tự đặc
+                                biệt</p>
                         </div>
 
                         <div class="mb-3">

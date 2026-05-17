@@ -21,7 +21,7 @@ class RegisterRequest extends FormRequest
                 'string',
                 'confirmed',
                 'min:6',
-                'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*[\W_]).+$/',
+                'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_]).+$/'
             ],
         ];
     }

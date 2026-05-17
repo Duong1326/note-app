@@ -27,9 +27,9 @@ class ResetPasswordController extends Controller
     public function reset(Request $request)
     {
         $request->validate([
-            'password' => ['required', 'min:6', 'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*[\W_]).+$/', 'confirmed'],
+            'password' => ['required', 'min:6', 'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_]).+$/', 'confirmed'],
         ], [
-            'password.regex' => 'Mật khẩu phải chứa ít nhất một chữ hoa, một chữ thường và một ký tự đặc biệt.',
+            'password.regex' => 'Mật khẩu phải chứa ít nhất một chữ hoa, một chữ thường, một số và một ký tự đặc biệt.',
             'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
         ]);
 
